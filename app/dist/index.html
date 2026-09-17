@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bricksurance SE — Exposure &amp; Event Response</title>
+<style>
+  :root{--slate:#1e293b;--slate2:#0f172a;--blue:#2563eb;--blue4:#60a5fa;--ink:#0f172a;--mut:#64748b;
+        --line:#e2e8f0;--bg:#f8fafc;--card:#fff;--red:#dc2626;--redbg:#fef2f2;--amber:#d97706;--ambbg:#fffbeb;
+        --green:#16a34a;--greenbg:#f0fdf4;--violet:#6d28d9;
+        --b50:#b91c1c;--b100:#ea580c;--b200:#f59e0b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);font-size:14px}
+  .app{display:flex;min-height:100vh}
+  .side{width:252px;background:linear-gradient(180deg,#1e293b 0%,#172033 100%);color:#cbd5e1;flex-shrink:0;
+        display:flex;flex-direction:column;position:fixed;height:100vh;border-right:1px solid rgba(255,255,255,.06)}
+  .brand{display:flex;align-items:center;gap:11px;padding:16px;border-bottom:1px solid rgba(255,255,255,.08);text-decoration:none;color:#fff}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#dc2626,#f59e0b);display:flex;align-items:center;justify-content:center}
+  .brand .logo svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:2}
+  .brand b{font-size:14px;display:block;line-height:1.2}.brand span{font-size:11px;color:#94a3b8}
+  .snav{padding:14px 12px;flex:1}
+  .slab{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin:14px 8px 6px}
+  .perils{display:flex;flex-direction:column;gap:6px}
+  .peril{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.03);font-size:12.5px}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .learn{margin:10px 12px;padding:11px;border:1px solid rgba(52,211,153,.35);border-radius:10px;background:rgba(16,185,129,.06);cursor:pointer}
+  .learn b{color:#34d399;font-size:12.5px}.learn p{margin:4px 0 0;font-size:11px;color:#94a3b8;line-height:1.4}
+  .disc{margin:10px 12px 16px;font-size:10.5px;color:#64748b;line-height:1.45;border-top:1px solid rgba(255,255,255,.06);padding-top:10px}
+  .main{margin-left:252px;flex:1;padding:22px 28px;max-width:1180px}
+  .head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  h1{font-size:21px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:#eef2ff;color:#3730a3;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:600}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+  .btn:hover{background:#f1f5f9}
+  .whatis{margin:14px 0;padding:0;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;display:none}
+  .whatis.on{display:block}
+  .whatis .wh{padding:12px 15px;background:#f8fafc;border-bottom:1px solid var(--line);font-weight:700;font-size:13px}
+  .whatis .wb{padding:13px 15px;font-size:12.5px;color:#475569;line-height:1.6}
+  .whatis code{background:#eef2ff;color:#3730a3;padding:1px 5px;border-radius:4px;font-size:11.5px}
+  .pickrow{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:16px 0 6px}
+  .events{display:flex;gap:11px;flex-wrap:wrap}
+  .ev{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;min-width:172px;cursor:pointer;background:#fff;transition:.12s}
+  .ev:hover{border-color:#cbd5e1}
+  .ev.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+  .ev .ep{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .ev .en{font-size:15px;font-weight:700;margin:6px 0 2px}
+  .ev .em{font-size:11.5px;color:var(--mut)}
+  .ev .ect{font-size:20px;font-weight:800;margin-top:7px}.ev .ect span{font-size:11.5px;font-weight:600;color:var(--mut)}
+  .bufsel{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#fff}
+  .bufsel button{border:0;background:#fff;padding:7px 13px;font-size:12.5px;cursor:pointer;color:var(--mut);border-right:1px solid var(--line)}
+  .bufsel button:last-child{border-right:0}
+  .bufsel button.on{background:var(--blue);color:#fff;font-weight:700}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+  .kpi .k{font-size:11.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+  .kpi .v{font-size:24px;font-weight:800;margin-top:5px}.kpi .v small{font-size:13px;font-weight:600;color:var(--mut)}
+  .kpi .bd{font-size:11px;color:var(--mut);margin-top:4px}
+  .grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}.main{margin-left:0;padding:16px}.side{display:none}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 16px;margin-bottom:16px}
+  .card h3{margin:0 0 3px;font-size:14px}.card .h3s{font-size:11.5px;color:var(--mut);margin:0 0 10px}
+  .mapwrap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f1f5f9}
+  .mapwrap svg{display:block;width:100%;height:auto}
+  .leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:#475569}
+  .leg span{display:inline-flex;align-items:center;gap:6px}
+  .cb{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+  .cbrow .cbt{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:3px}
+  .cbrow .cbt b{font-weight:700}.cbrow .cbt .m{color:var(--mut)}
+  .track{height:11px;background:#f1f5f9;border-radius:999px;overflow:hidden}
+  .track i{display:block;height:100%;border-radius:999px}
+  .xborder{margin-top:12px;padding:10px 12px;border-radius:9px;background:var(--ambbg);border:1px solid #fde68a;font-size:12px;color:#92400e;display:none}
+  .xborder.on{display:block}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid #f1f5f9}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);position:sticky;top:0;background:#fff}
+  td.r,th.r{text-align:right}
+  .tscroll{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+  .pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+  .muted{color:var(--mut)}
+  .loading{padding:40px;text-align:center;color:var(--mut)}
+  /* Learn overlay */
+  .lov{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .lov.on{display:flex}
+  .lbox{background:#fff;border-radius:14px;max-width:640px;width:100%;padding:22px 24px;max-height:86vh;overflow:auto}
+  .lbox h2{margin:0 0 4px;font-size:18px}.lbox .lc{color:var(--mut);font-size:12.5px;margin:0 0 14px}
+  .lstep{display:flex;gap:12px;padding:11px 0;border-top:1px solid #f1f5f9}
+  .lstep .ln{width:26px;height:26px;border-radius:50%;background:#eef2ff;color:#3730a3;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
+  .lstep b{font-size:13.5px}.lstep p{margin:3px 0 0;font-size:12px;color:#475569;line-height:1.5}
+  .lstep code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <a class="brand" href="#">
+      <span class="logo"><svg viewBox="0 0 24 24"><path d="M12 2 4 7v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <span><b>Bricksurance SE</b><span>Exposure &amp; Event Response</span></span>
+    </a>
+    <div class="snav">
+      <div class="slab">Perils tracked</div>
+      <div class="perils">
+        <div class="peril"><span class="dot" style="background:var(--red)"></span> Wildfire <span class="muted" style="margin-left:auto;font-size:11px">FIRMS · EFFIS</span></div>
+        <div class="peril"><span class="dot" style="background:var(--blue)"></span> Flood <span class="muted" style="margin-left:auto;font-size:11px">GloFAS · EMS</span></div>
+        <div class="peril"><span class="dot" style="background:var(--violet)"></span> Windstorm <span class="muted" style="margin-left:auto;font-size:11px">MeteoAlarm</span></div>
+      </div>
+    </div>
+    <div class="learn" onclick="openLearn()"><b>▸ Learn — how this works</b><p>From event footprint to threatened properties, in one governed picture.</p></div>
+    <div class="disc"><b style="color:#94a3b8">About this demo</b><br/>Synthetic Bricksurance SE data, illustrative event footprints. Not a live operational system. Exposure is computed by governed Unity Catalog functions on real Databricks geospatial SQL.</div>
+  </aside>
+
+  <main class="main">
+    <div class="head">
+      <div>
+        <h1>Exposure &amp; Event Response</h1>
+        <p class="sub">Which insured properties are threatened by an active catastrophe — right now, across borders.</p>
+      </div>
+      <div style="display:flex;gap:9px;align-items:center">
+        <span class="chip" id="entityChip">Bricksurance SE</span>
+        <button class="btn" onclick="toggleWhat()">What am I seeing?</button>
+      </div>
+    </div>
+
+    <div class="whatis" id="whatis">
+      <div class="wh">What am I seeing?</div>
+      <div class="wb">An <b>event footprint</b> (the wildfire perimeter, flood extent or storm swath) laid over the <b>insured property book</b>. For the selected event and buffer, the workbench asks the governed function <code>fn_exposure_in_footprint</code> which properties fall within <b>50 / 100 / 200 m</b> of the footprint, measured in true metres (EPSG:3035). The map, the KPIs and the table are all the <b>same</b> governed numbers — nothing is computed in the browser. A single event can span countries, so the country breakdown shows the whole cross-border exposure at once.</div>
+    </div>
+
+    <div class="pickrow">
+      <div class="events" id="events"><div class="loading">Loading events…</div></div>
+      <div style="display:flex;align-items:center;gap:9px">
+        <span class="muted" style="font-size:12px">Distance buffer</span>
+        <div class="bufsel" id="bufsel">
+          <button data-b="50">50 m</button>
+          <button data-b="100">100 m</button>
+          <button data-b="200" class="on">200 m</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view"></div>
+  </main>
+</div>
+
+<div class="lov" id="lov" onclick="if(event.target===this)closeLearn()">
+  <div class="lbox">
+    <h2>How Exposure &amp; Event Response works</h2>
+    <p class="lc">Deterministic engines measure; the picture is one governed source of truth.</p>
+    <div class="lstep"><span class="ln">1</span><div><b>Trust the data</b><p>The insured property book (<code>3_property</code>) carries a geocoded location for every exposure — the same policy spine the rest of the estate uses.</p></div></div>
+    <div class="lstep"><span class="ln">2</span><div><b>Find the footprint</b><p>An event footprint (<code>2_event_footprint</code>) arrives from a hazard feed — wildfire perimeter, flood extent, storm swath. Multi-segment events are unioned into one shape.</p></div></div>
+    <div class="lstep"><span class="ln">3</span><div><b>Measure the exposure</b><p>The governed function <code>fn_exposure_in_footprint</code> intersects properties against the footprint using Databricks geospatial SQL (<code>ST_DWithin</code>) in EPSG:3035, so 50/100/200 m are true metres — inside the footprint counts as 0 m.</p></div></div>
+    <div class="lstep"><span class="ln">4</span><div><b>See it whole — across borders</b><p><code>fn_event_exposure_summary</code> rolls the same rows up by band and by country, so one event shows its entire cross-border exposure in a single view — no country silos.</p></div></div>
+    <p class="muted" style="font-size:11.5px;margin-top:14px">Next on the roadmap: live hazard-feed ingestion, gross→net through treaty, and automatic stakeholder alerts.</p>
+    <div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeLearn()">Close</button></div>
+  </div>
+</div>
+
+<script>
+const PERIL={FIRE:{c:'var(--red)',label:'Wildfire',ic:'🔥'},FLOOD:{c:'var(--blue)',label:'Flood',ic:'🌊'},STORM:{c:'var(--violet)',label:'Windstorm',ic:'🌀'}};
+const BANDS=[['0-50m','var(--b50)'],['50-100m','var(--b100)'],['100-200m','var(--b200)']];
+let EVENTS=[], SEL=null, BUF=200, CFG={};
+
+const $=s=>document.querySelector(s);
+async function api(p){const r=await fetch('/api'+p);return r.json();}
+const num=n=>Number(n||0).toLocaleString('en-GB');
+const eurm=n=>{const v=Number(n||0)/1e6;return '€'+(v>=100?v.toFixed(0):v.toFixed(1))+'m';};
+
+function toggleWhat(){$('#whatis').classList.toggle('on');}
+function openLearn(){$('#lov').classList.add('on');}
+function closeLearn(){$('#lov').classList.remove('on');}
+
+async function boot(){
+  try{CFG=await api('/config');if(CFG.entity)$('#entityChip').textContent=CFG.entity;}catch(e){}
+  const d=await api('/events');
+  EVENTS=d.events||[];
+  renderPicker();
+  $('#bufsel').querySelectorAll('button').forEach(b=>b.onclick=()=>{BUF=+b.dataset.b;$('#bufsel').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(SEL)selectEvent(SEL);});
+  if(EVENTS.length)selectEvent(EVENTS[0].event_id);
+}
+
+function renderPicker(){
+  if(!EVENTS.length){$('#events').innerHTML='<div class="loading">No active events.</div>';return;}
+  $('#events').innerHTML=EVENTS.map(e=>{const p=PERIL[e.peril_code]||{c:'#64748b',label:e.peril_code,ic:'•'};
+    return `<div class="ev ${e.event_id===SEL?'on':''}" onclick="selectEvent('${e.event_id}')">
+      <div class="ep" style="color:${p.c}">${p.ic} ${p.label}</div>
+      <div class="en">${e.event_name}</div>
+      <div class="em">${e.event_date} · ${e.n_segments>1?e.n_segments+' segments':'single footprint'}</div>
+      <div class="ect">${num(e.threatened_count)} <span>within 200 m</span></div>
+    </div>`;}).join('');
+}
+
+async function selectEvent(eid){
+  SEL=eid;renderPicker();
+  $('#view').innerHTML='<div class="loading">Computing exposure…</div>';
+  const d=await api('/event/'+encodeURIComponent(eid)+'?buffer='+BUF);
+  renderView(d);
+}
+
+function renderView(d){
+  const ev=EVENTS.find(e=>e.event_id===d.event_id)||{};
+  const p=PERIL[ev.peril_code]||{c:'#64748b',label:ev.peril_code||''};
+  const props=d.properties||[];
+  const summ=d.summary||[];
+  const byBand={},byCountry=[];let total=0,totalSI=0;
+  summ.forEach(r=>{if(r.dim==='band')byBand[r.dim_key]={n:+r.n_objects,si:+r.sum_insured_eur};
+    else if(r.dim==='country'){byCountry.push({k:r.dim_key,n:+r.n_objects,si:+r.sum_insured_eur});total+=+r.n_objects;totalSI+=+r.sum_insured_eur;}});
+  byCountry.sort((a,b)=>b.n-a.n);
+  const xborder=byCountry.length>1;
+
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="k">Threatened properties</div><div class="v">${num(total)}</div><div class="bd">within ${BUF} m of the footprint</div></div>
+    <div class="kpi"><div class="k">Sum insured at risk</div><div class="v">${eurm(totalSI)}</div><div class="bd">total across threatened properties</div></div>
+    ${BANDS.map(([b,c])=>`<div class="kpi"><div class="k" style="color:${c}">${b}</div><div class="v" style="color:${c}">${num((byBand[b]||{}).n||0)}</div><div class="bd">${eurm((byBand[b]||{}).si||0)} at risk</div></div>`).join('')}
+  </div>`;
+
+  const view=`
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 2px">
+      <span class="pill" style="background:${p.c}1a;color:${p.c}">${p.label}</span>
+      <b style="font-size:16px">${ev.event_name||d.event_id}</b>
+      <span class="muted" style="font-size:12.5px">${ev.event_date||''}</span>
+    </div>
+    ${kpis}
+    <div class="grid2">
+      <div class="card">
+        <h3>Event footprint &amp; threatened properties</h3>
+        <p class="h3s">Properties coloured by distance band. Inside the footprint counts as 0 m. Buffer ${BUF} m.</p>
+        <div class="mapwrap" id="mapwrap">${buildMap(d.footprint||[],props,p.c)}</div>
+        <div class="leg">
+          <span><span class="dot" style="background:${p.c};opacity:.5"></span> footprint</span>
+          ${BANDS.map(([b,c])=>`<span><span class="dot" style="background:${c}"></span> ${b} (${num((byBand[b]||{}).n||0)})</span>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <h3>Exposure by country</h3>
+        <p class="h3s">One event, every country it touches — no silos.</p>
+        <div class="cb">${countryBars(byCountry,p.c)}</div>
+        <div class="xborder ${xborder?'on':''}">⚠ This single event crosses <b>${byCountry.length} countries</b> (${byCountry.map(c=>c.k).join(', ')}). Teams organised by country would each see only their slice.</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Threatened properties <span class="muted" style="font-weight:400;font-size:12px">· ${num(props.length)} rows, nearest first</span></h3>
+      <div class="tscroll"><table>
+        <thead><tr><th>Object</th><th>City</th><th>Country</th><th>Postcode</th><th class="r">Distance</th><th>Band</th><th class="r">Sum insured</th><th>Coverage</th></tr></thead>
+        <tbody>${props.slice(0,400).map(r=>{const bc=(BANDS.find(b=>b[0]===r.band)||[])[1]||'#94a3b8';
+          return `<tr><td class="mono">${r.insured_object_id}</td><td>${r.city||''}</td><td>${r.country_code}</td><td class="mono">${r.postcode||''}</td>
+            <td class="r">${num(Math.round(r.distance_m))} m</td>
+            <td><span class="pill" style="background:${bc}22;color:${bc}">${r.band}</span></td>
+            <td class="r">${eurm(r.sum_insured)}</td><td class="muted">${r.coverage_type_code||''}</td></tr>`;}).join('')||'<tr><td colspan="8" class="muted" style="padding:20px;text-align:center">No properties within this buffer.</td></tr>'}</tbody>
+      </table></div>
+    </div>`;
+  $('#view').innerHTML=view;
+}
+
+function countryBars(rows,accent){
+  if(!rows.length)return '<div class="muted">—</div>';
+  const max=Math.max(...rows.map(r=>r.n),1);
+  return rows.map(r=>`<div class="cbrow">
+    <div class="cbt"><b>${r.k}</b><span class="m">${num(r.n)} props · ${eurm(r.si)}</span></div>
+    <div class="track"><i style="width:${Math.round(r.n/max*100)}%;background:${accent}"></i></div>
+  </div>`).join('');
+}
+
+// ── CSP-safe inline-SVG map: parse POLYGON WKT + project lon/lat into a viewBox ──
+function parsePolys(footprint){
+  const polys=[];
+  (footprint||[]).forEach(f=>{
+    const m=(f.footprint_wkt||'').match(/\(\(([^)]+)\)\)/);
+    if(!m)return;
+    polys.push(m[1].split(',').map(pair=>{const [lo,la]=pair.trim().split(/\s+/).map(Number);return [lo,la];}));
+  });
+  return polys;
+}
+function buildMap(footprint,props,accent){
+  const polys=parsePolys(footprint);
+  const pts=props.filter(p=>p.latitude!=null&&p.longitude!=null).map(p=>({lon:+p.longitude,lat:+p.latitude,band:p.band}));
+  const all=[].concat(...polys.map(r=>r.map(c=>({lon:c[0],lat:c[1]}))),pts);
+  if(!all.length)return '<div class="loading">No geometry.</div>';
+  let minLo=Math.min(...all.map(a=>a.lon)),maxLo=Math.max(...all.map(a=>a.lon));
+  let minLa=Math.min(...all.map(a=>a.lat)),maxLa=Math.max(...all.map(a=>a.lat));
+  const padLo=(maxLo-minLo||.02)*0.14,padLa=(maxLa-minLa||.02)*0.14;
+  minLo-=padLo;maxLo+=padLo;minLa-=padLa;maxLa+=padLa;
+  const midLa=(minLa+maxLa)/2,kx=Math.cos(midLa*Math.PI/180);
+  const W=1000,H=Math.max(360,Math.min(680,Math.round(W*((maxLa-minLa)/((maxLo-minLo)*kx||1)))));
+  const X=lo=>((lo-minLo)/(maxLo-minLo))*W;
+  const Y=la=>H-((la-minLa)/(maxLa-minLa))*H;
+  const gridX=[.25,.5,.75].map(t=>`<line x1="${t*W}" y1="0" x2="${t*W}" y2="${H}" stroke="#e2e8f0" stroke-width="1"/>`).join('');
+  const gridY=[.25,.5,.75].map(t=>`<line x1="0" y1="${t*H}" x2="${W}" y2="${t*H}" stroke="#e2e8f0" stroke-width="1"/>`).join('');
+  const paths=polys.map(r=>`<path d="M${r.map(c=>X(c[0]).toFixed(1)+' '+Y(c[1]).toFixed(1)).join(' L')} Z" fill="${accent}" fill-opacity="0.16" stroke="${accent}" stroke-width="2" stroke-dasharray="7 5"/>`).join('');
+  const bandCol={'0-50m':'#b91c1c','50-100m':'#ea580c','100-200m':'#f59e0b'};
+  const circles=pts.map(p=>`<circle cx="${X(p.lon).toFixed(1)}" cy="${Y(p.lat).toFixed(1)}" r="3.4" fill="${bandCol[p.band]||'#94a3b8'}" fill-opacity="0.9"/>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Event footprint map">
+    <rect width="${W}" height="${H}" fill="#f8fafc"/>${gridX}${gridY}${paths}${circles}</svg>`;
+}
+
+boot();
+</script>
+</body>
+</html>

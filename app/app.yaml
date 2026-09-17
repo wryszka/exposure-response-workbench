@@ -1,0 +1,22 @@
+command:
+  - uvicorn
+  - app:app
+  - --host
+  - 0.0.0.0
+  - --port
+  - "8000"
+env:
+  - name: CATALOG_NAME
+    value: lr_dev_aws_us_catalog
+  - name: SCHEMA_NAME
+    value: exposure_response
+  - name: WAREHOUSE_ID
+    valueFrom: sql_warehouse
+  - name: ENTITY_NAME
+    value: Bricksurance SE
+  - name: USE_CACHE
+    value: "true"
+  - name: GENIE_SPACE_ID
+    value: ""
+  - name: FM_ENDPOINT
+    value: databricks-claude-sonnet-4-6

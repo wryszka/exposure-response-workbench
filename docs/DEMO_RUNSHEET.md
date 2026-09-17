@@ -7,9 +7,9 @@
 **If compressed, cut in this order:** TBD. **NEVER cut** the live-footprint → threatened-properties beat.
 
 ## Links — dev (stable)
-- **App:** TBD (P5)
+- **App:** https://exposure-response-workbench-7474656169654171.aws.databricksapps.com (P1 — event picker, map, exposure view)
 - **Schema (Catalog Explorer):** `lr_dev_aws_us_catalog.exposure_response`
-- **Key assets:** `3_property` · `2_event_footprint` · `fn_exposure_in_footprint` (P1) · Genie (P5) · alert job (P4)
+- **Key assets:** `3_property` · `2_event_footprint` · `fn_exposure_in_footprint` · `fn_event_exposure_summary` · `fn_events` (P1) · Genie (P5) · alert job (P4)
 
 ## Pre-flight (before the room)
 - **Reset:** in-app button / CLI (regenerates seeded data, rolls event dates to recent past).
@@ -21,8 +21,16 @@
 - **SAY:** "A wildfire is burning in southern France. Which of our properties are threatened, what's the exposure, and who needs to know — **right now**?"
 - **IF ASKED:** how is this done today? → manual: hand-pull policies, eyeball fire outlines. Q&A #1.
 
-**1 · The live footprint on the book (P1)** — the load-bearing beat
-- **SAY:** "The fire footprint over our book: **N properties** within **200 m**, **€X m** sum insured at risk."
+**1 · The live footprint on the book (P1)** — the load-bearing beat ✅ built
+- **GO:** app → pick **Var Wildfire**.
+- **DO:** show the map (footprint + properties coloured by band); read the KPI row; drop the buffer 200 → 100 → 50 m and watch the count tighten.
+- **SAY:** "The fire footprint over our book: **59 properties** within **200 m**, **€164 m** sum insured at risk — **50** of them right inside it."
+- **IF ASKED:** how is distance measured? → true metres, EPSG:3035; inside the footprint = 0 m. Q&A.
+
+**1b · Cross-border in one view (P1)** ✅ built
+- **GO:** pick **Alpine Flood**.
+- **DO:** point at the country bars — one event, two countries.
+- **SAY:** "One flood, **one event** — **69** Italian and **53** Austrian properties. Country-siloed teams would each see only half."
 
 **2 · Gross → net of treaty (P3)**
 

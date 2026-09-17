@@ -1,0 +1,11 @@
+resources:
+  apps:
+    exposure_response_app:
+      name: exposure-response-workbench
+      description: "Bricksurance SE — Exposure & Event Response Workbench (thin presentation layer over governed UC exposure functions)."
+      source_code_path: ../app
+      resources:
+        - name: sql_warehouse
+          sql_warehouse:
+            id: ${var.warehouse_id}
+            permission: CAN_USE

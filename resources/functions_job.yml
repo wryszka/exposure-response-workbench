@@ -1,0 +1,28 @@
+resources:
+  jobs:
+    exposure_02_functions:
+      name: exposure_02_functions
+      tags:
+        project: exposure_response_workbench
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: app_sp
+          default: ${var.app_service_principal_id}
+      tasks:
+        - task_key: exposure_functions
+          notebook_task:
+            notebook_path: ../notebooks/02_exposure_functions.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []
