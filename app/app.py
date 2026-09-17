@@ -65,8 +65,46 @@ def api_event(eid: str, buffer: int = 200):
         "coverholders": (
             f"SELECT coverholder_id, coverholder_name, binder_ref, country_scope, is_delegated, "
             f"n_objects, sum_insured_eur FROM {fq('fn_exposure_by_coverholder')}('{eid}', {buf})"),
+        # what changed since the last alert sweep — new / still / no-longer threatened
+        "delta": f"SELECT status, n_objects, sum_insured_eur FROM {fq('fn_event_delta')}('{eid}', {buf})",
     })
-    return {"event_id": eid, "buffer_m": buf, **out}
+    return {"event_id": eid, "buffer_m": buf, "alert": _latest_alert(eid), **out}
+
+
+# ─────────────────────────── alerts ───────────────────────────
+def _latest_alert(eid: str):
+    """The most recent dispatch row for one event — status, the governed numbers, and the exact digest sent."""
+    return sql.query_one(
+        f"SELECT run_id, status, breached, threshold_rule, threatened_count, gross_eur, ceded_eur, net_eur, "
+        f"countries, n_countries, new_count, still_count, gone_count, channel, recipients, "
+        f"CAST(sent_at AS STRING) AS sent_at, digest_html "
+        f"FROM {config.fqn('gov_alert_dispatch')} WHERE event_id = '{sql.esc(eid)}' ORDER BY run_id DESC LIMIT 1")
+
+
+@app.get("/api/alerts")
+def api_alerts():
+    """The dispatch log for the latest sweep — the record of who was told what, when (grouped by event)."""
+    rows = sql.query(
+        f"SELECT event_id, event_name, peril_code, status, breached, threatened_count, n_countries, countries, "
+        f"new_count, gross_eur, net_eur, channel, recipients, CAST(sent_at AS STRING) AS sent_at "
+        f"FROM {config.fqn('gov_alert_dispatch')} "
+        f"WHERE run_id = (SELECT max(run_id) FROM {config.fqn('gov_alert_dispatch')}) "
+        f"ORDER BY gross_eur DESC")
+    return {"dispatch": rows}
+
+
+@app.post("/api/alerts/run")
+def api_alerts_run():
+    """Fire the alert sweep on demand (the same serverless job the schedule runs). Degrades gracefully."""
+    try:
+        w = config.get_workspace_client()
+        jobs = list(w.jobs.list(name="exposure_30_alerts"))
+        if not jobs:
+            return {"ok": False, "reason": "alert sweep job not found in this workspace"}
+        run = w.jobs.run_now(job_id=jobs[0].job_id)
+        return {"ok": True, "run_id": run.run_id}
+    except Exception as e:
+        return {"ok": False, "reason": str(e)[:200]}
 
 
 # ─────────────────────────── static SPA ───────────────────────────

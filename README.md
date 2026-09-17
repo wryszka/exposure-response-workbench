@@ -44,6 +44,7 @@ CONVENTIONS.md · DECISIONS.md · STANDARDS.md
 - `fn_events(buffer_m)` — active events with a live threatened-count, for the picker.
 - `fn_gross_to_net(event_id, buffer_m)` — modelled gross loss (`ref_damage_factor`) ceded through the Property Cat XL tower (`3_treaty` / `3_treaty_layer`) to net retained; one row per waterfall step.
 - `fn_exposure_by_coverholder(event_id, buffer_m)` — threatened exposure split by coverholder / delegated authority (`3_coverholder` via `3_property_coverholder`).
+- `fn_event_delta(event_id, buffer_m)` — newly / still / no-longer threatened vs the previous snapshot (`gov_exposure_snapshot`) — the new/progressing/extinguished signal behind alerts.
 
 All exposure maths lives in these functions, never in the app. **`ST_*` runs on the SQL warehouse, not the serverless notebook engine** — so notebook 02 orchestrates the DDL onto the warehouse via the Statement Execution API.
 
@@ -56,9 +57,16 @@ databricks bundle run exposure_02_functions -t dev -p DEV  # governed exposure f
 ```
 Geospatial (`ST_`) needs a serverless / DBR 17.1+ warehouse. Default warehouse: `a3b61648ea4809e3`.
 
+## Stakeholder alerts (for the people who never open Databricks)
+`fn_event_delta` + a per-peril threshold (`ref_alert_threshold`) drive an **event-grouped** digest — one alert
+carries the whole cross-border picture — audited in `gov_alert_dispatch` and dispatched by the serverless job
+`exposure_30_alerts` (runs with nobody logged in). Real send via SMTP or Slack — add one free secret and it emails
+for real; without it the digest is still built, audited and previewable in-app. See `docs/ALERTS.md`.
+
 ## Status
-**P0 + P1 complete.** The European property foundation, the governed exposure functions, and the **live exposure
-view** all deploy and run on dev. App: `https://exposure-response-workbench-7474656169654171.aws.databricksapps.com`
-— event picker, CSP-safe SVG map (footprint + properties by band), band KPIs, cross-border country breakdown,
-threatened-property table, all off the governed functions. Verified: Var Wildfire **59 / €164m** (bands 50/1/8);
-Alpine Flood cross-border **IT 69 / AT 53**. Next: **P2** — live hazard-feed ingestion.
+**P0–P4 complete.** Property foundation, governed exposure functions, live exposure view, **live hazard-feed
+ingestion** (MeteoAlarm live; FIRMS/Copernicus frozen pending free keys), the **gross → net → coverholder**
+waterfall, and the **stakeholder alert path** all deploy and run on dev.
+App: `https://exposure-response-workbench-7474656169654171.aws.databricksapps.com`.
+Verified: Var Wildfire **59 / €164m**; Alpine Flood cross-border **IT 69 / AT 53** dispatched as **one alert**;
+live MeteoAlarm storm **195 / €499m**. Next: **P5** — event-response agent (Claude) + Genie + governance/Learn.

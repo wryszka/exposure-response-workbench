@@ -44,8 +44,12 @@
 - **SAY:** "Modelled loss **€147 m**. Our Property Cat XL tower absorbs it — we cede **€122 m**, retain just our **€25 m**. And **who wrote it**: Alpine Cover Underwriting, a delegated binder, carries **€215 m** of this event."
 - **IF ASKED:** loss vs sum insured? → sum-insured-at-risk × a visible governed damage curve (`ref_damage_factor`) = modelled loss; a cat model would replace that table. Q&A.
 
-**3 · Who needs to know — the alert (P4)**
-- **SAY:** "One event, **three countries**. One alert to the right people — not three teams missing it."
+**3 · Who needs to know — the alert (P4)** ✅ built
+- **GO:** stay on **Alpine Flood** → scroll to the **Stakeholder alert** card.
+- **DO:** read the delta chips (▲ newly / ● still / ▼ no longer threatened); note the status pill + "breached: gross ≥ €15m OR new ≥ 20"; click **Preview the alert that goes out**.
+- **SAY:** "The moment this crosses threshold, the people who never open Databricks get **this** — claims, underwriting, exposure management. One event, **two countries, one alert** — not two teams each seeing half. It runs on a schedule, with nobody logged in."
+- **DO (optional):** click **Run alert sweep now** — the serverless job fires; the dispatch log is audited in `gov_alert_dispatch`.
+- **IF ASKED:** does it actually send? → yes — add a free SMTP or Slack secret (`docs/ALERTS.md`) and it emails for real; without it the digest is still built, audited and previewable (what you're looking at). Grouped by event, so cross-border never fragments. Q&A.
 
 **N · Finale — the governed loop (1m)**
 - **SAY:** "Live event, real book, one governed answer — gross, net, and dispatched — in minutes, not a scramble."

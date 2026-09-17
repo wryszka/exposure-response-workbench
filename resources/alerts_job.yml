@@ -1,0 +1,41 @@
+resources:
+  jobs:
+    exposure_30_alerts:
+      name: exposure_30_alerts
+      description: >-
+        Event-response alert sweep — snapshots live exposure, computes the delta vs the previous snapshot
+        (new / progressing / extinguished), applies the per-peril threshold, and dispatches an event-grouped
+        digest (one alert per event, whole cross-border picture) to the stakeholder distribution. Runs on a
+        schedule so alerts fire with nobody logged in. Real send when a channel secret is configured; audited
+        to gov_alert_dispatch either way.
+      tags:
+        project: exposure_response_workbench
+      # Paused by default — armed on demand / for the demo. Change pause_status to UNPAUSED to run hourly.
+      trigger:
+        pause_status: PAUSED
+        periodic:
+          interval: 1
+          unit: HOURS
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: app_sp
+          default: ${var.app_service_principal_id}
+      tasks:
+        - task_key: alert_sweep
+          notebook_task:
+            notebook_path: ../notebooks/30_alerts.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+              buffer_m: "200"
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []

@@ -160,15 +160,25 @@
     <div class="lstep"><span class="ln">3</span><div><b>Measure the exposure</b><p>The governed function <code>fn_exposure_in_footprint</code> intersects properties against the footprint using Databricks geospatial SQL (<code>ST_DWithin</code>) in EPSG:3035, so 50/100/200 m are true metres — inside the footprint counts as 0 m.</p></div></div>
     <div class="lstep"><span class="ln">4</span><div><b>See it whole — across borders</b><p><code>fn_event_exposure_summary</code> rolls the same rows up by band and by country, so one event shows its entire cross-border exposure in a single view — no country silos.</p></div></div>
     <div class="lstep"><span class="ln">5</span><div><b>Net of treaty, and by coverholder</b><p><code>fn_gross_to_net</code> turns the threatened sum insured into a modelled loss (<code>ref_damage_factor</code>) and cedes it through the Property Cat XL tower to a net retained figure; <code>fn_exposure_by_coverholder</code> splits the same exposure by delegated authority — the gross / net / by-coverholder answer in one governed place.</p></div></div>
-    <p class="muted" style="font-size:11.5px;margin-top:14px">Next on the roadmap: automatic stakeholder alerts, an event-response agent and Genie.</p>
+    <div class="lstep"><span class="ln">6</span><div><b>Tell the people who aren't logged in</b><p>When an event clears its peril threshold, <code>fn_event_delta</code> works out what's newly threatened since the last look and an event-grouped digest is dispatched to claims, underwriting &amp; exposure management — one alert carrying the whole cross-border picture. Every dispatch is audited in <code>gov_alert_dispatch</code>, and it runs on a schedule with nobody logged in.</p></div></div>
+    <p class="muted" style="font-size:11.5px;margin-top:14px">Next on the roadmap: an event-response agent (Claude) and Genie.</p>
     <div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeLearn()">Close</button></div>
+  </div>
+</div>
+
+<div class="lov" id="dov" onclick="if(event.target===this)closeDigest()">
+  <div class="lbox" style="max-width:700px;padding:0;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0">
+      <b>The alert that goes out</b><button class="btn" onclick="closeDigest()">Close</button>
+    </div>
+    <iframe id="digestframe" title="Alert digest preview" style="width:100%;height:70vh;border:0;background:#f1f5f9"></iframe>
   </div>
 </div>
 
 <script>
 const PERIL={FIRE:{c:'var(--red)',label:'Wildfire',ic:'🔥'},FLOOD:{c:'var(--blue)',label:'Flood',ic:'🌊'},STORM:{c:'var(--violet)',label:'Windstorm',ic:'🌀'}};
 const BANDS=[['0-50m','var(--b50)'],['50-100m','var(--b100)'],['100-200m','var(--b200)']];
-let EVENTS=[], SEL=null, BUF=200, CFG={}, FILTER='all';
+let EVENTS=[], SEL=null, BUF=200, CFG={}, FILTER='all', CUR_DIGEST='';
 
 const $=s=>document.querySelector(s);
 async function api(p){const r=await fetch('/api'+p);return r.json();}
@@ -252,6 +262,10 @@ function renderView(d){
       </div>
     </div>`;
 
+  // ── stakeholder alert: delta since last sweep + the digest that goes out (fn_event_delta / gov_alert_dispatch) ──
+  const dl={}; (d.delta||[]).forEach(r=>dl[r.status]={n:+r.n_objects,si:+r.sum_insured_eur});
+  const alertCard=buildAlertCard(d.alert||null,dl);
+
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="k">Threatened properties</div><div class="v">${num(total)}</div><div class="bd">within ${BUF} m of the footprint</div></div>
     <div class="kpi"><div class="k">Sum insured at risk</div><div class="v">${eurm(totalSI)}</div><div class="bd">total across threatened properties</div></div>
@@ -283,6 +297,7 @@ function renderView(d){
       </div>
     </div>
     ${finCards}
+    ${alertCard}
     <div class="card">
       <h3>Threatened properties <span class="muted" style="font-weight:400;font-size:12px">· ${num(props.length)} rows, nearest first</span></h3>
       <div class="tscroll"><table>
@@ -327,6 +342,56 @@ function coverholderBars(rows){
       <span class="m" style="margin-left:auto">${num(r.n)} props · ${eurm(r.si)}</span></div>
     <div class="track"><i style="width:${Math.round(r.si/max*100)}%;background:var(--blue)"></i></div>
   </div>`).join('');
+}
+
+// ── stakeholder alert card: threshold decision, delta since last sweep, the digest that goes out ──
+function statusPill(s){
+  const m={SENT:['#16a34a','#dcfce7','✓ Sent'],RENDERED_NOT_SENT:['#b45309','#fef3c7','● Ready to send'],SUPPRESSED:['#64748b','#f1f5f9','— Below threshold']};
+  const [c,bg,l]=m[s]||['#64748b','#f1f5f9',s||'—'];
+  return `<span class="pill" style="background:${bg};color:${c}">${l}</span>`;
+}
+function buildAlertCard(al,dl){
+  const nw=(dl.newly_threatened||{}).n||0, st=(dl.still_threatened||{}).n||0, gn=(dl.no_longer_threatened||{}).n||0;
+  const chips=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px">
+    <span class="pill" style="background:#fef3c7;color:#b45309">▲ ${num(nw)} newly threatened</span>
+    <span class="pill" style="background:#eff6ff;color:#1d4ed8">● ${num(st)} still threatened</span>
+    <span class="pill" style="background:#f1f5f9;color:#64748b">▼ ${num(gn)} no longer</span>
+    <span class="muted" style="font-size:11.5px;align-self:center">since the last sweep · <code>fn_event_delta</code></span></div>`;
+  let body;
+  if(al){
+    CUR_DIGEST=al.digest_html||'';
+    const breached=(al.breached===true||al.breached==='true');
+    const chan=al.channel?' · '+al.channel:'';
+    body=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px">
+        ${statusPill(al.status)}
+        <span class="muted" style="font-size:12px">${breached?'threshold breached':'below threshold'}: ${al.threshold_rule||''}</span>
+        ${al.sent_at?`<span class="muted" style="font-size:12px;margin-left:auto">last sweep ${al.sent_at} UTC${chan}</span>`:''}
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:6px">Distribution: ${al.recipients||'—'}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn" onclick="openDigest()" ${CUR_DIGEST?'':'disabled'}>Preview the alert that goes out</button>
+        <button class="btn" onclick="runSweep(this)">Run alert sweep now</button>
+      </div>
+      ${al.status==='RENDERED_NOT_SENT'?`<div class="muted" style="font-size:11.5px;margin-top:8px">The digest is built and audited every sweep; add an SMTP or Slack secret (<code>docs/ALERTS.md</code>) and it sends for real — no code change.</div>`:''}`;
+  }else{
+    CUR_DIGEST='';
+    body=`<div class="muted" style="margin-top:8px">No alert sweep has run for this event yet.</div>
+      <div style="margin-top:10px"><button class="btn" onclick="runSweep(this)">Run alert sweep now</button></div>`;
+  }
+  return `<div class="card">
+    <h3>Stakeholder alert <span class="muted" style="font-weight:400;font-size:12px">· for the people who never open Databricks</span></h3>
+    <p class="h3s">One alert per event — the whole cross-border picture — dispatched to claims, underwriting &amp; exposure management the moment an event clears its peril threshold. Audited in <code>gov_alert_dispatch</code>; runs on a schedule with nobody logged in.</p>
+    ${chips}${body}
+  </div>`;
+}
+function openDigest(){$('#digestframe').srcdoc=CUR_DIGEST||'<p style="font-family:sans-serif;padding:24px;color:#64748b">No digest yet.</p>';$('#dov').classList.add('on');}
+function closeDigest(){$('#dov').classList.remove('on');}
+async function runSweep(btn){
+  const t=btn.textContent;btn.disabled=true;btn.textContent='Starting sweep…';
+  try{const r=await fetch('/api/alerts/run',{method:'POST'}).then(x=>x.json());
+    if(r.ok){btn.textContent='Sweep started ✓ (≈2 min)';}
+    else{btn.textContent='Sweep unavailable';btn.title=r.reason||'';setTimeout(()=>{btn.disabled=false;btn.textContent=t;},3000);}
+  }catch(e){btn.disabled=false;btn.textContent=t;}
 }
 
 // ── CSP-safe inline-SVG map: parse POLYGON WKT + project lon/lat into a viewBox ──
