@@ -4,17 +4,27 @@ The exposure functions (ST_*) run on the SQL warehouse, so every read is a State
 Pages that need several run them concurrently via query_many so wall-clock is the slowest single query.
 """
 from concurrent.futures import ThreadPoolExecutor
+from databricks.sdk.service.sql import StatementParameterListItem
 from . import config
 
 _POOL = ThreadPoolExecutor(max_workers=8)
 
 
-def query(statement: str):
-    """Return list[dict] rows. All values come back as strings from the API — cast in callers."""
+def query(statement: str, params: dict = None):
+    """Return list[dict] rows. All values come back as strings from the API — cast in callers.
+
+    Pass `params` ({name: value}) to bind `:name` markers server-side — the safe way to carry text
+    (e.g. cached JSON, free-text) that would otherwise break a SQL literal (Databricks treats backslash
+    as an escape inside string literals, so embedded JSON must never be pasted into the statement text).
+    """
     w = config.get_workspace_client()
+    kw = {}
+    if params:
+        kw["parameters"] = [StatementParameterListItem(name=k, value=(None if v is None else str(v)))
+                            for k, v in params.items()]
     resp = w.statement_execution.execute_statement(
         statement=statement, warehouse_id=config.WAREHOUSE_ID,
-        catalog=config.CATALOG, schema=config.SCHEMA, wait_timeout="50s")
+        catalog=config.CATALOG, schema=config.SCHEMA, wait_timeout="50s", **kw)
     result = resp.result
     if result is None or result.data_array is None:
         return []
@@ -22,8 +32,8 @@ def query(statement: str):
     return [dict(zip(cols, row)) for row in result.data_array]
 
 
-def query_one(statement: str):
-    rows = query(statement)
+def query_one(statement: str, params: dict = None):
+    rows = query(statement, params)
     return rows[0] if rows else None
 
 

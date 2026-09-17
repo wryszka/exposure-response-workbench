@@ -21,6 +21,23 @@
   .brand b{font-size:14px;display:block;line-height:1.2}.brand span{font-size:11px;color:#94a3b8}
   .snav{padding:14px 12px;flex:1}
   .slab{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin:14px 8px 6px}
+  .nav{display:flex;flex-direction:column;gap:3px}
+  .navi{display:block;padding:8px 10px;border-radius:8px;font-size:12.5px;color:#cbd5e1;cursor:pointer;text-decoration:none}
+  .navi:hover{background:rgba(255,255,255,.05)}
+  .navi.on{background:rgba(37,99,235,.22);color:#fff;font-weight:600}
+  .screen{display:none}.screen.on{display:block}
+  .chat{display:flex;flex-direction:column;gap:12px}
+  .msg{padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.55;max-width:88%;white-space:pre-wrap}
+  .msg.u{align-self:flex-end;background:var(--blue);color:#fff}
+  .msg.a{align-self:flex-start;background:#fff;border:1px solid var(--line)}
+  .tools{margin-top:8px;font-size:11px;color:var(--mut);border-top:1px dashed var(--line);padding-top:7px}
+  .tools code{background:#f1f5f9;padding:1px 5px;border-radius:4px}
+  .ybtn{border:1px solid #f59e0b;background:#fffbeb;color:#b45309;border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer;font-weight:600}
+  .ybtn.live{background:#f59e0b;color:#fff}
+  .ask-in{display:flex;gap:8px;margin-top:4px}
+  .ask-in input{flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:13px}
+  .starter{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer;color:#334155}
+  .starter:hover{background:#f1f5f9}
   .perils{display:flex;flex-direction:column;gap:6px}
   .peril{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.03);font-size:12.5px}
   .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
@@ -107,6 +124,12 @@
       <span><b>Bricksurance SE</b><span>Exposure &amp; Event Response</span></span>
     </a>
     <div class="snav">
+      <div class="slab">Workbench</div>
+      <div class="nav" id="nav">
+        <a class="navi on" data-t="exposure" onclick="showTab('exposure')">Exposure &amp; event response</a>
+        <a class="navi" data-t="ask" onclick="showTab('ask')">Ask the agent &amp; Genie</a>
+        <a class="navi" data-t="gov" onclick="showTab('gov')">Governance &amp; provenance</a>
+      </div>
       <div class="slab">Perils tracked</div>
       <div class="perils">
         <div class="peril"><span class="dot" style="background:var(--red)"></span> Wildfire <span class="muted" style="margin-left:auto;font-size:11px">FIRMS · EFFIS</span></div>
@@ -130,6 +153,7 @@
       </div>
     </div>
 
+    <div class="screen on" id="exposureScreen">
     <div class="whatis" id="whatis">
       <div class="wh">What am I seeing?</div>
       <div class="wb">An <b>event footprint</b> (the wildfire perimeter, flood extent or storm swath) laid over the <b>insured property book</b>. For the selected event and buffer, the workbench asks the governed function <code>fn_exposure_in_footprint</code> which properties fall within <b>50 / 100 / 200 m</b> of the footprint, measured in true metres (EPSG:3035). The map, the KPIs and the table are all the <b>same</b> governed numbers — nothing is computed in the browser. A single event can span countries, so the country breakdown shows the whole cross-border exposure at once.</div>
@@ -148,6 +172,39 @@
     </div>
 
     <div id="view"></div>
+    </div><!-- /exposureScreen -->
+
+    <div class="screen" id="askScreen">
+      <div class="whatis on" style="margin-top:0">
+        <div class="wh">Ask the Event Response agent — and Genie</div>
+        <div class="wb">Two ways to ask in plain English. The <b>Event Response agent</b> is Claude on the Databricks Foundation Model API; it answers <b>only</b> by calling the governed functions (<code>fn_exposure_in_footprint</code>, <code>fn_gross_to_net</code>, …) — every number is a real tool call, shown under each answer, never invented. <b>Genie</b> answers ad-hoc questions over the book and shows the SQL it wrote. The <span style="color:#b45309">yellow toggle</span> switches the agent between cached (instant) and live.</div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div><h3>Event Response agent</h3><p class="h3s">Claude · Foundation Model API · governed tools <span id="agentEp" class="mono muted"></span></p></div>
+            <button class="ybtn" id="liveBtn" onclick="toggleLive()" title="Cached is instant; live calls the model">◉ Cached</button>
+          </div>
+          <div class="chat" id="chat"></div>
+          <div id="starters" style="display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 4px"></div>
+          <div class="ask-in"><input id="agentQ" placeholder="e.g. What's my exposure to the Var wildfire, gross and net?" onkeydown="if(event.key==='Enter')askAgent()"><button class="btn" onclick="askAgent()">Ask</button></div>
+        </div>
+        <div class="card">
+          <h3>Ask the Exposure Book — Genie</h3>
+          <p class="h3s">Natural-language analytics over the book; Genie shows the SQL behind the answer. <span id="genieState" class="muted"></span></p>
+          <div class="ask-in"><input id="genieQ" placeholder="e.g. total sum insured by country" onkeydown="if(event.key==='Enter')askGenie()"><button class="btn" onclick="askGenie()">Ask Genie</button></div>
+          <div id="genieOut" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div><!-- /askScreen -->
+
+    <div class="screen" id="govScreen">
+      <div class="whatis on" style="margin-top:0">
+        <div class="wh">Governance &amp; provenance</div>
+        <div class="wb">Every event carries its <b>provenance</b> — which feed it came from, whether it's a live feed or a frozen illustrative footprint, and when it was ingested. The <b>exposure history</b> shows what moved on the book across snapshots (when a footprint updates, you see what changed and when). The <b>alert audit</b> is the append-only record of who was told what. Governed Unity Catalog objects throughout.</div>
+      </div>
+      <div id="govView"><div class="loading">Loading governance…</div></div>
+    </div><!-- /govScreen -->
   </main>
 </div>
 
@@ -161,7 +218,8 @@
     <div class="lstep"><span class="ln">4</span><div><b>See it whole — across borders</b><p><code>fn_event_exposure_summary</code> rolls the same rows up by band and by country, so one event shows its entire cross-border exposure in a single view — no country silos.</p></div></div>
     <div class="lstep"><span class="ln">5</span><div><b>Net of treaty, and by coverholder</b><p><code>fn_gross_to_net</code> turns the threatened sum insured into a modelled loss (<code>ref_damage_factor</code>) and cedes it through the Property Cat XL tower to a net retained figure; <code>fn_exposure_by_coverholder</code> splits the same exposure by delegated authority — the gross / net / by-coverholder answer in one governed place.</p></div></div>
     <div class="lstep"><span class="ln">6</span><div><b>Tell the people who aren't logged in</b><p>When an event clears its peril threshold, <code>fn_event_delta</code> works out what's newly threatened since the last look and an event-grouped digest is dispatched to claims, underwriting &amp; exposure management — one alert carrying the whole cross-border picture. Every dispatch is audited in <code>gov_alert_dispatch</code>, and it runs on a schedule with nobody logged in.</p></div></div>
-    <p class="muted" style="font-size:11.5px;margin-top:14px">Next on the roadmap: an event-response agent (Claude) and Genie.</p>
+    <div class="lstep"><span class="ln">7</span><div><b>Ask in plain English</b><p>The <b>Event Response agent</b> (Claude on the Foundation Model API) answers only by calling the governed functions — every figure is a real tool call, shown under the answer, never invented. <b>Genie</b> answers ad-hoc questions over the book and shows the SQL it wrote.</p></div></div>
+    <div class="lstep"><span class="ln">8</span><div><b>Govern &amp; trust</b><p>Every event carries provenance (live feed vs frozen footprint, source, ingest time via <code>gov_data_provenance</code>); the book's movement is auditable across snapshots (<code>gov_exposure_history</code>); and every alert dispatch is append-only (<code>gov_alert_audit</code>).</p></div></div>
     <div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeLearn()">Close</button></div>
   </div>
 </div>
@@ -429,6 +487,82 @@ function buildMap(footprint,props,accent){
   const circles=pts.map(p=>`<circle cx="${X(p.lon).toFixed(1)}" cy="${Y(p.lat).toFixed(1)}" r="3.4" fill="${bandCol[p.band]||'#94a3b8'}" fill-opacity="0.9"/>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Event footprint map">
     <rect width="${W}" height="${H}" fill="#f8fafc"/>${gridX}${gridY}${paths}${circles}</svg>`;
+}
+
+// ─────────────────────────── tabs ───────────────────────────
+let LIVE=false, GOV_LOADED=false, STARTED=false;
+function showTab(t){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $('#'+(t==='exposure'?'exposureScreen':t==='ask'?'askScreen':'govScreen')).classList.add('on');
+  document.querySelectorAll('.navi').forEach(n=>n.classList.toggle('on',n.dataset.t===t));
+  if(t==='ask'&&!STARTED)initAgent();
+  if(t==='gov'&&!GOV_LOADED)loadGov();
+}
+
+// ─────────────────────────── event response agent ───────────────────────────
+function pushMsg(cls,html){const m=document.createElement('div');m.className='msg '+cls;m.innerHTML=html;$('#chat').appendChild(m);m.scrollIntoView({block:'nearest'});return m;}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function initAgent(){
+  STARTED=true;
+  try{const d=await api('/agent/starters');$('#agentEp').textContent='· '+(d.endpoint||'');
+    $('#starters').innerHTML=(d.starters||[]).map(s=>`<span class="starter" onclick="askAgent(this.textContent)">${esc(s)}</span>`).join('');
+  }catch(e){}
+}
+function toggleLive(){LIVE=!LIVE;const b=$('#liveBtn');b.classList.toggle('live',LIVE);b.textContent=LIVE?'● Live':'◉ Cached';}
+async function askAgent(q){
+  q=(typeof q==='string'?q:$('#agentQ').value).trim();if(!q)return;
+  $('#agentQ').value='';pushMsg('u',esc(q));
+  const wait=pushMsg('a','<span class="muted">Calling governed tools…</span>');
+  try{
+    const r=await fetch('/api/agent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,live:LIVE})}).then(x=>x.json());
+    let tools='';
+    if((r.tools_called||[]).length){tools=`<div class="tools">Called: ${r.tools_called.map(t=>`<code>${esc(t.tool)}</code>${t.rows!=null?' ('+t.rows+' rows)':''}`).join(' · ')} <span style="float:right">${r.cache==='hit'?'cached':r.cache} · ${esc(r.endpoint||'')}</span></div>`;}
+    wait.innerHTML=esc(r.text||'(no answer)')+tools;
+  }catch(e){wait.innerHTML='<span class="muted">Agent unavailable.</span>';}
+}
+
+// ─────────────────────────── genie ───────────────────────────
+async function askGenie(){
+  const q=$('#genieQ').value.trim();if(!q)return;
+  $('#genieOut').innerHTML='<div class="loading">Asking Genie…</div>';
+  try{
+    const r=await fetch('/api/genie',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})}).then(x=>x.json());
+    if(!r.ok){$('#genieOut').innerHTML=`<div class="muted">Genie unavailable: ${esc(r.reason||'')}. ${CFG.genie_space_id?'':'No Genie space is configured yet.'}</div>`;return;}
+    let h=r.text?`<div style="font-size:13px;margin-bottom:10px">${esc(r.text)}</div>`:'';
+    if(r.sql)h+=`<div class="tools" style="border:0;padding:0;margin-bottom:8px">SQL Genie wrote:<pre class="mono" style="white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:9px;margin-top:5px">${esc(r.sql)}</pre></div>`;
+    if((r.rows||[]).length){const cols=r.columns||Object.keys(r.rows[0]);
+      h+=`<div class="tscroll"><table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${r.rows.slice(0,50).map(row=>`<tr>${cols.map(c=>`<td>${esc(String(row[c]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+    $('#genieOut').innerHTML=h||'<div class="muted">No result.</div>';
+  }catch(e){$('#genieOut').innerHTML='<div class="muted">Genie error.</div>';}
+}
+
+// ─────────────────────────── governance ───────────────────────────
+async function loadGov(){
+  GOV_LOADED=true;
+  try{const d=await api('/governance');renderGov(d);}
+  catch(e){$('#govView').innerHTML='<div class="muted">Governance unavailable.</div>';}
+}
+function renderGov(d){
+  const prov=d.provenance||[],hist=d.history||[],audit=d.audit||[];
+  const liveBadge=v=>(v===true||v==='true')?'<span class="pill" style="background:#dcfce7;color:#16a34a">● live feed</span>':'<span class="pill" style="background:#f1f5f9;color:#64748b">frozen</span>';
+  const provRows=prov.map(r=>`<tr><td>${esc(r.event_name)}</td><td>${esc(r.peril_code)}</td><td>${esc(r.source)} <span class="muted">${esc(r.source_detail||'')}</span></td><td>${liveBadge(r.is_live)}</td><td>${esc(r.countries||'')}</td><td class="mono">${esc(r.ingested_at||'')}</td></tr>`).join('');
+  // history grouped per event → count of snapshots + latest
+  const byEv={};hist.forEach(r=>{(byEv[r.event_id]=byEv[r.event_id]||[]).push(r);});
+  const histRows=Object.entries(byEv).map(([ev,rs])=>{const last=rs[rs.length-1];
+    return `<tr><td class="mono">${esc(ev)}</td><td class="r">${rs.length}</td><td class="mono">${esc(last.as_of||'')}</td><td class="r">${num(last.threatened_count)}</td><td class="r">${eurm(last.sum_insured_eur)}</td></tr>`;}).join('')||'<tr><td colspan="5" class="muted" style="padding:16px;text-align:center">No snapshots yet — run an alert sweep to baseline.</td></tr>';
+  const audRows=audit.map(r=>`<tr><td>${esc(r.event_name)}</td><td>${(r.breached===true||r.breached==='true')?'<span class="pill" style="background:#fef3c7;color:#b45309">breached</span>':'<span class="pill" style="background:#f1f5f9;color:#64748b">below</span>'}</td><td class="r">${num(r.threatened_count)}</td><td class="r">${eurm(r.gross_eur)}</td><td class="r">${eurm(r.net_eur)}</td><td class="r">${num(r.n_countries)}</td><td class="muted">${esc(r.recipients||'')}</td><td class="mono">${esc(r.sent_at||'')}</td></tr>`).join('')||'<tr><td colspan="8" class="muted" style="padding:16px;text-align:center">No dispatches yet.</td></tr>';
+  $('#govView').innerHTML=`
+    <div class="card"><h3>Data provenance <span class="muted" style="font-weight:400;font-size:12px">· where every footprint came from</span></h3>
+      <p class="h3s"><code>gov_data_provenance</code> — live feed vs frozen illustrative footprint, source, and ingest time per event.</p>
+      <div class="tscroll"><table><thead><tr><th>Event</th><th>Peril</th><th>Source</th><th>Feed</th><th>Countries</th><th>Ingested</th></tr></thead><tbody>${provRows}</tbody></table></div></div>
+    <div class="grid2">
+      <div class="card"><h3>Exposure history <span class="muted" style="font-weight:400;font-size:12px">· what moved, when</span></h3>
+        <p class="h3s"><code>gov_exposure_history</code> — snapshots per event; the book's movement is auditable and time-travelable.</p>
+        <div class="tscroll"><table><thead><tr><th>Event</th><th class="r">Snapshots</th><th>Latest as-of</th><th class="r">Threatened</th><th class="r">Sum insured</th></tr></thead><tbody>${histRows}</tbody></table></div></div>
+      <div class="card"><h3>Alert audit <span class="muted" style="font-weight:400;font-size:12px">· who was told what</span></h3>
+        <p class="h3s"><code>gov_alert_audit</code> — every dispatch, append-only.</p>
+        <div class="tscroll"><table><thead><tr><th>Event</th><th>Threshold</th><th class="r">Threat</th><th class="r">Gross</th><th class="r">Net</th><th class="r">Ctry</th><th>To</th><th>Sent</th></tr></thead><tbody>${audRows}</tbody></table></div></div>
+    </div>`;
 }
 
 boot();

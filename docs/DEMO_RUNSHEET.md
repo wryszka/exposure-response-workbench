@@ -51,5 +51,16 @@
 - **DO (optional):** click **Run alert sweep now** — the serverless job fires; the dispatch log is audited in `gov_alert_dispatch`.
 - **IF ASKED:** does it actually send? → yes — add a free SMTP or Slack secret (`docs/ALERTS.md`) and it emails for real; without it the digest is still built, audited and previewable (what you're looking at). Grouped by event, so cross-border never fragments. Q&A.
 
+**4 · Ask in plain English — the agent (P5)** ✅ built
+- **GO:** left nav → **Ask the agent & Genie**.
+- **DO:** click the starter "*What's my exposure to the Var wildfire, gross and net, and how sure am I?*"; when it answers, point at the **Called: `list_events` · `exposure_summary` · `gross_to_net`** line under the answer.
+- **SAY:** "This is Claude — but it doesn't *guess* numbers. It **calls the same governed functions** the screens use. €164m gross, €25m net — the exact figures, with the tools it called shown as proof. And it tells you the footprint is a frozen illustrative one, so you know how sure to be."
+- **DO (optional):** flip the **yellow live/cached toggle**; ask Genie "*total sum insured by country?*" — Genie shows the **SQL it wrote**.
+- **IF ASKED:** can it hallucinate a figure? → no — it has no calculator, only the governed tools; the numbers come back from the warehouse. Q&A.
+
+**5 · Trust it — governance (P5)** ✅ built
+- **GO:** left nav → **Governance & provenance**.
+- **SAY:** "Every event carries its **provenance** — live feed vs frozen footprint, source, ingest time. The book's movement is **auditable across snapshots**, and **every alert dispatch is append-only**. Nothing on these screens is un-sourced."
+
 **N · Finale — the governed loop (1m)**
-- **SAY:** "Live event, real book, one governed answer — gross, net, and dispatched — in minutes, not a scramble."
+- **SAY:** "Live event, real book, one governed answer — measured, ceded, dispatched, and explained by an agent that can't make a number up — in minutes, not a scramble."

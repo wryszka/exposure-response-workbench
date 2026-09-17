@@ -17,6 +17,6 @@ env:
   - name: USE_CACHE
     value: "true"
   - name: GENIE_SPACE_ID
-    value: ""
+    value: "01f1b2bf6cce17eb8815107a4fab826d"
   - name: FM_ENDPOINT
     value: databricks-claude-sonnet-4-6

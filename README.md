@@ -63,10 +63,22 @@ carries the whole cross-border picture — audited in `gov_alert_dispatch` and d
 `exposure_30_alerts` (runs with nobody logged in). Real send via SMTP or Slack — add one free secret and it emails
 for real; without it the digest is still built, audited and previewable in-app. See `docs/ALERTS.md`.
 
+## Ask in plain English — agent + Genie
+The **Event Response agent** is Claude on the Databricks Foundation Model API (`databricks-claude-sonnet-4-6`),
+in-app (`app/server/agent.py`) with a **governed-function tool surface** — it answers only by calling the
+`fn_*` functions, so every number is a real tool call (shown under each answer), never invented. A response
+cache + a visible **live/cached toggle** keep demo beats snappy. **Genie** ("Ask the Exposure Book", created
+programmatically over the `mv_*` views) answers ad-hoc questions in-app and shows the SQL it wrote.
+
+## Governance & provenance
+`gov_data_provenance` (feed source, live vs frozen, ingest time per event), `gov_exposure_history` (what moved
+on the book across snapshots) and `gov_alert_audit` (append-only dispatch record) back the **Governance** tab.
+
 ## Status
-**P0–P4 complete.** Property foundation, governed exposure functions, live exposure view, **live hazard-feed
+**P0–P5 complete.** Property foundation, governed exposure functions, live exposure view, **live hazard-feed
 ingestion** (MeteoAlarm live; FIRMS/Copernicus frozen pending free keys), the **gross → net → coverholder**
-waterfall, and the **stakeholder alert path** all deploy and run on dev.
-App: `https://exposure-response-workbench-7474656169654171.aws.databricksapps.com`.
-Verified: Var Wildfire **59 / €164m**; Alpine Flood cross-border **IT 69 / AT 53** dispatched as **one alert**;
-live MeteoAlarm storm **195 / €499m**. Next: **P5** — event-response agent (Claude) + Genie + governance/Learn.
+waterfall, the **stakeholder alert path**, and the **event-response agent + Genie + governance** all deploy and
+run on dev. App: `https://exposure-response-workbench-7474656169654171.aws.databricksapps.com`.
+Verified: Var Wildfire **59 / €164m** (agent returns net **€25m** via governed tools); Alpine Flood cross-border
+**IT 69 / AT 53** dispatched as **one alert**; live MeteoAlarm storm **195 / €499m**; Genie answers over the book.
+Next: **P6** — 8-agent review panel + Isaac `/review`, then flip the `exposure-management` hub tile roadmap→live.

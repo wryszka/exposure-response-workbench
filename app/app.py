@@ -8,7 +8,7 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, Response
 
-from server import config, sql
+from server import config, sql, agent, genie
 
 app = FastAPI(title="Exposure & Event Response Workbench")
 DIST = os.path.join(os.path.dirname(__file__), "dist")
@@ -105,6 +105,49 @@ def api_alerts_run():
         return {"ok": True, "run_id": run.run_id}
     except Exception as e:
         return {"ok": False, "reason": str(e)[:200]}
+
+
+# ─────────────────────────── event response agent (Claude via FMAPI, governed tools) ───────────────────────────
+@app.get("/api/agent/starters")
+def api_agent_starters():
+    return {"starters": agent.STARTERS, "endpoint": config.FM_ENDPOINT}
+
+
+@app.post("/api/agent")
+async def api_agent(request: Request):
+    """Ask the Event Response agent. It answers only by calling the governed fn_* tools (proof returned).
+    `live=true` bypasses the cache (the yellow live/cached toggle)."""
+    body = await request.json()
+    q = (body.get("question") or "").strip()
+    if not q:
+        return {"text": "Ask about an event's exposure, gross/net, coverholder split, or what's changed.", "tools_called": [], "cache": "n/a"}
+    use_cache = not bool(body.get("live", False))
+    return agent.ask(q, use_cache=use_cache)
+
+
+# ─────────────────────────── Genie — ask the exposure book ───────────────────────────
+@app.post("/api/genie")
+async def api_genie(request: Request):
+    body = await request.json()
+    return genie.ask((body.get("question") or "").strip())
+
+
+# ─────────────────────────── governance / version transparency ───────────────────────────
+@app.get("/api/governance")
+def api_governance():
+    """Provenance (which feed, live/frozen, when ingested), exposure history (what moved across snapshots),
+    and the alert audit — the governed, append-only story behind every number."""
+    fq = config.fqn
+    return sql.query_many({
+        "provenance": (f"SELECT event_id, event_name, peril_code, source, source_detail, is_live, n_segments, "
+                       f"countries, CAST(event_date AS STRING) event_date, CAST(ingested_at AS STRING) ingested_at "
+                       f"FROM {fq('gov_data_provenance')} ORDER BY is_live DESC, ingested_at DESC"),
+        "history": (f"SELECT event_id, CAST(as_of AS STRING) as_of, buffer_m, threatened_count, sum_insured_eur "
+                    f"FROM {fq('gov_exposure_history')} ORDER BY event_id, as_of"),
+        "audit": (f"SELECT event_id, event_name, status, breached, threatened_count, gross_eur, net_eur, "
+                  f"n_countries, recipients, CAST(sent_at AS STRING) sent_at "
+                  f"FROM {fq('gov_alert_audit')} ORDER BY sent_at DESC LIMIT 50"),
+    })
 
 
 # ─────────────────────────── static SPA ───────────────────────────

@@ -41,7 +41,7 @@ targets:
       warehouse_id: "a3b61648ea4809e3"
       # App SP captured on first app create (2026-09-17). UC grants (schema USE, table SELECT, function EXECUTE) applied imperatively.
       app_service_principal_id: "fc3ac835-8393-4ea6-8d2b-180096836d7b"
-      genie_space_id: ""
+      genie_space_id: "01f1b2bf6cce17eb8815107a4fab826d"
 
   # CENTRAL / SHAREABLE deployment — assets live in /Workspace/Shared so ANY SA can demo and
   # redeploy. production mode → no dev_<user>_ prefix, clean resource names, Shared root_path.

@@ -1,0 +1,27 @@
+resources:
+  jobs:
+    exposure_07_governance:
+      name: exposure_07_governance
+      tags:
+        project: exposure_response_workbench
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: app_sp
+          default: ${var.app_service_principal_id}
+      tasks:
+        - task_key: governance_views
+          notebook_task:
+            notebook_path: ../notebooks/07_governance.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []
