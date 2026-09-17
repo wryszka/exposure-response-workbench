@@ -1,0 +1,68 @@
+bundle:
+  name: exposure-response-workbench
+
+variables:
+  catalog:
+    description: Unity Catalog name for all demo tables (portability anchor — change this one var to redeploy elsewhere)
+    default: lr_dev_aws_us_catalog
+  schema:
+    description: Schema name for all demo tables (fixed across workspaces)
+    default: exposure_response
+  warehouse_id:
+    description: SQL warehouse used by the app + scripts for data queries (incl. ST_ geospatial — needs a serverless / DBR 17.1+ warehouse)
+    default: "a3b61648ea4809e3"
+  entity_name:
+    description: The insurer whose European property book is under watch
+    default: "Bricksurance SE"
+  fm_endpoint:
+    description: Foundation Model API endpoint backing the Event Response agent + narration
+    default: "databricks-claude-sonnet-4-6"
+  app_service_principal_id:
+    description: Databricks App service principal (CAN_MANAGE_RUN on reset job, CAN_QUERY on endpoints) — set after first app create
+    default: ""
+  genie_space_id:
+    description: AI/BI Genie space "Ask the Exposure Book" — set after creation (blank hides the tile)
+    default: ""
+  use_cache:
+    description: Switchable latency aid wrapping LLM narration only (never structured / geospatial outputs)
+    default: "true"
+
+# Single dev workspace for this demo. Catalog is the portability anchor:
+# redeploy elsewhere by overriding --var catalog=<other_catalog>.
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://fevm-lr-dev-aws-us.cloud.databricks.com
+      profile: DEV
+    variables:
+      catalog: lr_dev_aws_us_catalog
+      warehouse_id: "a3b61648ea4809e3"
+      app_service_principal_id: ""
+      genie_space_id: ""
+
+  # CENTRAL / SHAREABLE deployment — assets live in /Workspace/Shared so ANY SA can demo and
+  # redeploy. production mode → no dev_<user>_ prefix, clean resource names, Shared root_path.
+  shared:
+    mode: production
+    workspace:
+      host: https://fevm-lr-dev-aws-us.cloud.databricks.com
+      profile: DEV
+      root_path: /Workspace/Shared/exposure_response_workbench
+    run_as:
+      user_name: laurence.ryszka@databricks.com
+    variables:
+      catalog: lr_dev_aws_us_catalog
+      warehouse_id: "a3b61648ea4809e3"
+      app_service_principal_id: ""
+      genie_space_id: ""
+
+sync:
+  exclude:
+    - app/.venv/
+    - app/frontend/node_modules/
+    - "*.bak"
+
+include:
+  - resources/*.yml

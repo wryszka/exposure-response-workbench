@@ -1,0 +1,37 @@
+resources:
+  jobs:
+    exposure_00_setup:
+      name: exposure_00_setup
+      tags:
+        project: exposure_response_workbench
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: seed
+          default: "42"
+      tasks:
+        - task_key: setup
+          notebook_task:
+            notebook_path: ../notebooks/00_setup.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              seed: "{{job.parameters.seed}}"
+          environment_key: serverless
+        - task_key: property_foundation
+          depends_on:
+            - task_key: setup
+          notebook_task:
+            notebook_path: ../notebooks/01_property_foundation.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              seed: "{{job.parameters.seed}}"
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []
