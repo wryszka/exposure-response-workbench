@@ -32,6 +32,12 @@
 - **DO:** point at the country bars — one event, two countries.
 - **SAY:** "One flood, **one event** — **69** Italian and **53** Austrian properties. Country-siloed teams would each see only half."
 
+**1c · This is a REAL live feed (P2)** ✅ built
+- **GO:** filter the picker to **● Live** → pick **MeteoAlarm FR STORM** (green LIVE badge, sorted first).
+- **DO:** note the badge + the source line; this pulled from Météo-France minutes ago.
+- **SAY:** "This isn't seeded — these are **live** Météo-France warnings, pulled straight in. **195 properties** in the warned regions, **€499 m** at risk. The feed your team fought with, running itself."
+- **IF ASKED:** how is it live? → keyless MeteoAlarm CAP feed → warned NUTS3 regions → real boundary polygons → the same governed function. FIRMS wildfire + Copernicus flood go live with two free keys (docs/FEEDS.md). Q&A.
+
 **2 · Gross → net of treaty (P3)**
 
 **3 · Who needs to know — the alert (P4)**

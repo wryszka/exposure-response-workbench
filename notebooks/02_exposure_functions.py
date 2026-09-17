@@ -138,13 +138,14 @@ CREATE OR REPLACE FUNCTION {fqn}.fn_events(
 )
 RETURNS TABLE(
     event_id STRING, peril_code STRING, event_name STRING, event_date DATE,
-    n_segments BIGINT, threatened_count BIGINT
+    n_segments BIGINT, threatened_count BIGINT, source STRING, is_live BOOLEAN
 )
-COMMENT 'Active catastrophe events (wildfire / flood / windstorm) with a live count of insured properties within p_buffer_m metres of each footprint. Drives the event picker in the exposure view. Newest event first.'
+COMMENT 'Active catastrophe events (wildfire / flood / windstorm) with a live count of insured properties within p_buffer_m metres of each footprint. source is the feed the event came from (SYNTHETIC frozen seed, or a live feed: METEOALARM / FIRMS / EMS / GLOFAS / EFFIS) and is_live flags a real live pull vs a frozen sample. Drives the event picker and the live/frozen badge in the exposure view. Newest event first.'
 RETURN
   WITH ev AS (
     SELECT event_id, peril_code, event_name, event_date,
            count(*) AS n_segments,
+           max(source) AS source, max(coalesce(is_live, false)) AS is_live,
            ST_Transform(ST_Union_Agg(ST_GeomFromText(footprint_wkt, 4326)), 3035) AS g
     FROM {fqn}.`2_event_footprint`
     GROUP BY event_id, peril_code, event_name, event_date
@@ -154,10 +155,10 @@ RETURN
     FROM {fqn}.`3_property`
   )
   SELECT ev.event_id, ev.peril_code, ev.event_name, ev.event_date, ev.n_segments,
-         count(props.pg) AS threatened_count
+         count(props.pg) AS threatened_count, ev.source, ev.is_live
   FROM ev LEFT JOIN props ON ST_DWithin(props.pg, ev.g, p_buffer_m)
-  GROUP BY ev.event_id, ev.peril_code, ev.event_name, ev.event_date, ev.n_segments
-  ORDER BY ev.event_date DESC
+  GROUP BY ev.event_id, ev.peril_code, ev.event_name, ev.event_date, ev.n_segments, ev.source, ev.is_live
+  ORDER BY ev.is_live DESC, ev.event_date DESC
 """, "fn_events")
 
 # COMMAND ----------

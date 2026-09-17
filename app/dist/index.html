@@ -159,7 +159,7 @@
 <script>
 const PERIL={FIRE:{c:'var(--red)',label:'Wildfire',ic:'🔥'},FLOOD:{c:'var(--blue)',label:'Flood',ic:'🌊'},STORM:{c:'var(--violet)',label:'Windstorm',ic:'🌀'}};
 const BANDS=[['0-50m','var(--b50)'],['50-100m','var(--b100)'],['100-200m','var(--b200)']];
-let EVENTS=[], SEL=null, BUF=200, CFG={};
+let EVENTS=[], SEL=null, BUF=200, CFG={}, FILTER='all';
 
 const $=s=>document.querySelector(s);
 async function api(p){const r=await fetch('/api'+p);return r.json();}
@@ -179,14 +179,22 @@ async function boot(){
   if(EVENTS.length)selectEvent(EVENTS[0].event_id);
 }
 
+function setFilter(f){FILTER=f;renderPicker();}
+function isLive(e){return e.is_live===true||e.is_live==='true';}
 function renderPicker(){
-  if(!EVENTS.length){$('#events').innerHTML='<div class="loading">No active events.</div>';return;}
-  $('#events').innerHTML=EVENTS.map(e=>{const p=PERIL[e.peril_code]||{c:'#64748b',label:e.peril_code,ic:'•'};
-    return `<div class="ev ${e.event_id===SEL?'on':''}" onclick="selectEvent('${e.event_id}')">
+  const fc=(k,l)=>`<span onclick="setFilter('${k}')" style="cursor:pointer;font-size:11.5px;padding:2px 9px;border-radius:20px;border:1px solid ${FILTER===k?'#16a34a':'#cbd5e1'};background:${FILTER===k?'#16a34a':'#fff'};color:${FILTER===k?'#fff':'#475569'}">${l}</span>`;
+  const chips=`<div style="display:flex;gap:6px;margin:0 0 10px">${fc('all','All')}${fc('live','● Live')}${fc('frozen','Frozen')}</div>`;
+  const list=EVENTS.filter(e=>FILTER==='all'||(FILTER==='live'?isLive(e):!isLive(e)));
+  if(!list.length){$('#events').innerHTML=chips+'<div class="loading">No events for this filter.</div>';return;}
+  $('#events').innerHTML=chips+list.map(e=>{const p=PERIL[e.peril_code]||{c:'#64748b',label:e.peril_code,ic:'•'};
+    const live=isLive(e);
+    const badge=`<div style="margin-top:5px;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:${live?'#16a34a':'#94a3b8'}">${live?'● LIVE FEED':'frozen'} · ${e.source||''}</div>`;
+    return `<div class="ev ${e.event_id===SEL?'on':''}" style="border-left:3px solid ${live?'#16a34a':'transparent'}" onclick="selectEvent('${e.event_id}')">
       <div class="ep" style="color:${p.c}">${p.ic} ${p.label}</div>
       <div class="en">${e.event_name}</div>
       <div class="em">${e.event_date} · ${e.n_segments>1?e.n_segments+' segments':'single footprint'}</div>
       <div class="ect">${num(e.threatened_count)} <span>within 200 m</span></div>
+      ${badge}
     </div>`;}).join('');
 }
 
@@ -263,11 +271,16 @@ function countryBars(rows,accent){
 
 // ── CSP-safe inline-SVG map: parse POLYGON WKT + project lon/lat into a viewBox ──
 function parsePolys(footprint){
+  // handle POLYGON, POLYGON-with-holes and MULTIPOLYGON (live region footprints) — extract every innermost ring
   const polys=[];
   (footprint||[]).forEach(f=>{
-    const m=(f.footprint_wkt||'').match(/\(\(([^)]+)\)\)/);
-    if(!m)return;
-    polys.push(m[1].split(',').map(pair=>{const [lo,la]=pair.trim().split(/\s+/).map(Number);return [lo,la];}));
+    const rings=(f.footprint_wkt||'').match(/\(([^()]+)\)/g)||[];
+    rings.forEach(r=>{
+      const ring=r.replace(/[()]/g,'').split(',')
+        .map(pair=>{const [lo,la]=pair.trim().split(/\s+/).map(Number);return [lo,la];})
+        .filter(c=>Number.isFinite(c[0])&&Number.isFinite(c[1]));
+      if(ring.length>=3)polys.push(ring);
+    });
   });
   return polys;
 }

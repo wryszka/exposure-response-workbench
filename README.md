@@ -17,6 +17,11 @@ exposure view → gross→net → alert), with three thin peril adapters. See `C
 ## Data feeds
 - **Wildfire:** NASA FIRMS + EFFIS · **Windstorm:** MeteoAlarm + NOAA NHC / IBTrACS · **Flood:** GloFAS/EFAS + Copernicus EMS.
 - Live where the feed exists, a frozen snapshot for a reproducible room, synthetic fill where live data is thin.
+- **MeteoAlarm windstorm ingestion is live now** (keyless) — real Météo-France warnings → NUTS3 boundaries →
+  the governed exposure function. Wildfire (FIRMS) and flood (GloFAS/EFAS) go fully live once two free keys are
+  set — see [`docs/FEEDS.md`](docs/FEEDS.md) for the exact signup URLs and secret locations. Until then they run
+  on frozen real-shape samples.
+- Refresh with the `exposure_10_refresh_feeds` job (serverless; daily, paused in dev; run on demand).
 - Property book is synthetic Bricksurance SE (no PII).
 
 ## Repo structure

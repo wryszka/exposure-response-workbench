@@ -1,0 +1,53 @@
+resources:
+  jobs:
+    exposure_10_refresh_feeds:
+      name: exposure_10_refresh_feeds
+      tags:
+        project: exposure_response_workbench
+      description: >-
+        Refresh live hazard-event footprints from open feeds into 2_event_footprint, alongside the frozen
+        synthetic demo events. MeteoAlarm (windstorm/severe) is keyless and runs LIVE; FIRMS (wildfire) and
+        GloFAS/EFAS+EMS (flood) run live when their free keys are set (secrets exposure_response/MAP_KEY and
+        /CDS_API_KEY) and fall back to frozen real-shape samples otherwise. Daily schedule; run on demand too.
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+      # Daily at 06:15 UTC. Paused by default in dev; unpause to keep the live layer warm.
+      trigger:
+        pause_status: PAUSED
+        periodic:
+          interval: 1
+          unit: DAYS
+      tasks:
+        - task_key: windstorm_meteoalarm
+          notebook_task:
+            notebook_path: ../notebooks/12_feed_windstorm.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: serverless
+        - task_key: wildfire_firms
+          depends_on:
+            - task_key: windstorm_meteoalarm
+          notebook_task:
+            notebook_path: ../notebooks/11_feed_wildfire.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: serverless
+        - task_key: flood_copernicus
+          depends_on:
+            - task_key: wildfire_firms
+          notebook_task:
+            notebook_path: ../notebooks/13_feed_flood.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []
