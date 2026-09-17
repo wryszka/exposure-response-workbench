@@ -69,6 +69,14 @@
   .cbrow .cbt b{font-weight:700}.cbrow .cbt .m{color:var(--mut)}
   .track{height:11px;background:#f1f5f9;border-radius:999px;overflow:hidden}
   .track i{display:block;height:100%;border-radius:999px}
+  .fin3{display:flex;align-items:center;gap:10px;margin:4px 0 14px;flex-wrap:wrap}
+  .fin3 .fk{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+  .fin3 .fv{font-size:21px;font-weight:800;margin-top:3px}
+  .fin3 .fx{font-size:18px;color:#cbd5e1;font-weight:700}
+  .wf{display:flex;flex-direction:column;gap:9px}
+  .wfrow .cbt{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:3px}
+  .wfrow .cbt b{font-weight:700}.wfrow .cbt .m{color:var(--mut)}
+  .wfnet{margin-top:6px;padding:9px 11px;border-radius:9px;background:var(--greenbg);border:1px solid #bbf7d0;font-size:12.5px;color:#166534;display:flex;justify-content:space-between}
   .xborder{margin-top:12px;padding:10px 12px;border-radius:9px;background:var(--ambbg);border:1px solid #fde68a;font-size:12px;color:#92400e;display:none}
   .xborder.on{display:block}
   table{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -151,7 +159,8 @@
     <div class="lstep"><span class="ln">2</span><div><b>Find the footprint</b><p>An event footprint (<code>2_event_footprint</code>) arrives from a hazard feed — wildfire perimeter, flood extent, storm swath. Multi-segment events are unioned into one shape.</p></div></div>
     <div class="lstep"><span class="ln">3</span><div><b>Measure the exposure</b><p>The governed function <code>fn_exposure_in_footprint</code> intersects properties against the footprint using Databricks geospatial SQL (<code>ST_DWithin</code>) in EPSG:3035, so 50/100/200 m are true metres — inside the footprint counts as 0 m.</p></div></div>
     <div class="lstep"><span class="ln">4</span><div><b>See it whole — across borders</b><p><code>fn_event_exposure_summary</code> rolls the same rows up by band and by country, so one event shows its entire cross-border exposure in a single view — no country silos.</p></div></div>
-    <p class="muted" style="font-size:11.5px;margin-top:14px">Next on the roadmap: live hazard-feed ingestion, gross→net through treaty, and automatic stakeholder alerts.</p>
+    <div class="lstep"><span class="ln">5</span><div><b>Net of treaty, and by coverholder</b><p><code>fn_gross_to_net</code> turns the threatened sum insured into a modelled loss (<code>ref_damage_factor</code>) and cedes it through the Property Cat XL tower to a net retained figure; <code>fn_exposure_by_coverholder</code> splits the same exposure by delegated authority — the gross / net / by-coverholder answer in one governed place.</p></div></div>
+    <p class="muted" style="font-size:11.5px;margin-top:14px">Next on the roadmap: automatic stakeholder alerts, an event-response agent and Genie.</p>
     <div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeLearn()">Close</button></div>
   </div>
 </div>
@@ -216,6 +225,33 @@ function renderView(d){
   byCountry.sort((a,b)=>b.n-a.n);
   const xborder=byCountry.length>1;
 
+  // ── gross → net waterfall + coverholder split (governed: fn_gross_to_net / fn_exposure_by_coverholder) ──
+  const wf=d.waterfall||[];
+  const gross=+((wf.find(r=>r.kind==='gross')||{}).running_net_eur||0);
+  const net=+((wf.find(r=>r.kind==='net')||{}).running_net_eur||0);
+  const ceded=Math.max(gross-net,0);
+  const chs=(d.coverholders||[]).map(r=>({id:r.coverholder_id,name:r.coverholder_name,binder:r.binder_ref,scope:r.country_scope,del:String(r.is_delegated)==='true',n:+r.n_objects,si:+r.sum_insured_eur}));
+  const finCards=`
+    <div class="grid2">
+      <div class="card">
+        <h3>Gross → net of treaty</h3>
+        <p class="h3s">Modelled gross loss (sum insured × <code>ref_damage_factor</code>) ceded through the Property Cat XL tower to net retained. <code>fn_gross_to_net</code>.</p>
+        <div class="fin3">
+          <div><div class="fk">Gross modelled loss</div><div class="fv" style="color:var(--red)">${eurm(gross)}</div></div>
+          <div class="fx">→</div>
+          <div><div class="fk">Ceded to reinsurers</div><div class="fv" style="color:var(--amber)">${eurm(ceded)}</div></div>
+          <div class="fx">→</div>
+          <div><div class="fk">Net retained</div><div class="fv" style="color:var(--green)">${eurm(net)}</div></div>
+        </div>
+        <div class="wf">${waterfall(wf,gross)}</div>
+      </div>
+      <div class="card">
+        <h3>Exposure by coverholder</h3>
+        <p class="h3s">Who wrote the threatened risk — delegated authorities and the direct book. <code>fn_exposure_by_coverholder</code>.</p>
+        <div class="cb">${coverholderBars(chs)}</div>
+      </div>
+    </div>`;
+
   const kpis=`<div class="kpis">
     <div class="kpi"><div class="k">Threatened properties</div><div class="v">${num(total)}</div><div class="bd">within ${BUF} m of the footprint</div></div>
     <div class="kpi"><div class="k">Sum insured at risk</div><div class="v">${eurm(totalSI)}</div><div class="bd">total across threatened properties</div></div>
@@ -246,6 +282,7 @@ function renderView(d){
         <div class="xborder ${xborder?'on':''}">⚠ This single event crosses <b>${byCountry.length} countries</b> (${byCountry.map(c=>c.k).join(', ')}). Teams organised by country would each see only their slice.</div>
       </div>
     </div>
+    ${finCards}
     <div class="card">
       <h3>Threatened properties <span class="muted" style="font-weight:400;font-size:12px">· ${num(props.length)} rows, nearest first</span></h3>
       <div class="tscroll"><table>
@@ -266,6 +303,29 @@ function countryBars(rows,accent){
   return rows.map(r=>`<div class="cbrow">
     <div class="cbt"><b>${r.k}</b><span class="m">${num(r.n)} props · ${eurm(r.si)}</span></div>
     <div class="track"><i style="width:${Math.round(r.n/max*100)}%;background:${accent}"></i></div>
+  </div>`).join('');
+}
+
+// ── gross→net waterfall: each layer's ceded slice sized against the gross modelled loss ──
+function waterfall(rows,gross){
+  const cess=(rows||[]).filter(r=>r.kind==='cession');
+  if(!gross||!cess.length)return '<div class="muted" style="padding:8px 0">No modelled loss for this event.</div>';
+  return cess.map(r=>{const ceded=+r.ceded_eur,netAfter=+r.running_net_eur;const w=Math.round(ceded/gross*100);
+    return `<div class="wfrow">
+      <div class="cbt"><b>${r.layer_name||r.step_label}</b><span class="m">${ceded>0?'−'+eurm(ceded):'—'} · net ${eurm(netAfter)}</span></div>
+      <div class="track"><i style="width:${w}%;background:var(--amber)"></i></div>
+    </div>`;}).join('')+
+    `<div class="wfnet">Net retained after all layers <b>${eurm(+((rows.find(r=>r.kind==='net')||{}).running_net_eur||0))}</b></div>`;
+}
+
+// ── coverholder / delegated-authority split ──
+function coverholderBars(rows){
+  if(!rows.length)return '<div class="muted">—</div>';
+  const max=Math.max(...rows.map(r=>r.si),1);
+  return rows.map(r=>`<div class="cbrow">
+    <div class="cbt"><b>${r.name}</b> ${r.del?'<span class="pill" style="background:#eef2ff;color:#3730a3">delegated · '+r.binder+'</span>':'<span class="pill" style="background:#f1f5f9;color:#475569">direct</span>'}
+      <span class="m" style="margin-left:auto">${num(r.n)} props · ${eurm(r.si)}</span></div>
+    <div class="track"><i style="width:${Math.round(r.si/max*100)}%;background:var(--blue)"></i></div>
   </div>`).join('');
 }
 

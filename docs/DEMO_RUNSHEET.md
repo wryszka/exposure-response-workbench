@@ -38,7 +38,11 @@
 - **SAY:** "This isn't seeded — these are **live** Météo-France warnings, pulled straight in. **195 properties** in the warned regions, **€499 m** at risk. The feed your team fought with, running itself."
 - **IF ASKED:** how is it live? → keyless MeteoAlarm CAP feed → warned NUTS3 regions → real boundary polygons → the same governed function. FIRMS wildfire + Copernicus flood go live with two free keys (docs/FEEDS.md). Q&A.
 
-**2 · Gross → net of treaty (P3)**
+**2 · Gross → net of treaty, and by coverholder (P3)** ✅ built
+- **GO:** stay on **Alpine Flood** → scroll to the **Gross → net of treaty** card.
+- **DO:** read the gross → ceded → net headline; point at the layer bars; then the **by-coverholder** card.
+- **SAY:** "Modelled loss **€147 m**. Our Property Cat XL tower absorbs it — we cede **€122 m**, retain just our **€25 m**. And **who wrote it**: Alpine Cover Underwriting, a delegated binder, carries **€215 m** of this event."
+- **IF ASKED:** loss vs sum insured? → sum-insured-at-risk × a visible governed damage curve (`ref_damage_factor`) = modelled loss; a cat model would replace that table. Q&A.
 
 **3 · Who needs to know — the alert (P4)**
 - **SAY:** "One event, **three countries**. One alert to the right people — not three teams missing it."

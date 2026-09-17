@@ -42,6 +42,8 @@ CONVENTIONS.md · DECISIONS.md · STANDARDS.md
 - `fn_exposure_in_footprint(event_id, buffer_m)` — threatened insured objects within the buffer, with true metres + distance band; multi-segment events unioned.
 - `fn_event_exposure_summary(event_id, buffer_m)` — the same exposure rolled up by band and by country (the cross-border view).
 - `fn_events(buffer_m)` — active events with a live threatened-count, for the picker.
+- `fn_gross_to_net(event_id, buffer_m)` — modelled gross loss (`ref_damage_factor`) ceded through the Property Cat XL tower (`3_treaty` / `3_treaty_layer`) to net retained; one row per waterfall step.
+- `fn_exposure_by_coverholder(event_id, buffer_m)` — threatened exposure split by coverholder / delegated authority (`3_coverholder` via `3_property_coverholder`).
 
 All exposure maths lives in these functions, never in the app. **`ST_*` runs on the SQL warehouse, not the serverless notebook engine** — so notebook 02 orchestrates the DDL onto the warehouse via the Statement Execution API.
 

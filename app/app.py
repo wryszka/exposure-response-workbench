@@ -57,6 +57,14 @@ def api_event(eid: str, buffer: int = 200):
             f"FROM {fq('fn_exposure_in_footprint')}('{eid}', {buf}) ORDER BY distance_m"),
         # footprint geometry for the map — the raw synthetic WKT segments for this event
         "footprint": f"SELECT event_id, peril_code, event_name, event_date, footprint_wkt FROM {fq('`2_event_footprint`')} WHERE event_id = '{eid}'",
+        # gross → net waterfall (modelled loss ceded through the Property Cat XL tower)
+        "waterfall": (
+            f"SELECT seq, step_label, layer_name, attachment_eur, limit_eur, placement_pct, "
+            f"ceded_eur, running_net_eur, kind FROM {fq('fn_gross_to_net')}('{eid}', {buf}) ORDER BY seq"),
+        # threatened exposure split by coverholder / delegated authority
+        "coverholders": (
+            f"SELECT coverholder_id, coverholder_name, binder_ref, country_scope, is_delegated, "
+            f"n_objects, sum_insured_eur FROM {fq('fn_exposure_by_coverholder')}('{eid}', {buf})"),
     })
     return {"event_id": eid, "buffer_m": buf, **out}
 
