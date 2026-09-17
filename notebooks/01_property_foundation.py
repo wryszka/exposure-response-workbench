@@ -155,16 +155,25 @@ flood_it_wkt = poly([(12.90, 46.44), (13.10, 46.44), (13.10, 46.56), (12.90, 46.
 flood_at_wkt = poly([(13.28, 46.55), (13.52, 46.55), (13.52, 46.69), (13.28, 46.69)])
 # STORM — broad windstorm swath over northern Germany (Hamburg under it).
 storm_wkt = poly([(8.6, 53.2), (11.2, 53.2), (11.2, 53.9), (8.6, 53.9)])
+# FIRE (small, UNDER the retention) — a localised brush fire near Esterel, SE France. Modelled loss (~EUR 14m)
+# stays inside the EUR 25m retention, so the treaty does not attach and net = gross. Shows the waterfall's low end.
+esterel_wkt = poly([(6.736, 43.585), (6.749, 43.585), (6.749, 43.597), (6.736, 43.597)])
+# STORM (severe, PIERCES the tower) — a major windstorm swath across the Paris-Lyon corridor. Modelled loss
+# (~EUR 567m) exceeds the EUR 400m programme top, so net rises well above the retention. Shows the waterfall's high end.
+celine_wkt = poly([(1.75, 45.50), (5.10, 45.50), (5.10, 49.22), (1.75, 49.22)])
 
 def dsub(days):
     return TODAY - datetime.timedelta(days=days)
 
 footprints = [
     # event_id, peril_code, event_name, event_date, footprint_wkt, country_code, source, detected_at
-    ("EVT_FIRE_VAR",   "FIRE",  "Var Wildfire",      dsub(3),  fire_wkt,     "FR", "SYNTHETIC"),
-    ("EVT_FLOOD_ALPS", "FLOOD", "Alpine Flood",      dsub(6),  flood_it_wkt, "IT", "SYNTHETIC"),
-    ("EVT_FLOOD_ALPS", "FLOOD", "Alpine Flood",      dsub(6),  flood_at_wkt, "AT", "SYNTHETIC"),
-    ("EVT_STORM_NORD", "STORM", "Windstorm Nord",    dsub(12), storm_wkt,    "DE", "SYNTHETIC"),
+    ("EVT_FIRE_VAR",     "FIRE",  "Var Wildfire",       dsub(3),  fire_wkt,     "FR", "SYNTHETIC"),
+    ("EVT_FLOOD_ALPS",   "FLOOD", "Alpine Flood",       dsub(6),  flood_it_wkt, "IT", "SYNTHETIC"),
+    ("EVT_FLOOD_ALPS",   "FLOOD", "Alpine Flood",       dsub(6),  flood_at_wkt, "AT", "SYNTHETIC"),
+    ("EVT_STORM_NORD",   "STORM", "Windstorm Nord",     dsub(12), storm_wkt,    "DE", "SYNTHETIC"),
+    # Two scenarios that make the gross->net waterfall visibly vary across the tower (see REQUIREMENTS.md / DEMO_QA Q10):
+    ("EVT_FIRE_ESTEREL", "FIRE",  "Esterel Brush Fire", dsub(2),  esterel_wkt,  "FR", "SYNTHETIC"),  # under retention -> net = gross
+    ("EVT_STORM_CELINE", "STORM", "Windstorm Celine",   dsub(9),  celine_wkt,   "FR", "SYNTHETIC"),  # pierces tower -> net > retention
 ]
 fp = (
     spark.createDataFrame(
