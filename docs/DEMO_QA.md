@@ -30,5 +30,12 @@
 ## Governance
 15. **Can I trust the picture / prove what happened?** Every footprint carries its provenance (source, live vs frozen, when ingested); exposure snapshots are append-only so you can see what moved between runs; and every alert dispatch is logged. That's the `gov_*` view set.
 
+## Event Radar — the news sensor (P7)
+17. **What does "beats the feed" mean?** The structured satellite/warning feeds (FIRMS, MeteoAlarm, GloFAS) are authoritative but lagging. A news/GDACS signal that (a) geospatially touches our book *and* (b) has **no** structured feed of the same peril near it yet is an **early warning** — `beats_feed=TRUE`. Our hero: a Var wildfire in the press at 10:00 on 15 Sep, threatening 36 properties / €103.6m, **14 hours before** the FIRMS sample event dated 16 Sep.
+18. **Is this AI making the decision?** No — same rule as the rest of the workbench. AI (`ai_classify`/`ai_query`) *extracts* peril, severity and a summary from the text; a governed function (`fn_news_radar`) *decides* by intersecting the geocoded location against the book on the `ST_`/EPSG:3035 path. The number is deterministic; the reading is AI.
+19. **How do you avoid false positives — "a fire in the Var" ≠ our Var policies?** The gate is geospatial, not keyword. The place is geocoded to a coordinate, buffered 3 km, and intersected against actual property locations; a signal that doesn't touch the book scores 0.15 and is **dismissed**. Confidence and a plain-language **evidence** trail are shown for every signal — disconfirmation-first.
+20. **Does it act on its own?** Never. Detection is automatic; **promoting** a signal to an event and alerting is a **human click**, and every decision is appended to `gov_news_decision` (who, when, confidence, evidence). Once promoted, the `NEWS` event flows through the *same* exposure view + alert path as any feed event.
+21. **Is the GDACS feed real?** Yes — keyless GDACS RSS, pulled live (12 current disaster items landed). The frozen synthetic press item (a fictional wire, no real names) is there so the "beats the feed" beat is reproducible in the room.
+
 ## Incumbent champion (the skeptic)
 16. **Our cat model already tells us this.** This works *alongside* the cat models — it brings their view together with the live event and the actual book, refreshed in hours, and shows who to tell. It's the operational layer, not a replacement model.

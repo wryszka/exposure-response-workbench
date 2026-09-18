@@ -150,6 +150,53 @@ def api_governance():
     })
 
 
+# ─────────────────────────── event radar (unstructured news sensor) ───────────────────────────
+@app.get("/api/radar")
+def api_radar():
+    """Verified news signals from fn_news_radar — peril, geocoded location, threatened exposure, a confidence
+    and evidence trail, and the beats_feed flag (touches the book AND no structured feed had it yet)."""
+    rows = sql.query(
+        f"SELECT signal_id, source, is_live, peril_code, severity, place_name, published_at, title, summary, "
+        f"threatened_count, sum_insured, corroborated, beats_feed, confidence, status, evidence "
+        f"FROM {config.fqn('fn_news_radar')}() ORDER BY beats_feed DESC, confidence DESC")
+    return {"signals": rows}
+
+
+@app.post("/api/radar/promote")
+async def api_radar_promote(request: Request):
+    """HUMAN-GATED. Promote a verified signal to a provisional NEWS event so it flows through the exposure view
+    and the alert path. Idempotent; every promotion is audited to gov_news_decision. Never runs autonomously."""
+    body = await request.json()
+    sid = sql.esc((body.get("signal_id") or "").strip())
+    if not sid:
+        return {"ok": False, "reason": "signal_id required"}
+    eid = f"EVT_NEWS_{sid}"
+    fq = config.fqn
+    box = ("concat('POLYGON((', "
+           "cast(s.longitude-0.03 as string),' ',cast(s.latitude-0.03 as string),', ', "
+           "cast(s.longitude+0.03 as string),' ',cast(s.latitude-0.03 as string),', ', "
+           "cast(s.longitude+0.03 as string),' ',cast(s.latitude+0.03 as string),', ', "
+           "cast(s.longitude-0.03 as string),' ',cast(s.latitude+0.03 as string),', ', "
+           "cast(s.longitude-0.03 as string),' ',cast(s.latitude-0.03 as string),'))')")
+    try:
+        sql.query(
+            f"INSERT INTO {fq('`2_event_footprint`')} "
+            f"(event_id, peril_code, event_name, event_date, footprint_wkt, source, is_live, source_detail, ingested_at) "
+            f"SELECT '{eid}', s.peril_code, concat('(News) ', coalesce(s.place_name,'?'), ' ', s.peril_code), "
+            f"current_date(), {box}, 'NEWS', true, concat('Promoted from news signal {sid} — human-approved'), current_timestamp() "
+            f"FROM {fq('`2_news_signal`')} s "
+            f"WHERE s.signal_id = '{sid}' AND s.latitude IS NOT NULL "
+            f"AND NOT EXISTS (SELECT 1 FROM {fq('`2_event_footprint`')} WHERE event_id = '{eid}')")
+        sql.query(
+            f"INSERT INTO {fq('gov_news_decision')} "
+            f"(signal_id, action, event_id, decided_by, decided_at, confidence, evidence) "
+            f"SELECT signal_id, 'PROMOTE', '{eid}', 'exposure-team (demo)', current_timestamp(), confidence, evidence "
+            f"FROM {fq('fn_news_radar')}() WHERE signal_id = '{sid}'")
+        return {"ok": True, "event_id": eid}
+    except Exception as e:
+        return {"ok": False, "reason": str(e)[:200]}
+
+
 # ─────────────────────────── static SPA ───────────────────────────
 @app.get("/")
 def index():

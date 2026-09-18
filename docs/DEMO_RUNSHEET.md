@@ -51,6 +51,14 @@
 - **DO (optional):** click **Run alert sweep now** — the serverless job fires; the dispatch log is audited in `gov_alert_dispatch`.
 - **IF ASKED:** does it actually send? → yes — add a free SMTP or Slack secret (`docs/ALERTS.md`) and it emails for real; without it the digest is still built, audited and previewable (what you're looking at). Grouped by event, so cross-border never fragments. Q&A.
 
+**3b · We knew before the satellite — Event Radar (P7)** ✅ built ⭐
+- **GO:** left nav → **Event Radar**.
+- **DO:** read the top card — the ⚡ **"beats the feed"** badge on the **Var wildfire** press signal; point at **36 threatened properties / €103.6m**, **confidence 100% · verified**, and the **evidence** line (geocoded to Var · touches book · *not yet in any structured feed*). Note the live GDACS signals below it (real disaster feed) sitting as dismissed — they don't touch our book.
+- **SAY:** "The press reported this wildfire in the Var at **10:00 on the 15th**. Our satellite feed, FIRMS, didn't confirm it until the **16th** — **14 hours later**. Event Radar read the news, extracted the peril and place with AI, geocoded it, and **verified it against our actual book**: 36 insured properties, €103.6m, and *no structured feed has caught it yet*. That's the early-warning edge."
+- **DO:** click **Promote to event & alert** — a **human decision**, audited. The signal becomes a `NEWS` event; flip to **Exposure & event response** and show it now flows through the *same* governed exposure view + alert path.
+- **SAY:** "Auto-detect, **human-decide**. The machine finds and verifies; a person promotes. Every detection and decision is logged in `gov_news_decision` — nothing consequential fires on its own."
+- **IF ASKED:** false positives? → the gate is **geospatial** — a signal only scores if it touches the book *and* isn't already in a feed; "a fire somewhere in the Var" that isn't near our properties scores 0.15 and is dismissed. Q&A.
+
 **4 · Ask in plain English — the agent (P5)** ✅ built
 - **GO:** left nav → **Ask the agent & Genie**.
 - **DO:** click the starter "*What's my exposure to the Var wildfire, gross and net, and how sure am I?*"; when it answers, point at the **Called: `list_events` · `exposure_summary` · `gross_to_net`** line under the answer.

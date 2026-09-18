@@ -15,7 +15,7 @@ Wildfire · Flood · Windstorm — built on one event-response spine (footprint 
 exposure view → gross→net → alert), with three thin peril adapters. See `CONVENTIONS.md`.
 
 ## Data feeds
-- **Wildfire:** NASA FIRMS + EFFIS · **Windstorm:** MeteoAlarm + NOAA NHC / IBTrACS · **Flood:** GloFAS/EFAS + Copernicus EMS.
+- **Wildfire:** NASA FIRMS + EFFIS · **Windstorm:** MeteoAlarm + NOAA NHC / IBTrACS · **Flood:** GloFAS/EFAS + Copernicus EMS · **Unstructured:** GDACS RSS + press wires (Event Radar).
 - Live where the feed exists, a frozen snapshot for a reproducible room, synthetic fill where live data is thin.
 - **MeteoAlarm windstorm ingestion is live now** (keyless) — real Météo-France warnings → NUTS3 boundaries →
   the governed exposure function. Wildfire (FIRMS) and flood (GloFAS/EFAS) go fully live once two free keys are
@@ -32,6 +32,7 @@ notebooks/
   00_setup.py             # schema + reference code-sets (mirror data-core)
   01_property_foundation.py  # European property book + frozen event footprints + band smoke test
   02_exposure_functions.py   # governed UC exposure functions (DDL orchestrated onto the warehouse)
+  40_news_radar.py        # Event Radar — GDACS + press → AI extract + geocode + fn_news_radar verify
 app/                      # thin FastAPI + self-contained SPA (inline-SVG map); calls the UC functions
 frontend/tokens.css       # canonical house design tokens
 docs/                     # DEMO_RUNSHEET.md, DEMO_QA.md
@@ -45,6 +46,7 @@ CONVENTIONS.md · DECISIONS.md · STANDARDS.md
 - `fn_gross_to_net(event_id, buffer_m)` — modelled gross loss (`ref_damage_factor`) ceded through the Property Cat XL tower (`3_treaty` / `3_treaty_layer`) to net retained; one row per waterfall step.
 - `fn_exposure_by_coverholder(event_id, buffer_m)` — threatened exposure split by coverholder / delegated authority (`3_coverholder` via `3_property_coverholder`).
 - `fn_event_delta(event_id, buffer_m)` — newly / still / no-longer threatened vs the previous snapshot (`gov_exposure_snapshot`) — the new/progressing/extinguished signal behind alerts.
+- `fn_news_radar()` — Event Radar verification: each news/GDACS signal with threatened count/SI, corroboration, a confidence, an evidence trail and the `beats_feed` early-warning flag.
 
 All exposure maths lives in these functions, never in the app. **`ST_*` runs on the SQL warehouse, not the serverless notebook engine** — so notebook 02 orchestrates the DDL onto the warehouse via the Statement Execution API.
 
@@ -70,15 +72,27 @@ in-app (`app/server/agent.py`) with a **governed-function tool surface** — it 
 cache + a visible **live/cached toggle** keep demo beats snappy. **Genie** ("Ask the Exposure Book", created
 programmatically over the `mv_*` views) answers ad-hoc questions in-app and shows the SQL it wrote.
 
+## Event Radar — the unstructured news sensor ("we knew before the satellite")
+The structured feeds are authoritative but lagging. **Event Radar** (`notebooks/40_news_radar.py`, tab in-app)
+scans **GDACS RSS** (live, keyless) + press wires, extracts peril/place/severity with **AI Functions**
+(`ai_classify`, `ai_query`), geocodes against a governed gazetteer, and **verifies each signal against the book**
+via `fn_news_radar`: threatened count/SI on the `ST_` path, a confidence, an evidence trail, and a **`beats_feed`**
+flag (touches the book *and* no structured feed has caught it yet = an early warning). **Auto-detect, human-decide:**
+promoting a signal to a `NEWS` event (which then flows through the same exposure + alert path) is a human click,
+audited append-only in `gov_news_decision`. Hero: a Var wildfire press item threatens **36 props / €103.6m**,
+`beats_feed=TRUE`, **14 hours ahead** of the FIRMS satellite sample.
+
 ## Governance & provenance
 `gov_data_provenance` (feed source, live vs frozen, ingest time per event), `gov_exposure_history` (what moved
-on the book across snapshots) and `gov_alert_audit` (append-only dispatch record) back the **Governance** tab.
+on the book across snapshots), `gov_alert_audit` (append-only dispatch record) and `gov_news_decision` (every
+Event Radar detection + human promote/dismiss) back the **Governance** and **Event Radar** tabs.
 
 ## Status
-**P0–P5 complete.** Property foundation, governed exposure functions, live exposure view, **live hazard-feed
-ingestion** (MeteoAlarm live; FIRMS/Copernicus frozen pending free keys), the **gross → net → coverholder**
-waterfall, the **stakeholder alert path**, and the **event-response agent + Genie + governance** all deploy and
-run on dev. App: `https://exposure-response-workbench-7474656169654171.aws.databricksapps.com`.
+**P0–P7 complete.** Property foundation, governed exposure functions, live exposure view, **live hazard-feed
+ingestion** (MeteoAlarm + GDACS live; FIRMS/Copernicus frozen pending free keys), the **gross → net → coverholder**
+waterfall, the **stakeholder alert path**, the **event-response agent + Genie + governance**, and the **Event Radar
+news sensor** all deploy and run on dev. App: `https://exposure-response-workbench-7474656169654171.aws.databricksapps.com`.
 Verified: Var Wildfire **59 / €164m** (agent returns net **€25m** via governed tools); Alpine Flood cross-border
-**IT 69 / AT 53** dispatched as **one alert**; live MeteoAlarm storm **195 / €499m**; Genie answers over the book.
-Next: **P6** — 8-agent review panel + Isaac `/review`, then flip the `exposure-management` hub tile roadmap→live.
+**IT 69 / AT 53** dispatched as **one alert**; live MeteoAlarm storm **195 / €499m**; Event Radar hero **36 / €103.6m,
+beats FIRMS by 14h**; Genie answers over the book.
+Next: flip the `exposure-management` hub tile roadmap→live.

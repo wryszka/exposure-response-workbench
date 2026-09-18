@@ -127,6 +127,7 @@
       <div class="slab">Workbench</div>
       <div class="nav" id="nav">
         <a class="navi on" data-t="exposure" onclick="showTab('exposure')">Exposure &amp; event response</a>
+        <a class="navi" data-t="radar" onclick="showTab('radar')">Event Radar <span style="font-size:9px;color:#16a34a">● news</span></a>
         <a class="navi" data-t="ask" onclick="showTab('ask')">Ask the agent &amp; Genie</a>
         <a class="navi" data-t="gov" onclick="showTab('gov')">Governance &amp; provenance</a>
       </div>
@@ -205,6 +206,14 @@
       </div>
       <div id="govView"><div class="loading">Loading governance…</div></div>
     </div><!-- /govScreen -->
+
+    <div class="screen" id="radarScreen">
+      <div class="whatis on" style="margin-top:0">
+        <div class="wh">Event Radar — the unstructured sensor (we knew before the satellite)</div>
+        <div class="wb">The structured feeds are authoritative but <b>lagging</b> — a wildfire is often in the <b>press</b> hours before the satellite confirms it. Event Radar scans a real keyless disaster feed (<b>GDACS</b>, live) and press wires, extracts the peril, place and severity with <b>AI Functions</b>, geocodes it, and <b>verifies it against the book</b> (<code>fn_news_radar</code>): does it touch insured properties, and has a structured feed caught it yet? A <b>"beats the feed"</b> signal is an early warning. Detection is automatic; <b>promoting</b> a signal to an event — which pushes it into the exposure view and the alert path — is a <b>human decision</b>, audited in <code>gov_news_decision</code>. Nothing consequential runs on its own.</div>
+      </div>
+      <div id="radarView"><div class="loading">Loading signals…</div></div>
+    </div><!-- /radarScreen -->
   </main>
 </div>
 
@@ -490,13 +499,60 @@ function buildMap(footprint,props,accent){
 }
 
 // ─────────────────────────── tabs ───────────────────────────
-let LIVE=false, GOV_LOADED=false, STARTED=false;
+let LIVE=false, GOV_LOADED=false, STARTED=false, RADAR_LOADED=false;
+const SCREENS={exposure:'exposureScreen',radar:'radarScreen',ask:'askScreen',gov:'govScreen'};
 function showTab(t){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
-  $('#'+(t==='exposure'?'exposureScreen':t==='ask'?'askScreen':'govScreen')).classList.add('on');
+  $('#'+(SCREENS[t]||'exposureScreen')).classList.add('on');
   document.querySelectorAll('.navi').forEach(n=>n.classList.toggle('on',n.dataset.t===t));
   if(t==='ask'&&!STARTED)initAgent();
   if(t==='gov'&&!GOV_LOADED)loadGov();
+  if(t==='radar'&&!RADAR_LOADED)loadRadar();
+}
+
+// ─────────────────────────── event radar (unstructured news sensor) ───────────────────────────
+async function loadRadar(){
+  RADAR_LOADED=true;
+  try{const d=await api('/radar');renderRadar(d.signals||[]);}
+  catch(e){$('#radarView').innerHTML='<div class="muted">Event Radar unavailable.</div>';}
+}
+function renderRadar(sigs){
+  if(!sigs.length){$('#radarView').innerHTML='<div class="card"><div class="loading">No signals yet — run the Event Radar scan (job exposure_40_news_radar).</div></div>';return;}
+  const bt=s=>(s.beats_feed===true||s.beats_feed==='true');
+  const order={verified:0,candidate:1,dismissed:2};
+  sigs.sort((a,b)=>(bt(b)-bt(a))||((order[a.status]??9)-(order[b.status]??9)));
+  const card=s=>{const beats=bt(s);
+    const p=PERIL[s.peril_code]||{c:'#64748b',label:s.peril_code,ic:'•'};
+    const live=(s.is_live===true||s.is_live==='true');
+    const conf=Math.round(Number(s.confidence||0)*100);
+    const touches=Number(s.threatened_count||0);
+    const stColor=s.status==='verified'?'#16a34a':s.status==='candidate'?'#b45309':'#94a3b8';
+    const promoteBtn=touches>0?`<button class="btn" onclick="promoteSignal('${esc(s.signal_id)}',this)">Promote to event &amp; alert</button>`:'<span class="muted" style="font-size:12px">Does not touch the book — no action</span>';
+    return `<div class="card" style="border-left:4px solid ${beats?'#16a34a':'#e2e8f0'}">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div><div class="ep" style="color:${p.c}">${p.ic} ${p.label} · <span style="color:${live?'#16a34a':'#94a3b8'}">${live?'● LIVE '+(s.source||''):(s.source||'')}</span></div>
+        <div style="font-weight:600;margin:3px 0">${esc(s.title||'')}</div>
+        <div class="muted" style="font-size:12px">${esc(s.summary||'')}</div></div>
+        ${beats?'<span class="pill" style="background:#dcfce7;color:#16a34a;white-space:nowrap">⚡ beats the feed</span>':''}
+      </div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;margin:11px 0;font-size:12.5px">
+        <div><span class="muted">Location</span><br/><b>${esc(s.place_name||'—')}</b></div>
+        <div><span class="muted">Threatened</span><br/><b>${num(touches)}</b> props · ${eurm(s.sum_insured)}</div>
+        <div><span class="muted">Confidence</span><br/><b style="color:${stColor}">${conf}% · ${esc(s.status||'')}</b></div>
+        <div><span class="muted">Published</span><br/><b class="mono">${esc(String(s.published_at||'').slice(0,16))}</b></div>
+      </div>
+      <div class="tools" style="border:0;padding:0">${esc(s.evidence||'')}</div>
+      <div style="margin-top:10px">${promoteBtn}</div>
+    </div>`;};
+  $('#radarView').innerHTML=sigs.map(card).join('');
+}
+async function promoteSignal(sid,btn){
+  if(btn){btn.disabled=true;btn.textContent='Promoting…';}
+  try{const r=await fetch('/api/radar/promote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({signal_id:sid})}).then(x=>x.json());
+    if(r.ok){if(btn){btn.textContent='✓ Promoted → '+r.event_id;}
+      try{const d=await api('/events');EVENTS=d.events||[];renderPicker();}catch(e){}
+    }else if(btn){btn.disabled=false;btn.textContent='Promote failed';btn.title=r.reason||'';}
+  }catch(e){if(btn){btn.disabled=false;btn.textContent='Promote failed';}}
 }
 
 // ─────────────────────────── event response agent ───────────────────────────

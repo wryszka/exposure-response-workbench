@@ -22,7 +22,12 @@ SYSTEM = (
     "inside the footprint is 0 m). One event can cross borders — always surface the whole cross-border picture, "
     "never a single country's slice. When asked 'how sure am I', explain the exposure is computed by governed "
     "Unity Catalog functions over the current footprint and book, and name the footprint's source and whether it "
-    "is a live feed or a frozen illustrative footprint. Be concise: lead with the headline number, then the split."
+    "is a live feed or a frozen illustrative footprint. Be concise: lead with the headline number, then the split. "
+    "You also have an Event Radar tool (news_radar) — the unstructured news sensor that scans press wires and the "
+    "GDACS disaster feed. A 'beats_feed' signal is an EARLY WARNING: it touches the insured book but no structured "
+    "satellite/warning feed has confirmed it yet. Detection is automatic, but promoting a signal to an event and "
+    "alerting is a HUMAN decision — never claim you have promoted or sent an alert; surface the signal, its "
+    "verification and evidence, and recommend the human action."
 ).format(entity=config.ENTITY)
 
 # ── tool surface: each maps to a governed fn_* on the warehouse ──
@@ -52,6 +57,10 @@ TOOLS = [
         "description": "What changed for an event since the last snapshot: newly-threatened, still-threatened, no-longer-threatened counts and sum insured. Use for 'what changed / what is new'.",
         "parameters": {"type": "object", "properties": {
             "event_id": {"type": "string"}, "buffer_m": {"type": "integer", "default": 200}}, "required": ["event_id"]}}},
+    {"type": "function", "function": {
+        "name": "news_radar",
+        "description": "Scan the Event Radar — the unstructured news sensor. Returns each incoming news/GDACS signal with its peril, geocoded place, how many insured properties it threatens (and sum insured EUR), a confidence 0-1, a status (verified/candidate/dismissed), a beats_feed flag (TRUE = the signal touches the book AND no structured satellite/warning feed has caught it yet — an early warning), the publish time, and a plain-language evidence trail. Use for 'what's on the radar', 'what's the earliest signal near our book', triage, and to explain a signal's verification and evidence.",
+        "parameters": {"type": "object", "properties": {}, "required": []}}},
 ]
 
 
@@ -79,6 +88,11 @@ def _run_tool(name: str, args: dict):
         return sql.query(f"SELECT coverholder_name, binder_ref, is_delegated, n_objects, sum_insured_eur FROM {fq('fn_exposure_by_coverholder')}('{eid}', {b}) ORDER BY sum_insured_eur DESC")
     if name == "event_delta":
         return sql.query(f"SELECT status, n_objects, sum_insured_eur FROM {fq('fn_event_delta')}('{eid}', {b})")
+    if name == "news_radar":
+        return sql.query(f"SELECT signal_id, source, is_live, peril_code, severity, place_name, "
+                         f"CAST(published_at AS STRING) published_at, threatened_count, sum_insured, "
+                         f"beats_feed, corroborated, round(confidence,2) AS confidence, status, evidence, summary "
+                         f"FROM {fq('fn_news_radar')}() ORDER BY beats_feed DESC, confidence DESC")
     return [{"error": f"unknown tool {name}"}]
 
 
@@ -176,4 +190,5 @@ STARTERS = [
     "Which delegated authority is most exposed to the Alpine flood?",
     "Show me the cross-border exposure for the Alpine flood by country.",
     "What's the biggest live event on the book right now?",
+    "What's on the Event Radar — is there a signal that beats the feed near our book?",
 ]

@@ -1,0 +1,42 @@
+resources:
+  jobs:
+    exposure_40_news_radar:
+      name: exposure_40_news_radar
+      description: >-
+        Event Radar — the unstructured news sensor. Scans a real keyless disaster/news source (GDACS RSS,
+        live) plus a frozen synthetic press item, extracts peril / place / severity / summary with AI
+        Functions, geocodes against a governed gazetteer, and verifies each signal against the book
+        (fn_news_radar): does it touch insured properties, and has a structured feed caught it yet
+        (beats_feed). Detection is automatic; promotion of a signal to a provisional event is human-gated
+        in the app and audited to gov_news_decision.
+      tags:
+        project: exposure_response_workbench
+      # On-demand for the demo; flip to UNPAUSED to scan hourly.
+      trigger:
+        pause_status: PAUSED
+        periodic:
+          interval: 1
+          unit: HOURS
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: app_sp
+          default: ${var.app_service_principal_id}
+      tasks:
+        - task_key: news_radar
+          notebook_task:
+            notebook_path: ../notebooks/40_news_radar.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+              fm_endpoint: ${var.fm_endpoint}
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []
