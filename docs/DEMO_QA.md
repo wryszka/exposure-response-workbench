@@ -39,3 +39,9 @@
 
 ## Incumbent champion (the skeptic)
 16. **Our cat model already tells us this.** This works *alongside* the cat models — it brings their view together with the live event and the actual book, refreshed in hours, and shows who to tell. It's the operational layer, not a replacement model.
+
+### Live event / anti-selection
+- **Is the fire spread real or scripted?** A deterministic synthetic progression (`2_event_progression`) so the room is reproducible; the intersection each tick is the real governed `fn_progression_props` (ST_/EPSG:3035). Live feeds (MeteoAlarm) and GDACS are real elsewhere.
+- **Does the agent decide the decline?** No — the governed `fn_bind_check` decides (geospatial fact); the agent only *explains* it. A human underwriter can override, and every decision is audited.
+- **Why block the sale?** Binding cover on a property already in an active fire zone is adverse selection / moral hazard — the loss is near-certain. A human underwriter would refuse; the rule makes it consistent and real-time.
+- **Is this wired into the underwriting workbench?** Not yet — this is a self-contained vignette in this workbench. Real cross-workbench integration (underwriting reads a published "active event zones" surface) is the deferred next step.

@@ -40,3 +40,9 @@ Reviewed against the Bricksurance standard via the 8-agent panel (practitioner �
 Databricks SA · senior dev · security · current-Databricks expert · incumbent champion · UI/UX).
 Findings and fixes are tracked in `docs/REVIEW/`. Ship when every P0 passes and every P1 gap is
 labelled and roadmapped (the PARTIAL/ROADMAP rows above are that honesty).
+
+## R10 — Bind-time anti-selection control (added P8, 2026-09-18) — MET (vignette)
+When an event is active, cover must not be bound on an address inside the active zone. **Status: MET** as a self-contained quote→buy→blocked vignette — governed `fn_bind_check` (ST_/EPSG:3035) decides, the agent explains, an underwriter can override, all audited in `gov_bind_decision`. Real cross-workbench integration into the underwriting-workbench app is **deferred** (scope decision 2026-09-18).
+
+## R11 — Follow a developing event (added P8) — MET
+An event that develops over time must be watchable live. **Status: MET** — `2_event_progression` + the Live event tab follow the fire (auto-advance ~30 s), the map redraws, exposure ramps, and satellite corroboration flips on when FIRMS catches up.

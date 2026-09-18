@@ -72,3 +72,10 @@
 
 **N · Finale — the governed loop (1m)**
 - **SAY:** "Live event, real book, one governed answer — measured, ceded, dispatched, and explained by an agent that can't make a number up — in minutes, not a scramble."
+
+## Beat — Live event: "we knew before the satellite, and we stopped anti-selection"
+
+1. Open **Live event**. A synthetic wire (*Riviera Wire*) is breaking a Var wildfire — **~14 h before FIRMS**. Click **Follow this story**.
+2. The map redraws as the fire spreads: threatened properties climb **0 → 73 → 90 → 105**, sum insured to **€287.5m**. At update 3 the **🛰 satellite (FIRMS) corroborates** — the badge flips.
+3. Meanwhile: **Get a quote** for a home in the Var (€31,816/yr, issued fine). Let the fire grow. Click **Buy cover now** → **⛔ DECLINED** — the underwriting agent explains the address is in the active fire zone and refers to an underwriter. (At t0, before the fire arrives, the same buy **BOUND**.)
+4. Point out: the block is a governed `fn_bind_check`, audited in `gov_bind_decision`; an underwriter can override. Adverse selection, caught at the point of sale.

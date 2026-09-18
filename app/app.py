@@ -197,6 +197,122 @@ async def api_radar_promote(request: Request):
         return {"ok": False, "reason": str(e)[:200]}
 
 
+# ─────────────────────────── live event: follow a developing fire + anti-selection vignette ───────────────────────────
+# The synthetic hero applicant — a home in the Var whose address the growing fire reaches. Deterministic.
+HERO = {"object_ref": "IO0001856", "applicant": "Prospective policyholder — villa, Var",
+        "lat": 43.586962, "lon": 6.742300, "city": "Var (SE France)", "postcode": "13823",
+        "sum_insured": 7575254.27, "coverage": "BUILDINGS + CONTENTS"}
+LIVE_EID = "EVT_LIVE_VAR_FIRE"
+
+
+@app.get("/api/live/ticks")
+def api_live_ticks():
+    """The developing-fire progression (news T0 → satellite corroboration → growing perimeter). The browser
+    'follows' it, stepping ticks; each tick's threatened count/SI climbs. mv_progression_exposure (governed)."""
+    rows = sql.query(
+        f"SELECT t_index, label, as_of, corroborated, feed_source, threatened_count, sum_insured_eur "
+        f"FROM {config.fqn('mv_progression_exposure')} ORDER BY t_index")
+    return {"event_id": LIVE_EID, "event_name": "Var wildfire (developing)", "hero": HERO, "ticks": rows}
+
+
+@app.get("/api/live/tick/{i}")
+def api_live_tick(i: int):
+    """One progression tick: the footprint at that moment + the properties it now threatens (for the live map)."""
+    try:
+        ti = int(i)
+    except (TypeError, ValueError):
+        ti = 0
+    fq = config.fqn
+    out = sql.query_many({
+        "meta": (f"SELECT t_index, label, as_of, corroborated, feed_source, footprint_wkt, threatened_count, "
+                 f"sum_insured_eur FROM {fq('mv_progression_exposure')} WHERE t_index = {ti}"),
+        "props": (f"SELECT insured_object_id, latitude, longitude, city, country_code, sum_insured, "
+                  f"round(distance_m,1) AS distance_m, band FROM {fq('fn_progression_props')}({ti}) ORDER BY distance_m"),
+    })
+    meta = (out["meta"] or [{}])[0]
+    fw = meta.get("footprint_wkt")
+    return {"t_index": ti, "meta": meta,
+            "footprint": [{"footprint_wkt": fw, "peril_code": "FIRE"}] if fw else [],
+            "properties": out["props"]}
+
+
+@app.post("/api/bind/quote")
+async def api_bind_quote():
+    """Issue an indicative quote for the hero applicant. Quoting always succeeds — the governance is at BIND."""
+    import uuid
+    return {"quote_id": "Q-" + uuid.uuid4().hex[:8].upper(), **HERO,
+            "premium_eur": round(HERO["sum_insured"] * 0.0042)}
+
+
+def _bind_narration(reason: str, decision: str, dist: float, chk: dict, override: bool) -> str:
+    """The underwriting agent (Claude/FMAPI) explains the governed bind decision — grounded only in the facts."""
+    facts = (f"Decision={decision}. Applicant address distance to the active fire footprint = {int(dist)} m "
+             f"(0 = inside the footprint). Active event={chk.get('active_event')}, as of {chk.get('as_of')}, "
+             f"source: {chk.get('feed_source')}.")
+    sysmsg = ("You are the underwriting agent for a European property insurer, enforcing a governed bind-time rule: "
+              "cover cannot be bound on a property inside an active catastrophe (wildfire) zone — that would be "
+              "adverse selection. Explain the decision to the applicant in TWO concise, plain, polite sentences, "
+              "grounded ONLY in the facts given; never invent numbers. If DECLINED, say cover can't be bound right "
+              "now because the address is in an active fire zone, and refer them to an underwriter. If BOUND, confirm "
+              "cover is bound and that the property is currently clear of the fire. If OVERRIDDEN, note an underwriter "
+              "has overridden the automatic block and accepted the risk.")
+    try:
+        m = agent._fm_chat([{"role": "system", "content": sysmsg}, {"role": "user", "content": facts}])
+        return (m.get("content") or "").strip() or reason
+    except Exception:
+        return reason
+
+
+@app.post("/api/bind/buy")
+async def api_bind_buy(request: Request):
+    """Bind-time governance (anti-selection). Runs the governed fn_bind_check against the CURRENT fire footprint;
+    declines if the address is in the active zone. Human override supported. Every decision audited (gov_bind_decision)."""
+    body = await request.json()
+    qid = sql.esc((body.get("quote_id") or "Q-DEMO").strip())
+    try:
+        ti = int(body.get("t_index", 0))
+    except (TypeError, ValueError):
+        ti = 0
+    override = bool(body.get("override", False))
+    fq = config.fqn
+    chk = sql.query_one(
+        f"SELECT in_zone, round(distance_m,1) AS distance_m, active_event, as_of, feed_source "
+        f"FROM {fq('fn_bind_check')}({HERO['lon']}, {HERO['lat']}, {ti})") or {}
+    in_zone = str(chk.get("in_zone")).lower() == "true"
+    dist = float(chk.get("distance_m") or 0)
+    if in_zone and not override:
+        decision, reason = "DECLINED", f"Address is in the active fire zone as of {chk.get('as_of')} ({chk.get('feed_source')}) — cannot bind."
+    elif in_zone and override:
+        decision, reason = "OVERRIDDEN", "Underwriter override — risk accepted against the active-zone block."
+    else:
+        decision, reason = "BOUND", f"Clear of the active fire zone ({int(dist)} m away) at bind time — cover bound."
+    agent_text = _bind_narration(reason, decision, dist, chk, override)
+    try:
+        sql.query(
+            f"INSERT INTO {fq('gov_bind_decision')} (quote_id, applicant, object_ref, latitude, longitude, t_index, "
+            f"decision, reason, active_event_id, distance_m, as_of, decided_at, decided_by, overridden) "
+            f"VALUES (:qid, :app, :obj, {HERO['lat']}, {HERO['lon']}, {ti}, :dec, :rsn, :evt, {dist}, :aso, "
+            f"current_timestamp(), :by, {str(override).lower()})",
+            {"qid": qid, "app": HERO["applicant"], "obj": HERO["object_ref"], "dec": decision, "rsn": reason,
+             "evt": chk.get("active_event") or LIVE_EID, "aso": chk.get("as_of") or "",
+             "by": "underwriter (demo)" if override else "bind-time rule"})
+    except Exception:
+        pass
+    return {"decision": decision, "reason": reason, "agent_text": agent_text, "distance_m": dist,
+            "in_zone": in_zone, "as_of": chk.get("as_of"), "feed_source": chk.get("feed_source"),
+            "quote_id": qid, "overridden": override}
+
+
+@app.get("/api/bind/audit")
+def api_bind_audit():
+    """The append-only bind-decision log — every quote→buy outcome, its reason, and the active event at the time."""
+    rows = sql.query(
+        f"SELECT quote_id, object_ref, t_index, decision, reason, round(distance_m) AS distance_m, "
+        f"CAST(decided_at AS STRING) AS decided_at, decided_by, overridden "
+        f"FROM {config.fqn('gov_bind_decision')} ORDER BY decided_at DESC LIMIT 20")
+    return {"decisions": rows}
+
+
 # ─────────────────────────── static SPA ───────────────────────────
 @app.get("/")
 def index():

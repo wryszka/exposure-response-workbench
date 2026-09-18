@@ -96,3 +96,9 @@ Verified: Var Wildfire **59 / €164m** (agent returns net **€25m** via govern
 **IT 69 / AT 53** dispatched as **one alert**; live MeteoAlarm storm **195 / €499m**; Event Radar hero **36 / €103.6m,
 beats FIRMS by 14h**; Genie answers over the book.
 Next: flip the `exposure-management` hub tile roadmap→live.
+
+## Live event & anti-selection (P8)
+
+The **Live event** tab follows a developing Var wildfire: a synthetic press report breaks ~14 h before the satellite, the footprint grows (`2_event_progression`), threatened exposure ramps (0 → 105 properties / €287.5m), and FIRMS corroborates at a later tick. A self-contained **quote → buy → blocked** vignette shows the governed bind-time control (`fn_bind_check`): a buyer whose Var address the fire reaches is **declined at bind** (adverse selection), the underwriting agent (Claude/FMAPI) explains, an underwriter can override, and every decision is audited in `gov_bind_decision`. Rebuild via `notebooks/50_event_progression.py` (job `exposure_50_progression`).
+
+Status: **P0–P8 complete** on dev.

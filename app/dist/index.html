@@ -127,6 +127,7 @@
       <div class="slab">Workbench</div>
       <div class="nav" id="nav">
         <a class="navi on" data-t="exposure" onclick="showTab('exposure')">Exposure &amp; event response</a>
+        <a class="navi" data-t="live" onclick="showTab('live')">Live event <span style="font-size:9px;color:#dc2626">● follow</span></a>
         <a class="navi" data-t="radar" onclick="showTab('radar')">Event Radar <span style="font-size:9px;color:#16a34a">● news</span></a>
         <a class="navi" data-t="ask" onclick="showTab('ask')">Ask the agent &amp; Genie</a>
         <a class="navi" data-t="gov" onclick="showTab('gov')">Governance &amp; provenance</a>
@@ -214,6 +215,38 @@
       </div>
       <div id="radarView"><div class="loading">Loading signals…</div></div>
     </div><!-- /radarScreen -->
+
+    <div class="screen" id="liveScreen">
+      <div class="whatis on" style="margin-top:0">
+        <div class="wh">Live event — follow a developing wildfire, and stop anti-selection at the point of sale</div>
+        <div class="wb">A wildfire breaks in the <b>press hours before</b> the satellite confirms it. Trigger the story and the workbench <b>follows</b> it — the footprint grows on the map, more insured properties fall inside, exposure climbs, and the satellite (<b>FIRMS</b>) catches up and corroborates. Meanwhile a customer at an address the fire is reaching tries to buy cover: the governed <b>bind-time check</b> (<code>fn_bind_check</code>) declines it in real time — you can't insure a home already in an active fire zone. The agent explains; an underwriter can override. Every decision is audited in <code>gov_bind_decision</code>. Illustrative synthetic story; the geospatial check is real.</div>
+      </div>
+      <div id="newsroom"></div>
+      <div class="grid2">
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div><h3>Live fire map</h3><p class="h3s" id="liveSub">Trigger the story to start following.</p></div>
+            <div id="liveControls" style="display:flex;gap:7px"></div>
+          </div>
+          <div id="liveBadges" style="margin:2px 0 10px"></div>
+          <div class="mapwrap" id="liveMap"><div class="loading">Not following yet — hit “Follow this story”.</div></div>
+          <div id="liveKpis"></div>
+          <div class="leg">
+            <span><span class="dot" style="background:var(--red);opacity:.5"></span> fire footprint</span>
+            <span><span class="dot" style="background:#b91c1c"></span> 0-50m</span>
+            <span><span class="dot" style="background:#ea580c"></span> 50-100m</span>
+            <span><span class="dot" style="background:#f59e0b"></span> 100-200m</span>
+          </div>
+        </div>
+        <div>
+          <div class="card" id="vignetteCard"></div>
+          <div class="card">
+            <h3>Bind decisions <span class="muted" style="font-weight:400;font-size:12px">· append-only <code>gov_bind_decision</code></span></h3>
+            <div id="bindAudit" class="muted" style="font-size:12.5px">No bind decisions yet.</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /liveScreen -->
   </main>
 </div>
 
@@ -227,6 +260,7 @@
     <div class="lstep"><span class="ln">4</span><div><b>See it whole — across borders</b><p><code>fn_event_exposure_summary</code> rolls the same rows up by band and by country, so one event shows its entire cross-border exposure in a single view — no country silos.</p></div></div>
     <div class="lstep"><span class="ln">5</span><div><b>Net of treaty, and by coverholder</b><p><code>fn_gross_to_net</code> turns the threatened sum insured into a modelled loss (<code>ref_damage_factor</code>) and cedes it through the Property Cat XL tower to a net retained figure; <code>fn_exposure_by_coverholder</code> splits the same exposure by delegated authority — the gross / net / by-coverholder answer in one governed place.</p></div></div>
     <div class="lstep"><span class="ln">6</span><div><b>Tell the people who aren't logged in</b><p>When an event clears its peril threshold, <code>fn_event_delta</code> works out what's newly threatened since the last look and an event-grouped digest is dispatched to claims, underwriting &amp; exposure management — one alert carrying the whole cross-border picture. Every dispatch is audited in <code>gov_alert_dispatch</code>, and it runs on a schedule with nobody logged in.</p></div></div>
+    <div class="lstep"><span class="ln">★</span><div><b>Follow it live — and refuse anti-selection</b><p>On the <b>Live event</b> tab, a press report is <b>followed</b> as the fire spreads: the footprint grows (<code>2_event_progression</code>), threatened exposure climbs, and the satellite (FIRMS) catches up and corroborates. At the same time a buyer whose address the fire reaches is <b>declined at bind</b> by the governed <code>fn_bind_check</code> — you can't insure a home already in an active fire zone. The agent explains, an underwriter can override, and every decision is audited in <code>gov_bind_decision</code>.</p></div></div>
     <div class="lstep"><span class="ln">7</span><div><b>Ask in plain English</b><p>The <b>Event Response agent</b> (Claude on the Foundation Model API) answers only by calling the governed functions — every figure is a real tool call, shown under the answer, never invented. <b>Genie</b> answers ad-hoc questions over the book and shows the SQL it wrote.</p></div></div>
     <div class="lstep"><span class="ln">8</span><div><b>Govern &amp; trust</b><p>Every event carries provenance (live feed vs frozen footprint, source, ingest time via <code>gov_data_provenance</code>); the book's movement is auditable across snapshots (<code>gov_exposure_history</code>); and every alert dispatch is append-only (<code>gov_alert_audit</code>).</p></div></div>
     <div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeLearn()">Close</button></div>
@@ -499,8 +533,8 @@ function buildMap(footprint,props,accent){
 }
 
 // ─────────────────────────── tabs ───────────────────────────
-let LIVE=false, GOV_LOADED=false, STARTED=false, RADAR_LOADED=false;
-const SCREENS={exposure:'exposureScreen',radar:'radarScreen',ask:'askScreen',gov:'govScreen'};
+let LIVE=false, GOV_LOADED=false, STARTED=false, RADAR_LOADED=false, LIVE_LOADED=false;
+const SCREENS={exposure:'exposureScreen',live:'liveScreen',radar:'radarScreen',ask:'askScreen',gov:'govScreen'};
 function showTab(t){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   $('#'+(SCREENS[t]||'exposureScreen')).classList.add('on');
@@ -508,6 +542,119 @@ function showTab(t){
   if(t==='ask'&&!STARTED)initAgent();
   if(t==='gov'&&!GOV_LOADED)loadGov();
   if(t==='radar'&&!RADAR_LOADED)loadRadar();
+  if(t==='live'&&!LIVE_LOADED)loadLive();
+}
+
+// ─────────────────────────── live event: follow a developing fire + anti-selection vignette ───────────────────────────
+let LIVE_TICKS=[], LIVE_CUR=-1, LIVE_TIMER=null, LIVE_HERO=null, QUOTE=null;
+async function loadLive(){
+  LIVE_LOADED=true;
+  try{const d=await api('/live/ticks');LIVE_TICKS=d.ticks||[];LIVE_HERO=d.hero||null;}
+  catch(e){$('#newsroom').innerHTML='<div class="card"><div class="muted">Live event unavailable.</div></div>';return;}
+  renderNewsroom(false);renderVignette();loadBindAudit();
+}
+function renderNewsroom(published){
+  const t0=LIVE_TICKS[0]||{};
+  const followBtn=published
+    ? `<span class="pill" style="background:#fee2e2;color:#dc2626">● Following live</span> <button class="btn" onclick="resetFollow()">Reset</button>`
+    : `<button class="ybtn live" onclick="startFollow()" style="border-color:#dc2626;background:#dc2626">▶ Follow this story</button>`;
+  $('#newsroom').innerHTML=`<div class="card" style="border:1px solid #e2e8f0;padding:0;overflow:hidden">
+    <div style="background:#0f172a;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-weight:800;letter-spacing:.14em;font-size:13px">RIVIERA&nbsp;WIRE <span style="font-weight:400;color:#94a3b8;font-size:10.5px;letter-spacing:.04em">· breaking news (synthetic)</span></div>
+      <span class="pill" style="background:#dc2626;color:#fff">● BREAKING</span>
+    </div>
+    <div style="padding:16px 18px">
+      <div style="font-size:20px;font-weight:800;line-height:1.25">Wildfire breaks out in the Var backcountry; residents told to prepare to leave</div>
+      <div class="muted" style="font-size:11.5px;margin:7px 0 10px">Riviera Wire · SE France · a fast-moving brush fire has been reported near the ridge above the Var valley. Firefighting aircraft are mobilising. <b>Published now — ~14 h before the first satellite (FIRMS) confirmation.</b></div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">${followBtn}
+        <span class="muted" style="font-size:11.5px">Triggering starts the agent following the story — the map redraws as it spreads.</span></div>
+    </div></div>`;
+  $('#liveControls').innerHTML = published
+    ? `<button class="btn" onclick="nextTick()">Next update ▸</button>`
+    : '';
+}
+function badge(txt,bg,c){return `<span class="pill" style="background:${bg};color:${c}">${txt}</span>`;}
+function startFollow(){
+  if(!LIVE_TICKS.length)return;
+  LIVE_CUR=0;renderNewsroom(true);renderTick(0);
+  if(LIVE_TIMER)clearInterval(LIVE_TIMER);
+  LIVE_TIMER=setInterval(()=>{ if(LIVE_CUR<LIVE_TICKS.length-1){LIVE_CUR++;renderTick(LIVE_CUR);} else {clearInterval(LIVE_TIMER);LIVE_TIMER=null;} },30000);
+}
+function nextTick(){ if(LIVE_CUR<LIVE_TICKS.length-1){LIVE_CUR++;renderTick(LIVE_CUR);} }
+function resetFollow(){ if(LIVE_TIMER)clearInterval(LIVE_TIMER);LIVE_TIMER=null;LIVE_CUR=-1;
+  renderNewsroom(false);$('#liveMap').innerHTML='<div class="loading">Not following yet — hit “Follow this story”.</div>';
+  $('#liveSub').textContent='Trigger the story to start following.';$('#liveBadges').innerHTML='';$('#liveKpis').innerHTML='';renderVignette();}
+async function renderTick(i){
+  const meta=LIVE_TICKS[i]||{};
+  $('#liveSub').innerHTML=`<b>T+${i*30}m</b> · ${esc(meta.label||'')} <span class="muted">· ${esc(meta.feed_source||'')}</span>`;
+  const corr=(meta.corroborated===true||meta.corroborated==='true');
+  $('#liveBadges').innerHTML=
+    badge(`Update ${i+1} of ${LIVE_TICKS.length}`,'#eef2ff','#3730a3')+' '+
+    (corr?badge('🛰 satellite (FIRMS) corroborated','#dcfce7','#16a34a'):badge('⚡ news only — beats the feed','#fef3c7','#b45309'));
+  $('#liveKpis').innerHTML=`<div class="kpis" style="margin:12px 0 4px">
+    <div class="kpi"><div class="k">Threatened properties</div><div class="v" style="color:var(--red)">${num(meta.threatened_count)}</div><div class="bd">within 200 m as the fire grows</div></div>
+    <div class="kpi"><div class="k">Sum insured at risk</div><div class="v">${eurm(meta.sum_insured_eur)}</div><div class="bd">climbing with the perimeter</div></div>
+    <div class="kpi"><div class="k">Confirmation</div><div class="v" style="font-size:15px;color:${corr?'var(--green)':'var(--amber)'}">${corr?'Satellite + press':'Press only'}</div><div class="bd">${esc(String(meta.as_of||'').slice(0,16))}</div></div>
+  </div>`;
+  $('#liveMap').innerHTML='<div class="loading">Redrawing…</div>';
+  try{const d=await api('/live/tick/'+i);$('#liveMap').innerHTML=buildMap(d.footprint||[],d.properties||[],'var(--red)');}
+  catch(e){$('#liveMap').innerHTML='<div class="loading">Map unavailable.</div>';}
+  renderVignette();
+}
+// ── anti-selection quote → buy → blocked vignette ──
+function renderVignette(){
+  const h=LIVE_HERO||{};
+  const following=LIVE_CUR>=0;
+  const stateNote=following
+    ? `<div class="muted" style="font-size:11.5px;margin-top:6px">Fire state: <b>update ${LIVE_CUR+1} of ${LIVE_TICKS.length}</b> — the bind check runs against the fire footprint <b>right now</b>.</div>`
+    : `<div class="muted" style="font-size:11.5px;margin-top:6px">Tip: get a quote before the fire, then try to buy as it reaches the address.</div>`;
+  let inner;
+  if(!QUOTE){
+    inner=`<button class="btn" onclick="getQuote()">Get a quote</button>`;
+  }else{
+    inner=`<div style="background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin:4px 0 10px">
+      <div style="display:flex;justify-content:space-between"><span class="muted" style="font-size:12px">Quote ${esc(QUOTE.quote_id)}</span><span class="pill" style="background:#eff6ff;color:#1d4ed8">issued</span></div>
+      <div style="font-size:13px;margin-top:6px"><b>${esc(QUOTE.city)}</b> · ${esc(QUOTE.coverage)} · SI ${eurm(QUOTE.sum_insured)}</div>
+      <div style="font-size:20px;font-weight:800;margin-top:4px">€${num(QUOTE.premium_eur)}<span class="muted" style="font-size:12px;font-weight:600">/yr premium</span></div>
+    </div>
+    <button class="ybtn live" style="border-color:#16a34a;background:#16a34a" onclick="buyNow(false)">Buy cover now</button>
+    <div id="bindResult" style="margin-top:12px"></div>`;
+  }
+  $('#vignetteCard').innerHTML=`<h3>Buy cover — a home in the Var</h3>
+    <p class="h3s">A prospective policyholder at <span class="mono">${esc(h.object_ref||'')}</span> in the fire's path. Bind is governed by <code>fn_bind_check</code> against the live footprint.</p>
+    ${inner}${stateNote}`;
+}
+async function getQuote(){
+  try{QUOTE=await fetch('/api/bind/quote',{method:'POST'}).then(x=>x.json());renderVignette();}catch(e){}
+}
+async function buyNow(override){
+  const rb=$('#bindResult');if(rb)rb.innerHTML='<div class="loading">Underwriting check…</div>';
+  try{
+    const r=await fetch('/api/bind/buy',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({quote_id:QUOTE.quote_id,t_index:Math.max(LIVE_CUR,0),override:!!override})}).then(x=>x.json());
+    const blocked=r.decision==='DECLINED';
+    const bg=blocked?'#fef2f2':(r.decision==='OVERRIDDEN'?'#fffbeb':'#f0fdf4');
+    const bd=blocked?'#fecaca':(r.decision==='OVERRIDDEN'?'#fde68a':'#bbf7d0');
+    const c=blocked?'#dc2626':(r.decision==='OVERRIDDEN'?'#b45309':'#16a34a');
+    const label=blocked?'⛔ DECLINED':(r.decision==='OVERRIDDEN'?'⚠ BOUND (overridden)':'✓ BOUND');
+    $('#bindResult').innerHTML=`<div style="background:${bg};border:1px solid ${bd};border-radius:10px;padding:12px 14px">
+      <div style="display:flex;align-items:center;gap:9px"><span class="pill" style="background:${c};color:#fff">${label}</span>
+        <span class="muted" style="font-size:12px">${r.in_zone?'in active fire zone':(Math.round(r.distance_m)+' m from the fire')} · ${esc(String(r.as_of||'').slice(0,16))}</span></div>
+      <div style="font-size:13px;line-height:1.5;margin-top:9px">${esc(r.agent_text||r.reason||'')}</div>
+      <div class="tools" style="border-top:1px dashed var(--line);margin-top:9px">Governed by <code>fn_bind_check</code> · audited in <code>gov_bind_decision</code>
+        ${blocked?'<button class="btn" style="float:right;padding:4px 9px;font-size:11.5px" onclick="buyNow(true)">Underwriter override</button>':''}</div>
+    </div>`;
+    loadBindAudit();
+  }catch(e){if($('#bindResult'))$('#bindResult').innerHTML='<div class="muted">Bind check unavailable.</div>';}
+}
+async function loadBindAudit(){
+  try{const d=await api('/bind/audit');const rows=d.decisions||[];
+    if(!rows.length){$('#bindAudit').innerHTML='<span class="muted" style="font-size:12.5px">No bind decisions yet.</span>';return;}
+    $('#bindAudit').innerHTML=`<div class="tscroll" style="max-height:200px"><table><thead><tr><th>Quote</th><th>Decision</th><th class="r">Dist</th><th>When</th></tr></thead><tbody>${
+      rows.map(r=>{const dc=r.decision==='DECLINED'?'#dc2626':(r.decision==='OVERRIDDEN'?'#b45309':'#16a34a');
+      return `<tr><td class="mono">${esc(r.quote_id)}</td><td><span class="pill" style="background:${dc}1a;color:${dc}">${esc(r.decision)}</span></td><td class="r">${num(Math.round(r.distance_m))} m</td><td class="mono">${esc(String(r.decided_at||'').slice(0,16))}</td></tr>`;}).join('')
+    }</tbody></table></div>`;
+  }catch(e){}
 }
 
 // ─────────────────────────── event radar (unstructured news sensor) ───────────────────────────

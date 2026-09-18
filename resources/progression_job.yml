@@ -1,0 +1,32 @@
+resources:
+  jobs:
+    exposure_50_progression:
+      name: exposure_50_progression
+      description: >-
+        Live event progression + anti-selection bind check. Seeds the Var wildfire as a growing
+        time-series of footprints (2_event_progression), with satellite (FIRMS) corroboration flipping
+        on at a later tick; builds fn_progression_props / mv_progression_exposure (the live-follow map
+        + ramp) and fn_bind_check (the governed bind-time rule that declines cover in an active fire
+        zone), plus the append-only gov_bind_decision audit. ST_ DDL runs on the SQL warehouse.
+      tags:
+        project: exposure_response_workbench
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+      tasks:
+        - task_key: progression
+          notebook_task:
+            notebook_path: ../notebooks/50_event_progression.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []
