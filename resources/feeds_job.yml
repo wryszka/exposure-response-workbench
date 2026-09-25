@@ -37,9 +37,18 @@ resources:
               catalog: ${var.catalog}
               schema: ${var.schema}
           environment_key: serverless
-        - task_key: flood_copernicus
+        - task_key: wildfire_effis
           depends_on:
             - task_key: wildfire_firms
+          notebook_task:
+            notebook_path: ../notebooks/11b_feed_effis.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: serverless
+        - task_key: flood_copernicus
+          depends_on:
+            - task_key: wildfire_effis
           notebook_task:
             notebook_path: ../notebooks/13_feed_flood.py
             base_parameters:

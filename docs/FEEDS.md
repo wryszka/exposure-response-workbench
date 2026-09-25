@@ -14,7 +14,7 @@ Refresh job: `exposure_10_refresh_feeds` (serverless; daily, paused in dev; run 
 | Windstorm / severe | **MeteoAlarm** (38 EU met services) | `feeds.meteoalarm.org/api/v1/warnings/feeds-{country}` | **none** | CAP-JSON | ~hourly | ✅ all | Free; © national met services | **LIVE now** |
 | — region → polygon | Eurostat **GISCO** NUTS3 | `gisco-services.ec.europa.eu/.../NUTS_RG_20M_2013_4326_LEVL_3.geojson` | none | GeoJSON | static | ✅ | © EuroGeographics | **LIVE** (cached to Volume) |
 | Wildfire | **NASA FIRMS** active fire (VIIRS 375 m) | `firms.modaps.eosdis.nasa.gov/api/area/csv/{MAP_KEY}/...` | **free MAP_KEY** | CSV | NRT ~3 h | ✅ global | NASA EOSDIS/LANCE (attribute) | adapter live; **needs key** → frozen sample |
-| Wildfire | **EFFIS** (Copernicus) perimeters | EFFIS portal / WFS | free | GeoJSON/GPKG | daily | ✅ | Copernicus | documented; not wired |
+| Wildfire | **EFFIS Burnt Areas** (Copernicus) perimeters | EFFIS/GWIS WFS (`maps.effis.emergency.copernicus.eu/gwis`, GeoJSON) | **keyless** | GeoJSON | daily | ✅ Europe | Copernicus EMS — EFFIS/GWIS (attribute) | **adapter wired & live-capable** (`11b_feed_effis`); the burnt-area *perimeters* the customer uses. Live WFS pull tried 16 base×layer×format combos; if unreachable → frozen Var perimeter sample (`is_live=false`). ⚠️ current live pull fell back to frozen — confirm the current EFFIS WFS layer name |
 | Flood (forecast) | **GloFAS / EFAS** (Copernicus) | CDS API | **free CDS key** | NetCDF | 6–12 h | ✅ | Copernicus (attribute) | adapter wired to secret; **needs key** |
 | Flood (event extent) | **Copernicus EMS** Rapid Mapping | activation downloads | none (past) | GPKG/SHP | event | ✅ | Copernicus (CC-BY) | frozen real-shape sample |
 
