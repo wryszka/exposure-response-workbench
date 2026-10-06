@@ -43,30 +43,32 @@ def api_events():
 # ─────────────────────────── one event: exposure view ───────────────────────────
 @app.get("/api/event/{eid}")
 def api_event(eid: str, buffer: int = 200):
-    eid = sql.esc(eid)
     try:
         buf = int(buffer)
     except (TypeError, ValueError):
         buf = 200
+    if buf not in (50, 100, 200):
+        buf = 200
     fq = config.fqn
+    pe = {"eid": eid, "buf": buf}  # bound params — eid comes from the URL path (untrusted)
     out = sql.query_many({
-        "summary": f"SELECT dim, dim_key, n_objects, sum_insured_eur FROM {fq('fn_event_exposure_summary')}('{eid}', {buf}) ORDER BY dim, dim_key",
+        "summary": (f"SELECT dim, dim_key, n_objects, sum_insured_eur FROM {fq('fn_event_exposure_summary')}(:eid, :buf) ORDER BY dim, dim_key", pe),
         "properties": (
             f"SELECT insured_object_id, policy_id, country_code, city, postcode, latitude, longitude, "
             f"round(distance_m,1) AS distance_m, band, sum_insured, coverage_type_code, line_of_business_code "
-            f"FROM {fq('fn_exposure_in_footprint')}('{eid}', {buf}) ORDER BY distance_m"),
+            f"FROM {fq('fn_exposure_in_footprint')}(:eid, :buf) ORDER BY distance_m", pe),
         # footprint geometry for the map — the raw synthetic WKT segments for this event
-        "footprint": f"SELECT event_id, peril_code, event_name, event_date, footprint_wkt FROM {fq('`2_event_footprint`')} WHERE event_id = '{eid}'",
+        "footprint": (f"SELECT event_id, peril_code, event_name, event_date, footprint_wkt FROM {fq('`2_event_footprint`')} WHERE event_id = :eid", {"eid": eid}),
         # gross → net waterfall (modelled loss ceded through the Property Cat XL tower)
         "waterfall": (
             f"SELECT seq, step_label, layer_name, attachment_eur, limit_eur, placement_pct, "
-            f"ceded_eur, running_net_eur, kind FROM {fq('fn_gross_to_net')}('{eid}', {buf}) ORDER BY seq"),
+            f"ceded_eur, running_net_eur, kind FROM {fq('fn_gross_to_net')}(:eid, :buf) ORDER BY seq", pe),
         # threatened exposure split by coverholder / delegated authority
         "coverholders": (
             f"SELECT coverholder_id, coverholder_name, binder_ref, country_scope, is_delegated, "
-            f"n_objects, sum_insured_eur FROM {fq('fn_exposure_by_coverholder')}('{eid}', {buf})"),
+            f"n_objects, sum_insured_eur FROM {fq('fn_exposure_by_coverholder')}(:eid, :buf)", pe),
         # what changed since the last alert sweep — new / still / no-longer threatened
-        "delta": f"SELECT status, n_objects, sum_insured_eur FROM {fq('fn_event_delta')}('{eid}', {buf})",
+        "delta": (f"SELECT status, n_objects, sum_insured_eur FROM {fq('fn_event_delta')}(:eid, :buf)", pe),
     })
     return {"event_id": eid, "buffer_m": buf, "alert": _latest_alert(eid), **out}
 
@@ -78,7 +80,7 @@ def _latest_alert(eid: str):
         f"SELECT run_id, status, breached, threshold_rule, threatened_count, gross_eur, ceded_eur, net_eur, "
         f"countries, n_countries, new_count, still_count, gone_count, channel, recipients, "
         f"CAST(sent_at AS STRING) AS sent_at, digest_html "
-        f"FROM {config.fqn('gov_alert_dispatch')} WHERE event_id = '{sql.esc(eid)}' ORDER BY run_id DESC LIMIT 1")
+        f"FROM {config.fqn('gov_alert_dispatch')} WHERE event_id = :eid ORDER BY run_id DESC LIMIT 1", {"eid": eid})
 
 
 @app.get("/api/alerts")
@@ -167,11 +169,12 @@ async def api_radar_promote(request: Request):
     """HUMAN-GATED. Promote a verified signal to a provisional NEWS event so it flows through the exposure view
     and the alert path. Idempotent; every promotion is audited to gov_news_decision. Never runs autonomously."""
     body = await request.json()
-    sid = sql.esc((body.get("signal_id") or "").strip())
+    sid = (body.get("signal_id") or "").strip()
     if not sid:
         return {"ok": False, "reason": "signal_id required"}
     eid = f"EVT_NEWS_{sid}"
     fq = config.fqn
+    p = {"eid": eid, "sid": sid}  # bound params — signal_id comes from the request body (untrusted)
     box = ("concat('POLYGON((', "
            "cast(s.longitude-0.03 as string),' ',cast(s.latitude-0.03 as string),', ', "
            "cast(s.longitude+0.03 as string),' ',cast(s.latitude-0.03 as string),', ', "
@@ -182,16 +185,16 @@ async def api_radar_promote(request: Request):
         sql.query(
             f"INSERT INTO {fq('`2_event_footprint`')} "
             f"(event_id, peril_code, event_name, event_date, footprint_wkt, source, is_live, source_detail, ingested_at) "
-            f"SELECT '{eid}', s.peril_code, concat('(News) ', coalesce(s.place_name,'?'), ' ', s.peril_code), "
-            f"current_date(), {box}, 'NEWS', true, concat('Promoted from news signal {sid} — human-approved'), current_timestamp() "
+            f"SELECT :eid, s.peril_code, concat('(News) ', coalesce(s.place_name,'?'), ' ', s.peril_code), "
+            f"current_date(), {box}, 'NEWS', true, concat('Promoted from news signal ', :sid, ' - human-approved'), current_timestamp() "
             f"FROM {fq('`2_news_signal`')} s "
-            f"WHERE s.signal_id = '{sid}' AND s.latitude IS NOT NULL "
-            f"AND NOT EXISTS (SELECT 1 FROM {fq('`2_event_footprint`')} WHERE event_id = '{eid}')")
+            f"WHERE s.signal_id = :sid AND s.latitude IS NOT NULL "
+            f"AND NOT EXISTS (SELECT 1 FROM {fq('`2_event_footprint`')} WHERE event_id = :eid)", p)
         sql.query(
             f"INSERT INTO {fq('gov_news_decision')} "
             f"(signal_id, action, event_id, decided_by, decided_at, confidence, evidence) "
-            f"SELECT signal_id, 'PROMOTE', '{eid}', 'exposure-team (demo)', current_timestamp(), confidence, evidence "
-            f"FROM {fq('fn_news_radar')}() WHERE signal_id = '{sid}'")
+            f"SELECT signal_id, 'PROMOTE', :eid, 'exposure-team (demo)', current_timestamp(), confidence, evidence "
+            f"FROM {fq('fn_news_radar')}() WHERE signal_id = :sid", p)
         return {"ok": True, "event_id": eid}
     except Exception as e:
         return {"ok": False, "reason": str(e)[:200]}
@@ -268,7 +271,7 @@ async def api_bind_buy(request: Request):
     """Bind-time governance (anti-selection). Runs the governed fn_bind_check against the CURRENT fire footprint;
     declines if the address is in the active zone. Human override supported. Every decision audited (gov_bind_decision)."""
     body = await request.json()
-    qid = sql.esc((body.get("quote_id") or "Q-DEMO").strip())
+    qid = (body.get("quote_id") or "Q-DEMO").strip()  # bound as :qid in the audit INSERT below
     try:
         ti = int(body.get("t_index", 0))
     except (TypeError, ValueError):

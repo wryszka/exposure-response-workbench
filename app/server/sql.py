@@ -39,13 +39,15 @@ def query_one(statement: str, params: dict = None):
 
 def query_many(statements: dict):
     """Run a {key: statement} map concurrently. Returns {key: list[dict] rows}.
-    A failing statement yields [] for that key rather than failing the whole batch."""
-    def _safe(s):
+    Each value is either a statement string, or a (statement, params) tuple to bind `:name` markers
+    (the safe way to carry user/text values — see query()). A failing statement yields [] for that key."""
+    def _safe(item):
+        s, p = item if isinstance(item, tuple) else (item, None)
         try:
-            return query(s)
+            return query(s, p)
         except Exception:
             return []
-    futures = {k: _POOL.submit(_safe, s) for k, s in statements.items()}
+    futures = {k: _POOL.submit(_safe, v) for k, v in statements.items()}
     return {k: f.result() for k, f in futures.items()}
 
 

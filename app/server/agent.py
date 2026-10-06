@@ -73,21 +73,23 @@ def _buf(a):
 
 
 def _run_tool(name: str, args: dict):
-    """Execute a tool by calling the matching governed function on the warehouse. Returns list[dict] rows."""
+    """Execute a tool by calling the matching governed function on the warehouse. Returns list[dict] rows.
+    event_id comes from the model's tool arguments → always bound as :eid (never pasted into the statement)."""
     fq = config.fqn
-    eid = sql.esc(str(args.get("event_id", "")))
+    eid = str(args.get("event_id", ""))
     b = _buf(args)
+    p = {"eid": eid, "b": b}
     if name == "list_events":
         return sql.query(f"SELECT event_id, peril_code, event_name, CAST(event_date AS STRING) event_date, "
                          f"source, is_live, threatened_count FROM {fq('fn_events')}(200) ORDER BY threatened_count DESC")
     if name == "exposure_summary":
-        return sql.query(f"SELECT dim, dim_key, n_objects, sum_insured_eur FROM {fq('fn_event_exposure_summary')}('{eid}', {b}) ORDER BY dim, dim_key")
+        return sql.query(f"SELECT dim, dim_key, n_objects, sum_insured_eur FROM {fq('fn_event_exposure_summary')}(:eid, :b) ORDER BY dim, dim_key", p)
     if name == "gross_to_net":
-        return sql.query(f"SELECT step_label, layer_name, ceded_eur, running_net_eur, kind FROM {fq('fn_gross_to_net')}('{eid}', {b}) ORDER BY seq")
+        return sql.query(f"SELECT step_label, layer_name, ceded_eur, running_net_eur, kind FROM {fq('fn_gross_to_net')}(:eid, :b) ORDER BY seq", p)
     if name == "exposure_by_coverholder":
-        return sql.query(f"SELECT coverholder_name, binder_ref, is_delegated, n_objects, sum_insured_eur FROM {fq('fn_exposure_by_coverholder')}('{eid}', {b}) ORDER BY sum_insured_eur DESC")
+        return sql.query(f"SELECT coverholder_name, binder_ref, is_delegated, n_objects, sum_insured_eur FROM {fq('fn_exposure_by_coverholder')}(:eid, :b) ORDER BY sum_insured_eur DESC", p)
     if name == "event_delta":
-        return sql.query(f"SELECT status, n_objects, sum_insured_eur FROM {fq('fn_event_delta')}('{eid}', {b})")
+        return sql.query(f"SELECT status, n_objects, sum_insured_eur FROM {fq('fn_event_delta')}(:eid, :b)", p)
     if name == "news_radar":
         return sql.query(f"SELECT signal_id, source, is_live, peril_code, severity, place_name, "
                          f"CAST(published_at AS STRING) published_at, threatened_count, sum_insured, "
@@ -174,6 +176,8 @@ def ask(question: str, use_cache: bool = None) -> dict:
                 messages.append({"role": "tool", "tool_call_id": c.get("id"),
                                  "content": json.dumps(rows, default=str)[:6000]})
         else:
+            import logging
+            logging.getLogger("agent").warning("tool-calling loop hit the 6-step limit for question: %s", question[:120])
             text = "[the agent took too many steps — please narrow the question]"
     except Exception as e:
         return {"text": f"[agent unavailable: {str(e)[:180]}]", "tools_called": tools_called, "cache": "error", "endpoint": config.FM_ENDPOINT}
