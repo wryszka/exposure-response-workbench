@@ -35,3 +35,15 @@ def workspace_host() -> str:
         return get_workspace_client().config.host.rstrip("/")
     except Exception:
         return ""
+
+
+@lru_cache(maxsize=1)
+def workspace_id() -> str:
+    """Org/workspace id for the dashboard embed URL (?o=). Apps inject DATABRICKS_WORKSPACE_ID; else ask the SDK."""
+    wid = os.getenv("DATABRICKS_WORKSPACE_ID", "")
+    if wid:
+        return wid
+    try:
+        return str(get_workspace_client().get_workspace_id())
+    except Exception:
+        return ""

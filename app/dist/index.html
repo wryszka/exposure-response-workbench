@@ -187,6 +187,18 @@
           </div>
         </div>
       </div>
+      <div class="card" id="dashPanel" style="display:none;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+          <b style="font-size:15px">🔥 Live fire tracker</b>
+          <span class="muted" style="font-size:12px">The map and counts refresh as new feed records arrive.</span>
+          <label style="margin-left:auto;font-size:12px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dashAuto" checked onchange="dashAutoToggle()"> Auto-refresh every 30 s</label>
+          <button class="btn" onclick="dashReload()">↻ Refresh</button>
+          <a class="btn" id="dashNewTab" target="_blank" rel="noopener">Open in new tab ↗</a>
+          <button class="btn" onclick="closeDash()">✕</button>
+        </div>
+        <iframe id="dashFrame" title="Live fire tracker dashboard" style="width:100%;height:720px;border:1px solid var(--line);border-radius:10px;background:#fff" loading="lazy"></iframe>
+        <div class="muted" style="font-size:11.5px;margin-top:6px">If the dashboard doesn't appear here (browser blocks embedded sign-in), use <b>Open in new tab</b>.</div>
+      </div>
       <div id="view"></div>
     </div>
     </div><!-- /exposureScreen -->
@@ -342,12 +354,27 @@ function trackEvent(eid){
   window.scrollTo(0,0);
   selectEvent(eid);
 }
+let DASH_T=null;
+function dashUrls(){
+  let h=CFG.workspace_host; if(!/^https?:\/\//.test(h)) h='https://'+h;
+  const o=CFG.workspace_id?('?o='+encodeURIComponent(CFG.workspace_id)):'';
+  return {embed:h+'/embed/dashboardsv3/'+encodeURIComponent(CFG.dashboard_id)+o,
+          tab:h+'/dashboardsv3/'+encodeURIComponent(CFG.dashboard_id)+'/published'+o};
+}
 function openDash(){
   if(!CFG.dashboard_id || !CFG.workspace_host) return;
-  let h=CFG.workspace_host; if(!/^https?:\/\//.test(h)) h='https://'+h;
-  window.open(h+'/dashboardsv3/'+CFG.dashboard_id+'/published','_blank','noopener');
+  const u=dashUrls();
+  $('#dashNewTab').href=u.tab;
+  $('#dashFrame').src=u.embed;
+  $('#dashPanel').style.display='block';
+  $('#dashPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  dashAutoToggle();
 }
+function dashReload(){ if($('#dashPanel').style.display==='block') $('#dashFrame').src=dashUrls().embed; }
+function dashAutoToggle(){ clearInterval(DASH_T); DASH_T=null; if($('#dashAuto').checked) DASH_T=setInterval(dashReload,30000); }
+function closeDash(){ clearInterval(DASH_T); DASH_T=null; $('#dashPanel').style.display='none'; $('#dashFrame').src='about:blank'; }
 function backToBoard(){
+  closeDash();
   $('#track').style.display='none';
   $('#board').style.display='block';
   window.scrollTo(0,0);

@@ -65,3 +65,7 @@ Served Agent-Framework endpoint + MLflow tracing (current-DBX P1); real cross-wo
 - **Current-Databricks expert — ship as-is.** No deprecations. P1 production roadmap: served agent endpoint + MLflow tracing.
 - **Incumbent champion — would keep incumbent (today).** Objections = the labelled gaps above; arm them in Q&A, don't let them ambush.
 - **UI/UX + scared analyst — MAJOR overwhelm fixes (fixes #1–6).** On-brand and functional, but jargon leaks + KPI wall + faint map would overwhelm a non-technical analyst. After fixes: "OK, I can follow this — I'd use it."
+
+### Dashboard follow-ups — 2026-10-06 (deploy 01f1c174d20d11a19c1748a2e6249ad6, RUNNING)
+**Done:** inline dashboard embed in the tracking view (browser-verified; new-tab fallback kept) · real Auto Loader streaming proof + Live ingestion tiles (verified ticking) · app ↔ dashboard number parity (all 4 ticks identical: 0 / 73 / 90 / 105 homes, €0 / €182.9m / €242.9m / €287.5m).
+**Note:** workspace approved-domains list is org-locked; not needed while the embedding policy is ALLOW_ALL_DOMAINS.

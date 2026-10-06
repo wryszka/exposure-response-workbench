@@ -1,0 +1,34 @@
+resources:
+  jobs:
+    exposure_61_stream_proof:
+      name: exposure_61_stream_proof
+      description: >-
+        Live ingestion proof for the Live Fire Tracker dashboard. A time-boxed (default 45 min) loop drops a
+        hazard-feed heartbeat record into a UC Volume every ~20s and an Auto Loader Structured Streaming query
+        (checkpointed, availableNow) ingests each new file into stream_proof. Start ~5 min before the room;
+        it stops on its own. reset=true clears the table + checkpoint.
+      tags:
+        project: exposure_response_workbench
+      timeout_seconds: 3600
+      max_concurrent_runs: 1
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: minutes
+          default: "45"
+        - name: interval_s
+          default: "20"
+        - name: reset
+          default: "false"
+      tasks:
+        - task_key: stream_proof
+          notebook_task:
+            notebook_path: ../notebooks/61_stream_proof.py
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []

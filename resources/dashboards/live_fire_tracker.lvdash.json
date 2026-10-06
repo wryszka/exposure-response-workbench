@@ -3,11 +3,33 @@
     {
       "name": "ds_live",
       "displayName": "Live fire state",
+      "catalog": "lr_dev_aws_us_catalog",
+      "schema": "exposure_response",
       "queryLines": [
         "SELECT insured_object_id, latitude, longitude, sum_insured, band, ",
-        "       CASE WHEN band <> 'Clear' THEN 1 ELSE 0 END AS at_risk, ",
-        "       CASE WHEN band <> 'Clear' THEN sum_insured ELSE 0 END AS at_risk_si ",
-        "FROM live_fire_state "
+        "       CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk, ",
+        "       CASE WHEN in_path THEN sum_insured ELSE 0 END AS at_risk_si ",
+        "FROM live_fire_state"
+      ]
+    },
+    {
+      "name": "ds_stream",
+      "displayName": "Live ingestion (stream)",
+      "catalog": "lr_dev_aws_us_catalog",
+      "schema": "exposure_response",
+      "queryLines": [
+        "SELECT count(*) AS records_ingested, max(ingested_at) AS last_received, ",
+        "       coalesce(timestampdiff(SECOND, max(ingested_at), current_timestamp()), -1) AS seconds_since_last ",
+        "FROM stream_proof"
+      ]
+    },
+    {
+      "name": "ds_stream_ts",
+      "displayName": "Records per minute (stream)",
+      "catalog": "lr_dev_aws_us_catalog",
+      "schema": "exposure_response",
+      "queryLines": [
+        "SELECT date_trunc('MINUTE', ingested_at) AS minute, count(*) AS records FROM stream_proof GROUP BY 1 ORDER BY 1"
       ]
     }
   ],
@@ -15,116 +37,418 @@
     {
       "name": "main",
       "displayName": "Live fire tracker",
-      "pageType": "PAGE_TYPE_CANVAS",
-      "layoutVersion": "GRID_V1",
       "layout": [
         {
           "widget": {
             "name": "title",
-            "multilineTextboxSpec": {"lines": ["## 🔥 Live fire tracker — Var, southern France"]}
+            "multilineTextboxSpec": {
+              "lines": [
+                "## 🔥 Live fire tracker — Var, southern France"
+              ]
+            }
           },
-          "position": {"x": 0, "y": 0, "width": 12, "height": 1}
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 1
+          }
         },
         {
           "widget": {
             "name": "subtitle",
-            "multilineTextboxSpec": {"lines": ["Insured homes in the path of an active wildfire — the map updates as the fire spreads."]}
+            "multilineTextboxSpec": {
+              "lines": [
+                "Insured homes in the path of an active wildfire — the map updates as the fire spreads."
+              ]
+            }
           },
-          "position": {"x": 0, "y": 1, "width": 12, "height": 1}
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 12,
+            "height": 1
+          }
         },
         {
           "widget": {
             "name": "homes_at_risk",
-            "queries": [{
-              "name": "main_query",
-              "query": {
-                "datasetName": "ds_live",
-                "fields": [{"name": "sum(at_risk)", "expression": "SUM(`at_risk`)"}],
-                "disaggregated": false
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_live",
+                  "fields": [
+                    {
+                      "name": "sum(at_risk)",
+                      "expression": "SUM(`at_risk`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
               }
-            }],
+            ],
             "spec": {
               "version": 2,
               "widgetType": "counter",
               "encodings": {
-                "value": {"fieldName": "sum(at_risk)", "displayName": "Homes in the fire's path",
-                          "format": {"type": "number", "abbreviation": "compact", "decimalPlaces": {"type": "max", "places": 0}}}
+                "value": {
+                  "fieldName": "sum(at_risk)",
+                  "displayName": "Homes in the fire's path",
+                  "format": {
+                    "type": "number",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
               },
-              "frame": {"showTitle": true, "title": "Homes in the fire's path"}
+              "frame": {
+                "showTitle": true,
+                "title": "Homes in the fire's path"
+              }
             }
           },
-          "position": {"x": 0, "y": 2, "width": 6, "height": 3}
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 3
+          }
         },
         {
           "widget": {
             "name": "si_at_risk",
-            "queries": [{
-              "name": "main_query",
-              "query": {
-                "datasetName": "ds_live",
-                "fields": [{"name": "sum(at_risk_si)", "expression": "SUM(`at_risk_si`)"}],
-                "disaggregated": false
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_live",
+                  "fields": [
+                    {
+                      "name": "sum(at_risk_si)",
+                      "expression": "SUM(`at_risk_si`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
               }
-            }],
+            ],
             "spec": {
               "version": 2,
               "widgetType": "counter",
               "encodings": {
-                "value": {"fieldName": "sum(at_risk_si)", "displayName": "Sum insured at risk",
-                          "format": {"type": "number-currency", "currencyCode": "EUR", "abbreviation": "compact", "decimalPlaces": {"type": "max", "places": 1}}}
+                "value": {
+                  "fieldName": "sum(at_risk_si)",
+                  "displayName": "Sum insured at risk",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "EUR",
+                    "abbreviation": "compact",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
               },
-              "frame": {"showTitle": true, "title": "Sum insured at risk"}
+              "frame": {
+                "showTitle": true,
+                "title": "Sum insured at risk"
+              }
             }
           },
-          "position": {"x": 6, "y": 2, "width": 6, "height": 3}
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 3
+          }
         },
         {
           "widget": {
             "name": "fire_map",
-            "queries": [{
-              "name": "main_query",
-              "query": {
-                "datasetName": "ds_live",
-                "fields": [
-                  {"name": "latitude", "expression": "`latitude`"},
-                  {"name": "longitude", "expression": "`longitude`"},
-                  {"name": "band", "expression": "`band`"},
-                  {"name": "sum_insured", "expression": "`sum_insured`"}
-                ],
-                "disaggregated": true
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_live",
+                  "fields": [
+                    {
+                      "name": "latitude",
+                      "expression": "`latitude`"
+                    },
+                    {
+                      "name": "longitude",
+                      "expression": "`longitude`"
+                    },
+                    {
+                      "name": "band",
+                      "expression": "`band`"
+                    },
+                    {
+                      "name": "sum_insured",
+                      "expression": "`sum_insured`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
               }
-            }],
+            ],
             "spec": {
               "version": 2,
               "widgetType": "symbol-map",
               "encodings": {
-                "coordinates": {"latitude": {"fieldName": "latitude"}, "longitude": {"fieldName": "longitude"}},
+                "coordinates": {
+                  "latitude": {
+                    "fieldName": "latitude"
+                  },
+                  "longitude": {
+                    "fieldName": "longitude"
+                  }
+                },
                 "color": {
                   "fieldName": "band",
-                  "scale": {"type": "categorical", "mappings": [
-                    {"value": "In fire zone", "color": "#FF5F66"},
-                    {"value": "Near (<=200m)", "color": "#FFA600"},
-                    {"value": "Clear", "color": "#5ADBFF"}
-                  ]}
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "In fire zone",
+                        "color": "#FF5F66"
+                      },
+                      {
+                        "value": "Near (<=200m)",
+                        "color": "#FFA600"
+                      },
+                      {
+                        "value": "Clear",
+                        "color": "#5ADBFF"
+                      }
+                    ]
+                  }
                 },
-                "size": {"fieldName": "sum_insured", "scale": {"type": "quantitative"}}
+                "size": {
+                  "fieldName": "sum_insured",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
               },
-              "mark": {"opacity": 0.75},
-              "frame": {"showTitle": true, "title": "Insured homes near the fire (colour = threat)"}
+              "mark": {
+                "opacity": 0.75
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Insured homes near the fire (colour = threat)"
+              }
             }
           },
-          "position": {"x": 0, "y": 5, "width": 12, "height": 7}
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "stream_hdr",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### 📡 Live ingestion — the hazard feed streaming in right now"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "stream_rows",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_stream",
+                  "fields": [
+                    {
+                      "name": "sum(records_ingested)",
+                      "expression": "SUM(`records_ingested`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(records_ingested)",
+                  "displayName": "Feed records ingested",
+                  "format": {
+                    "type": "number",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Feed records ingested"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "stream_age",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_stream",
+                  "fields": [
+                    {
+                      "name": "min(seconds_since_last)",
+                      "expression": "MIN(`seconds_since_last`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "min(seconds_since_last)",
+                  "displayName": "Seconds since last record",
+                  "format": {
+                    "type": "number",
+                    "abbreviation": "none",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Seconds since last record"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 13,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "stream_ts",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_stream_ts",
+                  "fields": [
+                    {
+                      "name": "minute",
+                      "expression": "`minute`"
+                    },
+                    {
+                      "name": "records",
+                      "expression": "`records`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "minute",
+                  "scale": {
+                    "type": "temporal"
+                  },
+                  "displayName": "Minute"
+                },
+                "y": {
+                  "fieldName": "records",
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "displayName": "Records"
+                }
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Records arriving per minute"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 13,
+            "width": 6,
+            "height": 3
+          }
         }
-      ]
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
     }
   ],
   "uiSettings": {
     "theme": {
-      "canvasBackgroundColor": {"light": "#FCFCFC", "dark": "#1F272D"},
-      "widgetBackgroundColor": {"light": "#FFFFFF", "dark": "#11171C"},
-      "fontColor": {"light": "#11171C", "dark": "#E8ECF0"},
-      "selectionColor": {"light": "#2563EB", "dark": "#8ACAFF"},
-      "visualizationColors": ["#FF5F66", "#FFA600", "#5ADBFF", "#4E5185", "#1D425C", "#99DDB4"],
+      "canvasBackgroundColor": {
+        "light": "#FCFCFC",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#2563EB",
+        "dark": "#8ACAFF"
+      },
+      "visualizationColors": [
+        "#FF5F66",
+        "#FFA600",
+        "#5ADBFF",
+        "#4E5185",
+        "#1D425C",
+        "#99DDB4"
+      ],
       "widgetHeaderAlignment": "LEFT"
     }
   }

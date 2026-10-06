@@ -103,3 +103,10 @@ Next: flip the `exposure-management` hub tile roadmap→live.
 The **Live event** tab follows a developing Var wildfire: a synthetic press report breaks ~14 h before the satellite, the footprint grows (`2_event_progression`), threatened exposure ramps (0 → 105 properties / €287.5m), and FIRMS corroborates at a later tick. A self-contained **quote → buy → blocked** vignette shows the governed bind-time control (`fn_bind_check`): a buyer whose Var address the fire reaches is **declined at bind** (adverse selection), the underwriting agent (Claude/FMAPI) explains, an underwriter can override, and every decision is audited in `gov_bind_decision`. Rebuild via `notebooks/50_event_progression.py` (job `exposure_50_progression`).
 
 Status: **P0–P8 complete** on dev.
+
+## Live dashboard & streaming proof (for the room)
+- **Track ▸** an alert → **▶ Track live on the dashboard** opens the AI/BI *Live Fire Tracker* inline (auto-refresh 30 s; *Open in new tab* fallback). Its counts match the app exactly at every tick.
+- **Advance the fire:** run `notebooks/60_live_dashboard.py` with widget `t_index` = 0/1/2/3 (room default 2).
+- **Start the live-ingestion proof ~5 min before the room:**
+  `databricks bundle run exposure_61_stream_proof -t dev -p DEV --params reset=true` — runs 45 min then **stops on its own** (shorter: `minutes=20`).
+  **Stop early:** cancel the run in Jobs, or `databricks jobs cancel-all-runs <job_id> -p DEV`.

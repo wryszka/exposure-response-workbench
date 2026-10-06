@@ -10,31 +10,30 @@
 
 **The whole demo in four beats. One idea, one number, one screen per beat. Plain words — no platform jargon. ~4 minutes.**
 
-Open the app → **Live event** tab. Make sure it's reset to the clean pre-trigger state (see *Setup & Reset*).
+The app opens on the **alert board** — one card per active event. Make sure it's reset (see *Setup & Reset*).
 
-**Beat 1 — The fire, and our homes in its path.**
-- DO: Click **Follow this story** on the news item. The map draws the fire; insured homes inside it light up. Let it advance a step or two.
-- SAY: *"A wildfire's just broken out in southern France — on real live hazard feeds. Normally we're blind for hours. Here are the homes we insure in its path — right now."*
-- NUMBER: **73 homes** exposed, climbing as the fire spreads.
-- *(Names the risk of inaction + signals real live data, upfront — per review.)*
+**Beat 1 — An alert: a fire near homes we insure.**
+- DO: Point at the 🔥 **Wildfire · Var, southern France** card. Nothing else on the screen.
+- SAY: *"Normally we'd hear about this hours later. Here it's an alert the moment it touches our book — on real live hazard feeds."*
+- NUMBER: **59 homes in the path · €164m at risk.**
 
-**Beat 2 — What it could cost us.**
-- DO: Point to the exposure figure, then the net.
-- SAY: *"That's €183m of cover exposed. After our reinsurance, we'd keep €25m."*
-- NUMBERS: gross **€183m** → net **€25m**.
-- BRIDGE (30 sec, if a mixed/ops room): *"The €183m is the cover at risk; a visible damage curve turns it into a modelled loss, and our reinsurance absorbs the rest down to what we keep. The full step-by-step is one click away in Explore."*
+**Beat 2 — Track it, live.**
+- DO: Click **Track ▸**, then **Track live on the dashboard**. Let the fire spread a step or two (it advances on its own; **Next update ▸** if you want to pace it).
+- SAY: *"This is the fire spreading, minute by minute. Every dot is a home we insure — red means it's in the path. And underneath, the data's arriving live."*
+- NUMBERS: homes in the path climbing as it grows (0 → 73 → 90 → 105 homes; €287.5m at full size — the app and the dashboard show the same numbers), and the **live-ingestion** counter ticking.
 
-**Beat 3 — Who was told, automatically.**
-- DO: Show the stakeholder-alert card / digest (present tense — the alert that goes out).
-- SAY: *"The moment this crosses threshold, here's the alert that goes out — claims, underwriting, exposure — one event, both countries, before anyone opens a laptop."*
-- IF ASKED "did it actually email?": *"The alert is built and audited; turning on real send is one free credential (SMTP or Slack) — no code change."* (Wire it and this becomes a live send — see Setup.)
+**Beat 3 — What it costs us, and who's told.**
+- DO: Back in the event view: the cost card, then the alert.
+- SAY: *"That's the cover at risk. After our reinsurance, we keep €25m. And the moment it crossed the line, this alert went to claims and underwriting — one event, both countries — before anyone opened a laptop."*
+- NUMBER: we keep **€25m**.
+- IF ASKED "did it actually email?": *"The alert is built and audited; turning on the send is one free credential — no code change."*
 
-**Beat 4 — The one that lands: buying cover as the fire arrives.**
-- DO: In the quote→buy panel, request a quote for the hero address (issues fine), then click **Buy** once the fire has reached it.
-- SAY: *"Someone tried to buy cover with the fire at their door. The system said no — active zone, can't insure."*
-- NUMBER: quote **€31,816/yr** — bound when 5.7 km clear, **declined** once in the zone.
+**Beat 4 — Someone tries to buy cover with the fire at their door.**
+- DO: In the **Get cover** panel pick 🔥 **Villa in the Var** → quote → **Buy cover now** → **Declined**. Then pick 🏡 **Apartment in Munich** → quote → **Buy** → **Bound**.
+- SAY: *"Someone in the fire's path tries to buy — we say no, active zone. Someone in Munich buys the same cover — approved. Same rule, decided by the live data."*
+- NUMBER: Munich quote **€33,573/yr — bound.** Var — **declined.**
 
-**Close (one line):** *"Sense the event, see the exposure, tell the right people, and stop the bad risk — in minutes, on live data."*
+**Close (one line):** *"Spot it, track it live, know the cost, tell the right people, and stop the bad risk — in minutes."*
 
 > Keep it here on the main track. Everything else is **Explore** — only if they ask.
 
@@ -43,15 +42,15 @@ Open the app → **Live event** tab. Make sure it's reset to the clean pre-trigg
 # Setup & Reset
 
 **Pre-flight (do ~10 min before the room — tested):**
-1. **Warm the warehouse:** open the app (it lands on **Live event**), click into **Exposure** → pick the Var wildfire → wait for the map (~first query is the slow one). Avoids a cold-start stall on the live follow.
-2. **Pre-cache the agent:** go to **Ask** → click all 5 starter prompts once (each caches instantly) → so the first live question is instant.
-3. **Confirm reset:** Live event back to pre-trigger (no promoted `EVT_NEWS_*`, no bind rows); dates roll to today.
-4. One browser tab, full screen, zoom so one KPI reads from the back of the room.
+1. **Warm the warehouse:** open the app (it lands on the **alert board**), click **Track ▸** on the Var wildfire and wait for the map, then open the live dashboard once. First query is the slow one — this avoids a stall in the room.
+2. **Start the live-ingestion job** (see README) so the dashboard's ingestion counter is ticking when you get there. It stops on its own.
+3. **Pre-cache the agent:** go to **Ask** → click all 5 starter prompts once (each caches instantly) → so the first live question is instant.
+4. **Confirm reset:** fire back to the start (no promoted `EVT_NEWS_*`, no bind rows); dates roll to today.
+5. One browser tab, full screen, zoom so one KPI reads from the back of the room.
 
-**Live-follow fallback:** the fire auto-advances every ~30s; if it ever stalls (slow query), use the manual **"Next update ▸"** button to step through — don't wait on the timer.
+**Fallbacks:** the fire auto-advances; if it stalls, use **Next update ▸**. If the dashboard won't show inside the app, use its **open in new tab** link. If the dashboard is down entirely, the event view's own map tells the same story.
 - App URL: https://exposure-response-workbench-7474656169654171.aws.databricksapps.com
 - Warehouse `a3b61648ea4809e3` must be running.
-- Fallback if you skip the live follow: the **Exposure** tab on the Var wildfire tells beats 1–3 statically.
 
 **If asked "is this real data?":** yes — MeteoAlarm (windstorm) and GDACS (disaster news) are live keyless feeds; wildfire perimeters are EFFIS Burnt Areas (the source Hiscox uses), on a frozen sample in the room for reproducibility. The property book is synthetic — no customer data.
 

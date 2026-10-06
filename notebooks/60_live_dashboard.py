@@ -46,19 +46,23 @@ run_wh(f"DELETE FROM {S}.live_cursor")
 run_wh(f"INSERT INTO {S}.live_cursor VALUES ('EVT_LIVE_VAR_FIRE', {T})")
 
 # live_fire_state view (ST_ classification against the current tick's footprint)
+# live_fire_state view — "in the path" uses EXACTLY the app's canonical predicate
+# (fn_progression_props / mv_progression_exposure: within 200 m of the tick's footprint, EPSG:3035),
+# so the dashboard KPIs and the app always show the same count + sum insured at every tick.
 run_wh(f"""
 CREATE OR REPLACE VIEW {S}.live_fire_state AS
 WITH cur AS (SELECT event_id, t_index FROM {S}.live_cursor LIMIT 1),
-f AS (SELECT ST_Transform(ST_GeomFromText(ep.footprint_wkt,4326),3035) g, ep.as_of_ts
-      FROM {S}.`2_event_progression` ep JOIN cur ON ep.event_id=cur.event_id AND ep.t_index=cur.t_index)
-SELECT p.insured_object_id,
-  CAST(p.latitude AS double) latitude, CAST(p.longitude AS double) longitude, p.sum_insured,
-  CASE WHEN ST_DWithin(f.g, ST_Transform(ST_SetSRID(ST_Point(p.longitude,p.latitude),4326),3035),0) THEN 'In fire zone'
-       WHEN ST_DWithin(f.g, ST_Transform(ST_SetSRID(ST_Point(p.longitude,p.latitude),4326),3035),200) THEN 'Near (<=200m)'
-       ELSE 'Clear' END AS band,
-  f.as_of_ts, current_timestamp() AS last_refreshed
-FROM {S}.`3_property` p, f
-WHERE ST_Distance(f.g, ST_Transform(ST_SetSRID(ST_Point(p.longitude,p.latitude),4326),3035)) <= 12000
+f AS (SELECT ST_Transform(ST_SetSRID(ST_GeomFromText(ep.footprint_wkt),4326),3035) g, ep.as_of_ts, ep.t_index
+      FROM {S}.`2_event_progression` ep JOIN cur ON ep.event_id=cur.event_id AND ep.t_index=cur.t_index),
+d AS (SELECT p.insured_object_id, CAST(p.latitude AS double) latitude, CAST(p.longitude AS double) longitude,
+             p.sum_insured, f.as_of_ts, f.t_index,
+             ST_DWithin(ST_Transform(ST_SetSRID(ST_Point(p.longitude,p.latitude),4326),3035), f.g, 200) AS in_path,
+             ST_Distance(ST_Transform(ST_SetSRID(ST_Point(p.longitude,p.latitude),4326),3035), f.g) AS distance_m
+      FROM {S}.`3_property` p CROSS JOIN f)
+SELECT insured_object_id, latitude, longitude, sum_insured, in_path, distance_m, t_index,
+  CASE WHEN distance_m = 0 THEN 'In fire zone' WHEN in_path THEN 'Near (<=200m)' ELSE 'Clear' END AS band,
+  as_of_ts, current_timestamp() AS last_refreshed
+FROM d WHERE distance_m <= 12000
 """)
 run_wh(f"GRANT SELECT ON VIEW {S}.live_fire_state TO `account users`")
 run_wh(f"GRANT SELECT ON TABLE {S}.live_cursor TO `account users`")

@@ -32,7 +32,7 @@ def _events():
 def api_config():
     return {"catalog": config.CATALOG, "schema": config.SCHEMA, "entity": config.ENTITY,
             "workspace_host": config.workspace_host(), "genie_space_id": config.GENIE_SPACE_ID,
-            "dashboard_id": config.DASHBOARD_ID}
+            "dashboard_id": config.DASHBOARD_ID, "workspace_id": config.workspace_id()}
 
 
 # ─────────────────────────── events (picker) ───────────────────────────
