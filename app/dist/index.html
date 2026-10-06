@@ -310,6 +310,8 @@ let EVENTS=[], SEL=null, BUF=200, CFG={}, FILTER='all', CUR_DIGEST='';
 
 const $=s=>document.querySelector(s);
 async function api(p){const r=await fetch('/api'+p);return r.json();}
+// Move the embedded dashboard's tick in step with the in-app follow (fire-and-forget; dashboard reloads after the write).
+function syncDash(i){fetch('/api/live/cursor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t_index:i})}).then(()=>setTimeout(dashReload,1500)).catch(()=>{});}
 const num=n=>Number(n||0).toLocaleString('en-GB');
 const eurm=n=>{const v=Number(n||0)/1e6;return '€'+(v>=100?v.toFixed(0):v.toFixed(1))+'m';};
 
@@ -666,10 +668,11 @@ function startFollow(){
   LIVE_TIMER=setInterval(()=>{ if(LIVE_CUR<LIVE_TICKS.length-1){LIVE_CUR++;renderTick(LIVE_CUR);} else {clearInterval(LIVE_TIMER);LIVE_TIMER=null;} },30000);
 }
 function nextTick(){ if(LIVE_CUR<LIVE_TICKS.length-1){LIVE_CUR++;renderTick(LIVE_CUR);} }
-function resetFollow(){ if(LIVE_TIMER)clearInterval(LIVE_TIMER);LIVE_TIMER=null;LIVE_CUR=-1;
+function resetFollow(){ if(LIVE_TIMER)clearInterval(LIVE_TIMER);LIVE_TIMER=null;LIVE_CUR=-1;syncDash(0);
   renderNewsroom(false);$('#liveMap').innerHTML='<div class="loading">Not following yet — hit “Follow this story”.</div>';
   $('#liveSub').textContent='Trigger the story to start following.';$('#liveBadges').innerHTML='';$('#liveKpis').innerHTML='';renderVignette();}
 async function renderTick(i){
+  syncDash(i);
   const meta=LIVE_TICKS[i]||{};
   $('#liveSub').innerHTML=`<b>T+${i*30}m</b> · ${esc(meta.label||'')} <span class="muted">· ${esc(meta.feed_source||'')}</span>`;
   const corr=(meta.corroborated===true||meta.corroborated==='true');

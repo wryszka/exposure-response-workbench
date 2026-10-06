@@ -1,0 +1,163 @@
+resources:
+  jobs:
+    exposure_99_reset:
+      name: exposure_99_reset
+      description: >-
+        One-click reset & roll-forward. Re-runs the existing notebooks in dependency order so every demo
+        date reads as of today (ACTIVE events 0-3 days old) while the hero numbers stay deterministic
+        (seed 42, fixed footprints). Snapshots grants first and restores them last, clears demo-click
+        rows (bind / news decisions, promoted NEWS events), and resets the live dashboard to tick 0.
+        Feed adapters fall back to frozen samples, so it never depends on a live API being up.
+      tags:
+        project: exposure_response_workbench
+      max_concurrent_runs: 1
+      timeout_seconds: 3600
+      tasks:
+        - task_key: snapshot_grants
+          notebook_task:
+            notebook_path: ../notebooks/99_reset.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              app_sp: ${var.app_service_principal_id}
+              mode: "snapshot"
+          environment_key: serverless
+        - task_key: setup_reference
+          depends_on:
+            - task_key: snapshot_grants
+          notebook_task:
+            notebook_path: ../notebooks/00_setup.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              seed: "42"
+          environment_key: serverless
+        - task_key: property_and_events
+          depends_on:
+            - task_key: setup_reference
+          notebook_task:
+            notebook_path: ../notebooks/01_property_foundation.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              seed: "42"
+          environment_key: serverless
+        - task_key: feed_windstorm_meteoalarm
+          depends_on:
+            - task_key: property_and_events
+          notebook_task:
+            notebook_path: ../notebooks/12_feed_windstorm.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: serverless
+        - task_key: feed_wildfire_firms
+          depends_on:
+            - task_key: feed_windstorm_meteoalarm
+          notebook_task:
+            notebook_path: ../notebooks/11_feed_wildfire.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: serverless
+        - task_key: feed_wildfire_effis
+          depends_on:
+            - task_key: feed_wildfire_firms
+          notebook_task:
+            notebook_path: ../notebooks/11b_feed_effis.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: serverless
+        - task_key: feed_flood_copernicus
+          depends_on:
+            - task_key: feed_wildfire_effis
+          notebook_task:
+            notebook_path: ../notebooks/13_feed_flood.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: serverless
+        - task_key: treaty_and_coverholder
+          depends_on:
+            - task_key: feed_flood_copernicus
+          notebook_task:
+            notebook_path: ../notebooks/20_treaty_and_coverholder.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+        - task_key: news_radar
+          depends_on:
+            - task_key: treaty_and_coverholder
+          notebook_task:
+            notebook_path: ../notebooks/40_news_radar.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+              fm_endpoint: ${var.fm_endpoint}
+          environment_key: serverless
+        - task_key: fire_progression
+          depends_on:
+            - task_key: news_radar
+          notebook_task:
+            notebook_path: ../notebooks/50_event_progression.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+        - task_key: live_dashboard_cursor_t0
+          depends_on:
+            - task_key: fire_progression
+          notebook_task:
+            notebook_path: ../notebooks/60_live_dashboard.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              t_index: "0"
+          environment_key: serverless
+        - task_key: alert_sweep
+          depends_on:
+            - task_key: live_dashboard_cursor_t0
+          notebook_task:
+            notebook_path: ../notebooks/30_alerts.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+              buffer_m: "200"
+          environment_key: serverless
+        - task_key: governance_views
+          depends_on:
+            - task_key: alert_sweep
+          notebook_task:
+            notebook_path: ../notebooks/07_governance.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+        - task_key: finish_clear_and_regrant
+          depends_on:
+            - task_key: governance_views
+          notebook_task:
+            notebook_path: ../notebooks/99_reset.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              app_sp: ${var.app_service_principal_id}
+              mode: "finish"
+          environment_key: serverless
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "5"
+            dependencies: []

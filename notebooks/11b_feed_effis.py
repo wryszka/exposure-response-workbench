@@ -157,9 +157,11 @@ if not rows:
     # An irregular burnt-area *perimeter* (distinct from the FIRMS bbox footprint) over the SE-France / Var belt.
     frozen = ("POLYGON((6.62 43.57, 6.71 43.55, 6.83 43.58, 6.90 43.63, 6.88 43.70, "
               "6.79 43.73, 6.69 43.71, 6.63 43.66, 6.62 43.57))")
+    # Dated with FIRMS (1 day back): burnt areas are mapped AFTER the fire, so the frozen news item
+    # (FIRMS date - 14 h) stays ahead of every structured feed and keeps beats_feed TRUE after a reset.
     rows = [{"event_id": "EVT_EFFIS_SAMPLE_FR", "peril_code": "FIRE",
              "event_name": "EFFIS burnt area — Var, SE France (frozen sample, ~4,200 ha)",
-             "event_date": today - datetime.timedelta(days=2), "footprint_wkt": frozen, "country_code": "FR",
+             "event_date": today - datetime.timedelta(days=1), "footprint_wkt": frozen, "country_code": "FR",
              "source_detail": "Frozen EFFIS-shaped burnt-area perimeter over the Var belt; live EFFIS/GWIS WFS "
                               "was unreachable this run (Copernicus EMS — EFFIS/GWIS)"}]
     land_raw("EFFIS", "frozen-sample", len(rows), f"tried={len(tried)} endpoints")

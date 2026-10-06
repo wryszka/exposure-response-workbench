@@ -165,15 +165,16 @@ celine_wkt = poly([(1.75, 45.50), (5.10, 45.50), (5.10, 49.22), (1.75, 49.22)])
 def dsub(days):
     return TODAY - datetime.timedelta(days=days)
 
+# Offsets keep every ACTIVE event within 0-3 days of the run date (the reset job re-runs this daily-fresh).
 footprints = [
     # event_id, peril_code, event_name, event_date, footprint_wkt, country_code, source, detected_at
-    ("EVT_FIRE_VAR",     "FIRE",  "Var Wildfire",       dsub(3),  fire_wkt,     "FR", "SYNTHETIC"),
-    ("EVT_FLOOD_ALPS",   "FLOOD", "Alpine Flood",       dsub(6),  flood_it_wkt, "IT", "SYNTHETIC"),
-    ("EVT_FLOOD_ALPS",   "FLOOD", "Alpine Flood",       dsub(6),  flood_at_wkt, "AT", "SYNTHETIC"),
-    ("EVT_STORM_NORD",   "STORM", "Windstorm Nord",     dsub(12), storm_wkt,    "DE", "SYNTHETIC"),
+    ("EVT_FIRE_VAR",     "FIRE",  "Var Wildfire",       dsub(0),  fire_wkt,     "FR", "SYNTHETIC"),
+    ("EVT_FLOOD_ALPS",   "FLOOD", "Alpine Flood",       dsub(2),  flood_it_wkt, "IT", "SYNTHETIC"),
+    ("EVT_FLOOD_ALPS",   "FLOOD", "Alpine Flood",       dsub(2),  flood_at_wkt, "AT", "SYNTHETIC"),
+    ("EVT_STORM_NORD",   "STORM", "Windstorm Nord",     dsub(3), storm_wkt,    "DE", "SYNTHETIC"),
     # Two scenarios that make the gross->net waterfall visibly vary across the tower (see REQUIREMENTS.md / DEMO_QA Q10):
-    ("EVT_FIRE_ESTEREL", "FIRE",  "Esterel Brush Fire", dsub(2),  esterel_wkt,  "FR", "SYNTHETIC"),  # under retention -> net = gross
-    ("EVT_STORM_CELINE", "STORM", "Windstorm Celine",   dsub(9),  celine_wkt,   "FR", "SYNTHETIC"),  # pierces tower -> net > retention
+    ("EVT_FIRE_ESTEREL", "FIRE",  "Esterel Brush Fire", dsub(1),  esterel_wkt,  "FR", "SYNTHETIC"),  # under retention -> net = gross
+    ("EVT_STORM_CELINE", "STORM", "Windstorm Celine",   dsub(3),  celine_wkt,   "FR", "SYNTHETIC"),  # pierces tower -> net > retention
 ]
 fp = (
     spark.createDataFrame(

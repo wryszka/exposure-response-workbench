@@ -28,12 +28,13 @@ exposure view → gross→net → alert), with three thin peril adapters. See `C
 ## Repo structure
 ```
 databricks.yml            # DAB bundle — catalog is the one portability var
-resources/                # setup_job.yml · functions_job.yml · app.yml (ingest/ai/reset to follow)
+resources/                # one job per stage + reset_job.yml (exposure_99_reset) + app.yml + dashboards/
 notebooks/
   00_setup.py             # schema + reference code-sets (mirror data-core)
   01_property_foundation.py  # European property book + frozen event footprints + band smoke test
   02_exposure_functions.py   # governed UC exposure functions (DDL orchestrated onto the warehouse)
   40_news_radar.py        # Event Radar — GDACS + press → AI extract + geocode + fn_news_radar verify
+  99_reset.py             # reset bookends: grant snapshot → … → clear demo clicks + restore grants
 app/                      # thin FastAPI + self-contained SPA (inline-SVG map); calls the UC functions
 frontend/tokens.css       # canonical house design tokens
 docs/                     # DEMO_RUNSHEET.md, DEMO_QA.md
@@ -58,6 +59,14 @@ databricks bundle run exposure_00_setup    -t dev -p DEV   # schema + property f
 databricks bundle run exposure_02_functions -t dev -p DEV  # governed exposure functions
 # app: databricks apps start/deploy exposure-response-workbench --source-code-path <ws files>/app
 ```
+
+## Reset & roll forward (run the morning of a demo)
+One click puts the whole demo back to a clean start, **dated as of today**:
+- **Jobs UI:** Workflows → Jobs → `exposure_99_reset` → **Run now**.
+- **CLI:** `databricks bundle run exposure_99_reset -t dev -p DEV`
+- Takes **~10 min**. It re-runs the existing notebooks in order — 00 setup → 01 property book + events → feeds (MeteoAlarm, FIRMS, EFFIS, Copernicus flood; frozen samples if a feed is down) → 20 treaty & coverholders → 40 news radar → 50 fire progression → 60 dashboard back to the start → 30 alert sweep → 07 governance — bracketed by `99_reset.py`, which snapshots grants first and restores them last.
+- After it: ACTIVE events are 0–3 days old (Var wildfire today), the news item is 14 h ahead of the satellite, the fire and dashboard are at the start, and the bind / news-decision audit rows are cleared. Hero numbers are deterministic (seed 42) — identical after every reset.
+- System history (alert dispatches, exposure snapshots, raw feed pulls) is append-only and kept.
 Geospatial (`ST_`) needs a serverless / DBR 17.1+ warehouse. Default warehouse: `a3b61648ea4809e3`.
 
 ## Stakeholder alerts (for the people who never open Databricks)
@@ -106,7 +115,7 @@ Status: **P0–P8 complete** on dev.
 
 ## Live dashboard & streaming proof (for the room)
 - **Track ▸** an alert → **▶ Track live on the dashboard** opens the AI/BI *Live Fire Tracker* inline (auto-refresh 30 s; *Open in new tab* fallback). Its counts match the app exactly at every tick.
-- **Advance the fire:** run `notebooks/60_live_dashboard.py` with widget `t_index` = 0/1/2/3 (room default 2).
+- **Advance the fire:** the app moves the dashboard in step — **Start following** / **Next update ▸** / **Reset** in the event view set the dashboard's tick (`POST /api/live/cursor` → `live_cursor`). The reset job puts it back to tick 0.
 - **Start the live-ingestion proof ~5 min before the room:**
   `databricks bundle run exposure_61_stream_proof -t dev -p DEV --params reset=true` — runs 45 min then **stops on its own** (shorter: `minutes=20`).
   **Stop early:** cancel the run in Jobs, or `databricks jobs cancel-all-runs <job_id> -p DEV`.

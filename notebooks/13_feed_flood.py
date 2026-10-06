@@ -46,10 +46,10 @@ seg_it = "POLYGON((12.88 46.42, 13.12 46.42, 13.12 46.58, 12.88 46.58, 12.88 46.
 seg_at = "POLYGON((13.26 46.53, 13.54 46.53, 13.54 46.71, 13.26 46.71, 13.26 46.53))"
 rows = [
     {"event_id": "EVT_EMS_FLOOD_ALPS", "peril_code": "FLOOD", "event_name": "Copernicus EMS — alpine flood extent (frozen sample)",
-     "event_date": today - datetime.timedelta(days=8), "footprint_wkt": seg_it, "country_code": "IT",
+     "event_date": today - datetime.timedelta(days=2), "footprint_wkt": seg_it, "country_code": "IT",
      "source_detail": "Frozen Copernicus-EMS-shaped delineation (IT segment); add CDS key for live GloFAS/EFAS forecast"},
     {"event_id": "EVT_EMS_FLOOD_ALPS", "peril_code": "FLOOD", "event_name": "Copernicus EMS — alpine flood extent (frozen sample)",
-     "event_date": today - datetime.timedelta(days=8), "footprint_wkt": seg_at, "country_code": "AT",
+     "event_date": today - datetime.timedelta(days=2), "footprint_wkt": seg_at, "country_code": "AT",
      "source_detail": "Frozen Copernicus-EMS-shaped delineation (AT segment); cross-border, one event_id"},
 ]
 land_raw("EMS", "frozen-sample", len(rows), f"cds_key={'yes' if cds_key else 'no'}")

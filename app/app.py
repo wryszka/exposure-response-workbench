@@ -228,6 +228,26 @@ def api_live_ticks():
     return {"event_id": LIVE_EID, "event_name": "Var wildfire (developing)", "hero": HERO, "ticks": rows}
 
 
+@app.post("/api/live/cursor")
+async def api_live_cursor(request: Request):
+    """Point the Live Fire Tracker dashboard at the tick the presenter is on. The dashboard reads
+    live_cursor, so following / Next update / Reset in the app moves the embedded dashboard in step."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    try:
+        ti = max(0, min(int(body.get("t_index", 0)), 50))
+    except (TypeError, ValueError):
+        ti = 0
+    try:
+        sql.query(f"DELETE FROM {config.fqn('live_cursor')}")
+        sql.query(f"INSERT INTO {config.fqn('live_cursor')} VALUES (:eid, CAST(:ti AS INT))", {"eid": LIVE_EID, "ti": ti})
+        return {"ok": True, "t_index": ti}
+    except Exception as e:
+        return {"ok": False, "reason": str(e)[:200]}
+
+
 @app.get("/api/live/tick/{i}")
 def api_live_tick(i: int):
     """One progression tick: the footprint at that moment + the properties it now threatens (for the live map)."""
