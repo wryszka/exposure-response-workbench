@@ -328,8 +328,9 @@ async function boot(){
 }
 
 // ── ALERT BOARD: the landing — one clear card per active event; click Track to follow one ──
+const HERO_EVENT='EVT_FIRE_VAR';  // the story's hero card is always first; live warnings follow
 function renderBoard(){
-  const list=EVENTS;
+  const list=[...EVENTS].sort((a,b)=>(b.event_id===HERO_EVENT)-(a.event_id===HERO_EVENT));
   if(!list.length){$('#boardList').innerHTML='<div class="loading">No active events.</div>';return;}
   $('#boardList').innerHTML=list.map(e=>{
     const p=PERIL[e.peril_code]||{c:'#64748b',label:e.peril_code,ic:'•'};
