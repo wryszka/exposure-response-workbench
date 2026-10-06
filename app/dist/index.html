@@ -134,8 +134,8 @@
     <div class="snav">
       <div class="slab">Workbench</div>
       <div class="nav" id="nav">
-        <a class="navi" data-t="exposure" onclick="showTab('exposure')">Exposure</a>
-        <a class="navi on" data-t="live" onclick="showTab('live')">Live event <span style="font-size:9px;color:#b45309">● follow</span></a>
+        <a class="navi on" data-t="exposure" onclick="showTab('exposure')">Exposure — alerts</a>
+        <a class="navi" data-t="live" onclick="showTab('live')">Live event <span style="font-size:9px;color:#b45309">● follow</span></a>
         <a class="navi" data-t="radar" onclick="showTab('radar')">Event Radar <span style="font-size:9px;color:#16a34a">● news</span></a>
         <a class="navi" data-t="ask" onclick="showTab('ask')">Ask the agent &amp; Genie</a>
         <a class="navi" data-t="gov" onclick="showTab('gov')">Governance &amp; provenance</a>
@@ -163,25 +163,31 @@
       </div>
     </div>
 
-    <div class="screen" id="exposureScreen">
-    <div class="whatis" id="whatis">
-      <div class="wh">What am I seeing?</div>
-      <div class="wb">The <b>event footprint</b> (the wildfire perimeter, flood extent or storm swath) laid over the <b>homes we insure</b>. For the chosen event and distance, you see which homes fall within <b>50, 100 or 200 metres</b> of the footprint — the exact real-world distances your team specified. The map, the headline numbers and the table are the <b>same</b> figures throughout. One event can span countries, so the country breakdown shows the whole cross-border picture at once. <span class="muted">(How it's computed, step by step, is in <b>Learn</b>.)</span></div>
+    <div class="screen on" id="exposureScreen">
+    <!-- ALERT BOARD (the landing) — one card per active event; click Track to follow -->
+    <div id="board">
+      <div class="whatis on" style="margin-top:0">
+        <div class="wh">Active events near our book</div>
+        <div class="wb">Each card below is a live catastrophe we're watching — the peril, where it is, and how many homes we insure are in its path. Click <b>Track ▸</b> to follow one live and see the exposure, the alert, and what we'd keep after reinsurance.</div>
+      </div>
+      <div id="boardList"><div class="loading">Loading active events…</div></div>
     </div>
 
-    <div class="pickrow">
-      <div class="events" id="events"><div class="loading">Loading events…</div></div>
-      <div style="display:flex;align-items:center;gap:9px">
-        <span class="muted" style="font-size:12px">Distance buffer</span>
-        <div class="bufsel" id="bufsel">
-          <button data-b="50">50 m</button>
-          <button data-b="100">100 m</button>
-          <button data-b="200" class="on">200 m</button>
+    <!-- TRACKING (per-event detail) — hidden until an alert is opened -->
+    <div id="track" style="display:none">
+      <div style="display:flex;align-items:center;gap:12px;margin:2px 0 12px;flex-wrap:wrap">
+        <button class="btn" onclick="backToBoard()">← All alerts</button>
+        <div style="display:flex;align-items:center;gap:9px;margin-left:auto">
+          <span class="muted" style="font-size:12px">Distance buffer</span>
+          <div class="bufsel" id="bufsel">
+            <button data-b="50">50 m</button>
+            <button data-b="100">100 m</button>
+            <button data-b="200" class="on">200 m</button>
+          </div>
         </div>
       </div>
+      <div id="view"></div>
     </div>
-
-    <div id="view"></div>
     </div><!-- /exposureScreen -->
 
     <div class="screen" id="askScreen">
@@ -224,7 +230,7 @@
       <div id="radarView"><div class="loading">Loading signals…</div></div>
     </div><!-- /radarScreen -->
 
-    <div class="screen on" id="liveScreen">
+    <div class="screen" id="liveScreen">
       <div class="whatis on" style="margin-top:0">
         <div class="wh">Live event — follow a developing wildfire, and stop a sale you shouldn't make</div>
         <div class="wb">A wildfire breaks in the <b>news hours before</b> the satellite confirms it. Start following the story and the map <b>redraws as the fire spreads</b> — more insured homes fall inside, the exposure climbs, and the satellite catches up to confirm it. Meanwhile a customer whose home the fire is reaching tries to buy cover: the system <b>declines it on the spot</b> — you can't insure a home that's already in an active fire zone. The agent explains why, and an underwriter can override. Every decision is kept on record. (Illustrative synthetic story; the distance check is real.)</div>
@@ -302,10 +308,43 @@ async function boot(){
   try{CFG=await api('/config');if(CFG.entity)$('#entityChip').textContent=CFG.entity;}catch(e){}
   const d=await api('/events');
   EVENTS=d.events||[];
-  renderPicker();
+  renderBoard();   // land on the clear alert board
   $('#bufsel').querySelectorAll('button').forEach(b=>b.onclick=()=>{BUF=+b.dataset.b;$('#bufsel').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(SEL)selectEvent(SEL);});
-  if(EVENTS.length)selectEvent(EVENTS[0].event_id);
-  loadLive();  // we land on the Live event tab — populate it now
+}
+
+// ── ALERT BOARD: the landing — one clear card per active event; click Track to follow one ──
+function renderBoard(){
+  const list=EVENTS;
+  if(!list.length){$('#boardList').innerHTML='<div class="loading">No active events.</div>';return;}
+  $('#boardList').innerHTML=list.map(e=>{
+    const p=PERIL[e.peril_code]||{c:'#64748b',label:e.peril_code,ic:'•'};
+    const live=isLive(e);
+    const status=live
+      ? '<span class="pill" style="background:#fee2e2;color:#b91c1c">● ACTIVE</span>'
+      : '<span class="pill" style="background:#fef3c7;color:#b45309">WATCH</span>';
+    return `<div class="alertcard" onclick="trackEvent('${esc(e.event_id)}')"
+        style="display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e5e7eb;border-left:4px solid ${p.c};border-radius:12px;padding:16px 18px;margin-bottom:10px;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.04)">
+      <div style="font-size:30px;line-height:1">${p.ic}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.03em;color:${p.c}">${esc(p.label.toUpperCase())} &nbsp;${status}</div>
+        <div style="font-weight:700;font-size:15px;margin:3px 0 2px">${esc(e.event_name)}</div>
+        <div style="font-size:20px;font-weight:800">${num(e.threatened_count)} <span style="font-size:13px;font-weight:600" class="muted">homes in the path</span></div>
+        <div class="muted" style="font-size:11.5px;margin-top:2px">as of ${esc(e.event_date)} · ${live?'live feed':'frozen sample'} · ${esc(e.source||'')}</div>
+      </div>
+      <div style="flex-shrink:0"><span style="display:inline-block;background:#2563eb;color:#fff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px">Track ▸</span></div>
+    </div>`;
+  }).join('');
+}
+function trackEvent(eid){
+  $('#board').style.display='none';
+  $('#track').style.display='block';
+  window.scrollTo(0,0);
+  selectEvent(eid);
+}
+function backToBoard(){
+  $('#track').style.display='none';
+  $('#board').style.display='block';
+  window.scrollTo(0,0);
 }
 
 function setFilter(f){FILTER=f;renderPicker();}
@@ -328,7 +367,7 @@ function renderPicker(){
 }
 
 async function selectEvent(eid){
-  SEL=eid;renderPicker();
+  SEL=eid;
   $('#view').innerHTML='<div class="loading">Computing exposure (≈3s)…</div>';
   const d=await api('/event/'+encodeURIComponent(eid)+'?buffer='+BUF);
   renderView(d);
@@ -551,6 +590,7 @@ function showTab(t){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   $('#'+(SCREENS[t]||'exposureScreen')).classList.add('on');
   document.querySelectorAll('.navi').forEach(n=>n.classList.toggle('on',n.dataset.t===t));
+  if(t==='exposure'){$('#track').style.display='none';$('#board').style.display='block';}
   if(t==='ask'&&!STARTED)initAgent();
   if(t==='gov'&&!GOV_LOADED)loadGov();
   if(t==='radar'&&!RADAR_LOADED)loadRadar();
