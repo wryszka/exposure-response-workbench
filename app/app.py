@@ -31,7 +31,8 @@ def _events():
 @app.get("/api/config")
 def api_config():
     return {"catalog": config.CATALOG, "schema": config.SCHEMA, "entity": config.ENTITY,
-            "workspace_host": config.workspace_host(), "genie_space_id": config.GENIE_SPACE_ID}
+            "workspace_host": config.workspace_host(), "genie_space_id": config.GENIE_SPACE_ID,
+            "dashboard_id": config.DASHBOARD_ID}
 
 
 # ─────────────────────────── events (picker) ───────────────────────────

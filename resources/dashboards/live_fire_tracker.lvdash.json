@@ -1,0 +1,131 @@
+{
+  "datasets": [
+    {
+      "name": "ds_live",
+      "displayName": "Live fire state",
+      "queryLines": [
+        "SELECT insured_object_id, latitude, longitude, sum_insured, band, ",
+        "       CASE WHEN band <> 'Clear' THEN 1 ELSE 0 END AS at_risk, ",
+        "       CASE WHEN band <> 'Clear' THEN sum_insured ELSE 0 END AS at_risk_si ",
+        "FROM live_fire_state "
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "main",
+      "displayName": "Live fire tracker",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "title",
+            "multilineTextboxSpec": {"lines": ["## 🔥 Live fire tracker — Var, southern France"]}
+          },
+          "position": {"x": 0, "y": 0, "width": 12, "height": 1}
+        },
+        {
+          "widget": {
+            "name": "subtitle",
+            "multilineTextboxSpec": {"lines": ["Insured homes in the path of an active wildfire — the map updates as the fire spreads."]}
+          },
+          "position": {"x": 0, "y": 1, "width": 12, "height": 1}
+        },
+        {
+          "widget": {
+            "name": "homes_at_risk",
+            "queries": [{
+              "name": "main_query",
+              "query": {
+                "datasetName": "ds_live",
+                "fields": [{"name": "sum(at_risk)", "expression": "SUM(`at_risk`)"}],
+                "disaggregated": false
+              }
+            }],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {"fieldName": "sum(at_risk)", "displayName": "Homes in the fire's path",
+                          "format": {"type": "number", "abbreviation": "compact", "decimalPlaces": {"type": "max", "places": 0}}}
+              },
+              "frame": {"showTitle": true, "title": "Homes in the fire's path"}
+            }
+          },
+          "position": {"x": 0, "y": 2, "width": 6, "height": 3}
+        },
+        {
+          "widget": {
+            "name": "si_at_risk",
+            "queries": [{
+              "name": "main_query",
+              "query": {
+                "datasetName": "ds_live",
+                "fields": [{"name": "sum(at_risk_si)", "expression": "SUM(`at_risk_si`)"}],
+                "disaggregated": false
+              }
+            }],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {"fieldName": "sum(at_risk_si)", "displayName": "Sum insured at risk",
+                          "format": {"type": "number-currency", "currencyCode": "EUR", "abbreviation": "compact", "decimalPlaces": {"type": "max", "places": 1}}}
+              },
+              "frame": {"showTitle": true, "title": "Sum insured at risk"}
+            }
+          },
+          "position": {"x": 6, "y": 2, "width": 6, "height": 3}
+        },
+        {
+          "widget": {
+            "name": "fire_map",
+            "queries": [{
+              "name": "main_query",
+              "query": {
+                "datasetName": "ds_live",
+                "fields": [
+                  {"name": "latitude", "expression": "`latitude`"},
+                  {"name": "longitude", "expression": "`longitude`"},
+                  {"name": "band", "expression": "`band`"},
+                  {"name": "sum_insured", "expression": "`sum_insured`"}
+                ],
+                "disaggregated": true
+              }
+            }],
+            "spec": {
+              "version": 2,
+              "widgetType": "symbol-map",
+              "encodings": {
+                "coordinates": {"latitude": {"fieldName": "latitude"}, "longitude": {"fieldName": "longitude"}},
+                "color": {
+                  "fieldName": "band",
+                  "scale": {"type": "categorical", "mappings": [
+                    {"value": "In fire zone", "color": "#FF5F66"},
+                    {"value": "Near (<=200m)", "color": "#FFA600"},
+                    {"value": "Clear", "color": "#5ADBFF"}
+                  ]}
+                },
+                "size": {"fieldName": "sum_insured", "scale": {"type": "quantitative"}}
+              },
+              "mark": {"opacity": 0.75},
+              "frame": {"showTitle": true, "title": "Insured homes near the fire (colour = threat)"}
+            }
+          },
+          "position": {"x": 0, "y": 5, "width": 12, "height": 7}
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {"light": "#FCFCFC", "dark": "#1F272D"},
+      "widgetBackgroundColor": {"light": "#FFFFFF", "dark": "#11171C"},
+      "fontColor": {"light": "#11171C", "dark": "#E8ECF0"},
+      "selectionColor": {"light": "#2563EB", "dark": "#8ACAFF"},
+      "visualizationColors": ["#FF5F66", "#FFA600", "#5ADBFF", "#4E5185", "#1D425C", "#99DDB4"],
+      "widgetHeaderAlignment": "LEFT"
+    }
+  }
+}

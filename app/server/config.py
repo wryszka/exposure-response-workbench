@@ -13,6 +13,7 @@ SCHEMA = os.getenv("SCHEMA_NAME", "exposure_response")
 WAREHOUSE_ID = os.getenv("WAREHOUSE_ID", "a3b61648ea4809e3")
 USE_CACHE = _flag("USE_CACHE", True)
 GENIE_SPACE_ID = os.getenv("GENIE_SPACE_ID", "")
+DASHBOARD_ID = os.getenv("DASHBOARD_ID", "01f1c169c0e0157496036dc765800f30")  # AI/BI Live Fire Tracker
 FM_ENDPOINT = os.getenv("FM_ENDPOINT", "databricks-claude-sonnet-4-6")
 ENTITY = os.getenv("ENTITY_NAME", "Bricksurance SE")
 

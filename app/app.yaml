@@ -18,5 +18,7 @@ env:
     value: "true"
   - name: GENIE_SPACE_ID
     value: "01f1b2bf6cce17eb8815107a4fab826d"
+  - name: DASHBOARD_ID
+    value: "01f1c169c0e0157496036dc765800f30"
   - name: FM_ENDPOINT
     value: databricks-claude-sonnet-4-6

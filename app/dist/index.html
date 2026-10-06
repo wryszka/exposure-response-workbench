@@ -177,6 +177,7 @@
     <div id="track" style="display:none">
       <div style="display:flex;align-items:center;gap:12px;margin:2px 0 12px;flex-wrap:wrap">
         <button class="btn" onclick="backToBoard()">← All alerts</button>
+        <button class="btn" id="dashBtn" style="display:none;background:#2563eb;color:#fff;border-color:#2563eb" onclick="openDash()">▶ Track live on the dashboard</button>
         <div style="display:flex;align-items:center;gap:9px;margin-left:auto">
           <span class="muted" style="font-size:12px">Distance buffer</span>
           <div class="bufsel" id="bufsel">
@@ -305,7 +306,7 @@ function openLearn(){$('#lov').classList.add('on');}
 function closeLearn(){$('#lov').classList.remove('on');}
 
 async function boot(){
-  try{CFG=await api('/config');if(CFG.entity)$('#entityChip').textContent=CFG.entity;}catch(e){}
+  try{CFG=await api('/config');if(CFG.entity)$('#entityChip').textContent=CFG.entity;if(CFG.dashboard_id&&CFG.workspace_host)$('#dashBtn').style.display='';}catch(e){}
   const d=await api('/events');
   EVENTS=d.events||[];
   renderBoard();   // land on the clear alert board
@@ -340,6 +341,11 @@ function trackEvent(eid){
   $('#track').style.display='block';
   window.scrollTo(0,0);
   selectEvent(eid);
+}
+function openDash(){
+  if(!CFG.dashboard_id || !CFG.workspace_host) return;
+  let h=CFG.workspace_host; if(!/^https?:\/\//.test(h)) h='https://'+h;
+  window.open(h+'/dashboardsv3/'+CFG.dashboard_id+'/published','_blank','noopener');
 }
 function backToBoard(){
   $('#track').style.display='none';
