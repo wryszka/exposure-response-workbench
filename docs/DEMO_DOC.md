@@ -43,7 +43,7 @@ The app opens on the **alert board** — one card per active event. Make sure it
 
 **Pre-flight (do ~10 min before the room — tested):**
 1. **Warm the warehouse:** open the app (it lands on the **alert board**), click **Track ▸** on the Var wildfire and wait for the map, then open the live dashboard once. First query is the slow one — this avoids a stall in the room.
-2. **Start the live-ingestion job** (see README) so the dashboard's ingestion counter is ticking when you get there. It stops on its own.
+2. **Start the live-ingestion job** ~5 min before, so the dashboard's ingestion counter is ticking when you get there: in Databricks **Jobs → exposure_61_stream_proof → Run now** (set `reset=true`), or from a terminal `databricks bundle run exposure_61_stream_proof -t dev -p DEV --params reset=true`. It stops by itself after 45 min; cancel the run in Jobs to stop early.
 3. **Pre-cache the agent:** go to **Ask** → click all 5 starter prompts once (each caches instantly) → so the first live question is instant.
 4. **Confirm reset:** fire back to the start (no promoted `EVT_NEWS_*`, no bind rows); dates roll to today.
 5. One browser tab, full screen, zoom so one KPI reads from the back of the room.
