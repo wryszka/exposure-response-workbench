@@ -90,3 +90,10 @@
 - **Wired** as task `wildfire_effis` in `exposure_10_refresh_feeds` (after `wildfire_firms`). Job ran green on serverless (run 951878927121703, TERMINATED SUCCESS).
 - **Verified.** FIRMS and EFFIS coexist as distinct FIRE sources in `fn_events`. The EFFIS event flows through the SAME governed spine: `fn_exposure_in_footprint('EVT_EFFIS_SAMPLE_FR',200)` → **90 props / €242.9m** (Var perimeter over the dense cluster).
 - ⚠️ **Live pull fell back to frozen this run** — all 16 endpoint/layer/format combos returned no FeatureCollection (local egress is proxy-blocked; serverless reached out but the tried EFFIS WFS layer names/service did not return GeoJSON). Follow-up: confirm the *current* EFFIS/GWIS WFS layer name (or use the EFFIS current-situation GeoJSON / ArcGIS REST) to flip EFFIS to live; adapter needs no structural change, just the working typeName/endpoint.
+
+## 2026-10-06 — Bricksurance theme-compliance pass (demo polish for 16 Oct)
+- Aligned app CSS to the house tokens (DESIGN_LANGUAGE.md / template tokens.css): page `--bg`→#f1f5f9; added canonical `--brand/--brand-d/--brand-soft/--brand-line`, `--emerald*`, `--amber*`(#b45309), `--red*`(#fee2e2); kept local names (`--blue/--green/--redbg/--ambbg`) as aliases → house values so no rule broke.
+- Swapped the ad-hoc red→amber shield logo for the house **brickmark** (4-square #34d399/#60a5fa on #0f172a); brand title 15px/800; sidebar gradient #0f172a→#172033.
+- Fixed known drift: h1 21px→**24px**; `.main` max-width 1180→**1200**, padding→26×32; `.chip`→brand-soft/brand-d.
+- Verified over HTTP (deployment 01f1c1636f7f1b2bbd44a7568ae19c7a, RUNNING): brickmark + 24px h1 render; `/api/agent/starters` returns the 5 strong prompts; live agent turn answered the Var wildfire with governed numbers (59/€164.3m) via real tool calls (exposure_summary, gross_to_net) — not invented.
+- Learn overlay already complete (8 steps + ★ live-follow/anti-selection); "About this demo" disclaimer + 11 "What am I seeing?" explainers already present — left as-is. No narrative/data change.
