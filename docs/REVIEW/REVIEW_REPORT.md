@@ -35,6 +35,10 @@ Minor/polish (fold if time, else v1.1): Genie SQL behind a "see the SQL" toggle;
 **Deferred (labelled):** #5 buffer default left at 200 m (the headline 59/€164.3m figure; impact reduced now the app opens on Live event, not the Exposure picker); #7 notebook SQL interpolation in 30_alerts.py / 10_feeds_common.py (feed/notebook context, not URL-controlled — v1.1); bind rate-limit + promotion TOCTOU unique-constraint (demo-trusted — v1.1).
 **#10 real alert send:** still needs a free SMTP/Slack credential from the user.
 
+### Post-review enhancements — 2026-10-06
+- **Front page → alert board** (commit 26e2d31) + **AI/BI Live Fire Tracker dashboard** + Track-live button (commit 988c472).
+- **Dual-outcome buy panel** (this change): two preset addresses → quote → Buy → **BOUND** (Munich, clear) vs **DECLINED** (Var, active zone), governed by `fn_bind_check`, audited; verified over HTTP.
+
 ---
 
 ## Deal-breakers to ARM in Q&A (incumbent champion + practitioner)

@@ -202,10 +202,19 @@ async def api_radar_promote(request: Request):
 
 
 # ─────────────────────────── live event: follow a developing fire + anti-selection vignette ───────────────────────────
-# The synthetic hero applicant — a home in the Var whose address the growing fire reaches. Deterministic.
-HERO = {"object_ref": "IO0001856", "applicant": "Prospective policyholder — villa, Var",
-        "lat": 43.586962, "lon": 6.742300, "city": "Var (SE France)", "postcode": "13823",
-        "sum_insured": 7575254.27, "coverage": "BUILDINGS + CONTENTS"}
+# Two synthetic applicants for the simulated buy journey (deterministic, no payment, no PII):
+#   var    — a home in the Var whose address the growing fire reaches → DECLINED at bind (active zone)
+#   munich — a home far from any active event → APPROVED (cover bound)
+APPLICANTS = {
+    "var": {"object_ref": "IO0001856", "applicant": "Prospective policyholder — villa, Var",
+            "lat": 43.586962, "lon": 6.742300, "city": "Var (SE France)", "postcode": "13823",
+            "sum_insured": 7575254.27, "coverage": "BUILDINGS + CONTENTS"},
+    "munich": {"object_ref": "IO0004465", "applicant": "Prospective policyholder — apartment, Munich",
+               "lat": 48.112706, "lon": 11.618368, "city": "Munich (DE)", "postcode": "81667",
+               "sum_insured": 7993646.77, "coverage": "BUILDINGS + CONTENTS"},
+}
+def _applicant(which): return APPLICANTS.get((which or "var").strip().lower(), APPLICANTS["var"])
+HERO = APPLICANTS["var"]  # back-compat default
 LIVE_EID = "EVT_LIVE_VAR_FIRE"
 
 
@@ -241,11 +250,12 @@ def api_live_tick(i: int):
 
 
 @app.post("/api/bind/quote")
-async def api_bind_quote():
-    """Issue an indicative quote for the hero applicant. Quoting always succeeds — the governance is at BIND."""
+async def api_bind_quote(request: Request):
+    """Issue an indicative quote for the chosen applicant (?which=var|munich). Quoting always succeeds — governance is at BIND."""
     import uuid
-    return {"quote_id": "Q-" + uuid.uuid4().hex[:8].upper(), **HERO,
-            "premium_eur": round(HERO["sum_insured"] * 0.0042)}
+    a = _applicant(request.query_params.get("which"))
+    return {"quote_id": "Q-" + uuid.uuid4().hex[:8].upper(), "which": request.query_params.get("which") or "var", **a,
+            "premium_eur": round(a["sum_insured"] * 0.0042)}
 
 
 def _bind_narration(reason: str, decision: str, dist: float, chk: dict, override: bool) -> str:
@@ -278,10 +288,11 @@ async def api_bind_buy(request: Request):
     except (TypeError, ValueError):
         ti = 0
     override = bool(body.get("override", False))
+    a = _applicant(body.get("which"))
     fq = config.fqn
     chk = sql.query_one(
         f"SELECT in_zone, round(distance_m,1) AS distance_m, active_event, as_of, feed_source "
-        f"FROM {fq('fn_bind_check')}({HERO['lon']}, {HERO['lat']}, {ti})") or {}
+        f"FROM {fq('fn_bind_check')}({a['lon']}, {a['lat']}, {ti})") or {}
     in_zone = str(chk.get("in_zone")).lower() == "true"
     dist = float(chk.get("distance_m") or 0)
     if in_zone and not override:
@@ -295,9 +306,9 @@ async def api_bind_buy(request: Request):
         sql.query(
             f"INSERT INTO {fq('gov_bind_decision')} (quote_id, applicant, object_ref, latitude, longitude, t_index, "
             f"decision, reason, active_event_id, distance_m, as_of, decided_at, decided_by, overridden) "
-            f"VALUES (:qid, :app, :obj, {HERO['lat']}, {HERO['lon']}, {ti}, :dec, :rsn, :evt, {dist}, :aso, "
+            f"VALUES (:qid, :app, :obj, {a['lat']}, {a['lon']}, {ti}, :dec, :rsn, :evt, {dist}, :aso, "
             f"current_timestamp(), :by, {str(override).lower()})",
-            {"qid": qid, "app": HERO["applicant"], "obj": HERO["object_ref"], "dec": decision, "rsn": reason,
+            {"qid": qid, "app": a["applicant"], "obj": a["object_ref"], "dec": decision, "rsn": reason,
              "evt": chk.get("active_event") or LIVE_EID, "aso": chk.get("as_of") or "",
              "by": "underwriter (demo)" if override else "bind-time rule"})
     except Exception:

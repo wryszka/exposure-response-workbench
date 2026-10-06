@@ -604,7 +604,7 @@ function showTab(t){
 }
 
 // ─────────────────────────── live event: follow a developing fire + anti-selection vignette ───────────────────────────
-let LIVE_TICKS=[], LIVE_CUR=-1, LIVE_TIMER=null, LIVE_HERO=null, QUOTE=null;
+let LIVE_TICKS=[], LIVE_CUR=-1, LIVE_TIMER=null, LIVE_HERO=null, QUOTE=null, BIND_WHICH=null;
 async function loadLive(){
   LIVE_LOADED=true;
   try{const d=await api('/live/ticks');LIVE_TICKS=d.ticks||[];LIVE_HERO=d.hero||null;}
@@ -660,14 +660,21 @@ async function renderTick(i){
   renderVignette();
 }
 // ── anti-selection quote → buy → blocked vignette ──
+// Two preset applicants — one in the fire's path (declines), one far away (approves). Simulated; no payment.
+const BIND_PICKS=[
+  {k:'var',    icon:'🔥', title:'Villa in the Var', sub:"in the fire's path"},
+  {k:'munich', icon:'🏡', title:'Apartment in Munich', sub:'far from any active event'},
+];
+function pickAddress(k){ BIND_WHICH=k; QUOTE=null; renderVignette(); }
 function renderVignette(){
-  const h=LIVE_HERO||{};
-  const following=LIVE_CUR>=0;
-  const stateNote=following
-    ? `<div class="muted" style="font-size:11.5px;margin-top:6px">Fire state: <b>update ${LIVE_CUR+1} of ${LIVE_TICKS.length}</b> — the bind check runs against the fire footprint <b>right now</b>.</div>`
-    : `<div class="muted" style="font-size:11.5px;margin-top:6px">Tip: get a quote before the fire, then try to buy as it reaches the address.</div>`;
+  const picker=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 10px">
+    ${BIND_PICKS.map(p=>`<button class="btn" style="flex:1;min-width:150px;text-align:left;${BIND_WHICH===p.k?'border-color:var(--brand);background:var(--brand-soft)':''}" onclick="pickAddress('${p.k}')">
+      <div style="font-size:14px"><b>${p.icon} ${p.title}</b></div><div class="muted" style="font-size:11.5px">${p.sub}</div></button>`).join('')}
+  </div>`;
   let inner;
-  if(!QUOTE){
+  if(!BIND_WHICH){
+    inner=`<div class="muted" style="font-size:12.5px">Pick an address to request a quote.</div>`;
+  }else if(!QUOTE){
     inner=`<button class="btn" onclick="getQuote()">Get a quote</button>`;
   }else{
     inner=`<div style="background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin:4px 0 10px">
@@ -678,18 +685,19 @@ function renderVignette(){
     <button class="ybtn live" style="border-color:#16a34a;background:#16a34a" onclick="buyNow(false)">Buy cover now</button>
     <div id="bindResult" style="margin-top:12px"></div>`;
   }
-  $('#vignetteCard').innerHTML=`<h3>Buy cover — a home in the Var</h3>
-    <p class="h3s">One of our customers, at a home the fire is reaching, tries to buy cover right now. Before we issue it, the system checks the address against the active fire — in real time.</p>
-    ${inner}${stateNote}`;
+  $('#vignetteCard').innerHTML=`<h3>Buy cover — simulated</h3>
+    <p class="h3s">Someone asks to buy cover. Before we issue it, the system checks the address against any active catastrophe — in real time. Try both:</p>
+    ${picker}${inner}
+    <div class="muted" style="font-size:11px;margin-top:8px">Simulated — no payment. The decision is governed and recorded.</div>`;
 }
 async function getQuote(){
-  try{QUOTE=await fetch('/api/bind/quote',{method:'POST'}).then(x=>x.json());renderVignette();}catch(e){}
+  try{QUOTE=await fetch('/api/bind/quote?which='+encodeURIComponent(BIND_WHICH||'var'),{method:'POST'}).then(x=>x.json());renderVignette();}catch(e){}
 }
 async function buyNow(override){
   const rb=$('#bindResult');if(rb)rb.innerHTML='<div class="loading">Underwriting check…</div>';
   try{
     const r=await fetch('/api/bind/buy',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({quote_id:QUOTE.quote_id,t_index:Math.max(LIVE_CUR,0),override:!!override})}).then(x=>x.json());
+      body:JSON.stringify({quote_id:QUOTE.quote_id,which:BIND_WHICH||'var',t_index:(LIVE_CUR>=0?LIVE_CUR:(LIVE_TICKS.length?LIVE_TICKS.length-1:3)),override:!!override})}).then(x=>x.json());
     const blocked=r.decision==='DECLINED';
     const bg=blocked?'#fef2f2':(r.decision==='OVERRIDDEN'?'#fffbeb':'#f0fdf4');
     const bd=blocked?'#fecaca':(r.decision==='OVERRIDDEN'?'#fde68a':'#bbf7d0');
