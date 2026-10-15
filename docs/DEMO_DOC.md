@@ -26,7 +26,7 @@
 
 *"We'll take one fire from the first alert to three questions: who do we tell, what does it cost us, and what do we refuse to write. Then two things you didn't ask for. At the end, how you get from Miguel's notebook to this, one step at a time."*
 
-> Then go straight to the alert board. If short on time, say only the five numbered asks and the last line.
+> Then go straight to the alert board. If short on time, say only the five numbered asks and the last line. The "two things you didn't ask for" are story card 5 (*we knew before the satellite*) and card 8 (*one rule, two workbenches* — the UK flood refused in underwriting); drop that sentence if you won't have time for them.
 
 ---
 
