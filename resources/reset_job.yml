@@ -7,7 +7,9 @@ resources:
         date reads as of today (ACTIVE events 0-3 days old) while the hero numbers stay deterministic
         (seed 42, fixed footprints). Snapshots grants first and restores them last, clears demo-click
         rows (bind / news decisions, promoted NEWS events), and resets the live dashboard to tick 0.
-        Feed adapters fall back to frozen samples, so it never depends on a live API being up.
+        Feed adapters fall back to frozen samples, so it never depends on a live API being up. Every feed
+        batch passes the data-quality gate; the seeded rejected batch is re-created so the Data sources
+        screen always shows one rejection; active zones are re-published to underwriting.
       tags:
         project: exposure_response_workbench
       max_concurrent_runs: 1
@@ -78,9 +80,32 @@ resources:
               catalog: ${var.catalog}
               schema: ${var.schema}
           environment_key: serverless
-        - task_key: treaty_and_coverholder
+        - task_key: feed_flood_ea_uk
           depends_on:
             - task_key: feed_flood_copernicus
+          notebook_task:
+            notebook_path: ../notebooks/14_feed_ea_flood.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+        - task_key: active_zones
+          depends_on:
+            - task_key: feed_flood_ea_uk
+          notebook_task:
+            notebook_path: ../notebooks/51_active_zones.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+              extra_grantees: "81589066-5ed3-49c3-8093-f723a711cc2d"   # underwriting app SP (reads active zones)
+          environment_key: serverless
+        - task_key: treaty_and_coverholder
+          depends_on:
+            - task_key: active_zones
           notebook_task:
             notebook_path: ../notebooks/20_treaty_and_coverholder.py
             base_parameters:
@@ -101,9 +126,20 @@ resources:
               app_sp: ${var.app_service_principal_id}
               fm_endpoint: ${var.fm_endpoint}
           environment_key: serverless
-        - task_key: fire_progression
+        - task_key: dq_and_sources
           depends_on:
             - task_key: news_radar
+          notebook_task:
+            notebook_path: ../notebooks/15_dq_and_sources.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+        - task_key: fire_progression
+          depends_on:
+            - task_key: dq_and_sources
           notebook_task:
             notebook_path: ../notebooks/50_event_progression.py
             base_parameters:

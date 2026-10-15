@@ -13,6 +13,10 @@
 # MAGIC
 # MAGIC Peril mapping (CAP `awareness_type`): 1 Wind / 3 Thunderstorm / 7 Coastal → STORM · 8 Forest-fire → FIRE ·
 # MAGIC 10 Rain / 11 Flood / 12 Rain-Flood → FLOOD.
+# MAGIC
+# MAGIC **Data-quality gate:** the normalised batch passes `dq_gate` before it may replace the MeteoAlarm footprints.
+# MAGIC A rejected batch is quarantined and the previous warnings stay in use; if every country feed is unreachable
+# MAGIC the batch is logged REJECTED and nothing is replaced. An empty batch is valid ("no active warnings").
 
 # COMMAND ----------
 
@@ -48,10 +52,12 @@ today = datetime.date.today()
 groups = {}  # peril -> {codes:set, level:int, label:str}
 total_warnings = 0
 
+n_ok_pulls = 0
 for country, url in FEEDS.items():
     d = robust_get(url, timeout=30, expect="json")
     if not d or "warnings" not in d:
         print(f"  {country}: no data this pull"); continue
+    n_ok_pulls += 1
     ws = d["warnings"]; total_warnings += len(ws)
     land_raw("METEOALARM", url, len(ws), None)  # audit every pull
     if country != "france":
@@ -64,8 +70,9 @@ for country, url in FEEDS.items():
                 lvl = int(params.get("awareness_level", "1;").split(";")[0] or 1)
             except ValueError:
                 lvl = 1
+            # metropolitan France only (the book's geography): overseas departments (FR9*) are excluded
             codes = [g["value"] for a in info.get("area", []) for g in a.get("geocode", [])
-                     if g["valueName"] == "NUTS3" and g["value"] in nuts_fr]
+                     if g["valueName"] == "NUTS3" and g["value"] in nuts_fr and not g["value"].startswith("FR9")]
             if not codes:
                 continue
             grp = groups.setdefault(peril, {"codes": set(), "level": 0, "label": info.get("event", "")})
@@ -94,5 +101,14 @@ for peril, grp in groups.items():
             "source_detail": f"Meteo-France via MeteoAlarm (keyless); region {code}; boundary GISCO NUTS3 2013 20M",
         })
 
-n = replace_events_from_source("METEOALARM", rows)
-print(f"MeteoAlarm live ingest complete: {n} footprint rows landed at {datetime.datetime.utcnow().isoformat()}Z")
+if n_ok_pulls == 0:
+    dq_unreachable("METEOALARM", f"all {len(FEEDS)} MeteoAlarm country feeds were unreachable after retries")
+    print("MeteoAlarm unreachable — previous warnings kept")
+else:
+    accepted, dec = dq_gate("METEOALARM", rows,
+                            note=f"{total_warnings} warnings from {n_ok_pulls} country feeds; {len(rows)} French regions mapped")
+    if dec["decision"] == "ACCEPTED":
+        n = replace_events_from_source("METEOALARM", accepted)
+        print(f"MeteoAlarm live ingest complete: {n} footprint rows landed at {datetime.datetime.utcnow().isoformat()}Z")
+    else:
+        print(f"MeteoAlarm batch REJECTED — previous accepted warnings kept ({dec['reason']})")

@@ -12,6 +12,9 @@
 # MAGIC shared backoff/retry fetch. If the endpoint is unreachable/blocked/empty the adapter falls back to a
 # MAGIC **frozen real-shape burnt-area perimeter** over the SE-France / Var belt (`is_live=false`) so the job never
 # MAGIC crashes. **Attribution:** *Copernicus Emergency Management Service — EFFIS / GWIS*. No credential required.
+# MAGIC
+# MAGIC **Data-quality gate:** a live batch passes `dq_gate` before it may replace the EFFIS footprints (rejected →
+# MAGIC quarantined, previous data kept); the frozen fallback is logged as FALLBACK_FROZEN (and checked too).
 
 # COMMAND ----------
 
@@ -166,5 +169,10 @@ if not rows:
                               "was unreachable this run (Copernicus EMS — EFFIS/GWIS)"}]
     land_raw("EFFIS", "frozen-sample", len(rows), f"tried={len(tried)} endpoints")
 
-n = replace_events_from_source("EFFIS", rows, is_live=is_live)
-print(f"EFFIS burnt-area adapter: {n} row(s), live={is_live}")
+accepted, dec = dq_gate("EFFIS", rows, frozen=not is_live,
+                        note=None if is_live else f"EFFIS/GWIS WFS unreachable on {len(tried)} endpoint combinations")
+if dec["decision"] == "REJECTED":
+    print(f"EFFIS batch REJECTED — previous accepted perimeters kept ({dec['reason']})")
+else:
+    n = replace_events_from_source("EFFIS", accepted, is_live=is_live)
+    print(f"EFFIS burnt-area adapter: {n} row(s), live={is_live}, dq={dec['decision']}")
