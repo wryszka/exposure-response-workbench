@@ -212,7 +212,8 @@ resources:
             notebook_path: ../notebooks/70_deploy_agent_version.py
             base_parameters:
               app_sp: ${var.app_service_principal_id}
-          environment_key: serverless
+          # No environment_key: runs in the default notebook environment, where `databricks-agents` resolves to a
+          # version that understands the ResponsesAgent schema (the shared job environment resolved an old one).
       environments:
         - environment_key: serverless
           spec:
