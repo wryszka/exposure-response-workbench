@@ -41,7 +41,7 @@ The app opens on the **alert board** — one card per active event. Make sure it
 
 # Setup & Reset
 
-**Morning of the demo:** run **`exposure_99_reset`** (Jobs → Run now, ~10 min) — dates roll to today, the fire and dashboard go back to the start, demo clicks are cleared.
+**Morning of the demo:** click **↻ Reset demo** at the bottom of the app's sidebar → **Reset now** (or Jobs → `exposure_99_reset` → Run now). About **15 minutes**: dates roll to today, the fire and dashboard go back to the start, demo clicks are cleared, and the agent team is refreshed. The sidebar shows progress and, when done, "Dates last rolled to today …". Don't run it during a demo.
 
 **Pre-flight (do ~10 min before the room — tested):**
 1. **Warm the warehouse:** open the app (it lands on the **alert board**), click **Track ▸** on the Var wildfire and wait for the map, then open the live dashboard once. First query is the slow one — this avoids a stall in the room.

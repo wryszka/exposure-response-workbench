@@ -62,9 +62,10 @@ databricks bundle run exposure_02_functions -t dev -p DEV  # governed exposure f
 
 ## Reset & roll forward (run the morning of a demo)
 One click puts the whole demo back to a clean start, **dated as of today**:
+- **In the app:** sidebar → **↻ Reset demo** → **Reset now** (shows progress; the app's service principal has CAN_MANAGE_RUN on the job via the app's `reset_job` resource binding).
 - **Jobs UI:** Workflows → Jobs → `exposure_99_reset` → **Run now**.
 - **CLI:** `databricks bundle run exposure_99_reset -t dev -p DEV`
-- Takes **~10 min**. It re-runs the existing notebooks in order — 00 setup → 01 property book + events → feeds (MeteoAlarm, FIRMS, EFFIS, Copernicus flood; frozen samples if a feed is down) → 20 treaty & coverholders → 40 news radar → 50 fire progression → 60 dashboard back to the start → 30 alert sweep → 07 governance — bracketed by `99_reset.py`, which snapshots grants first and restores them last.
+- Takes **~15 min** (incl. refreshing the agent endpoint, whose tool credentials are re-resolved at deploy time). It re-runs the existing notebooks in order — 00 setup → 01 property book + events → feeds (MeteoAlarm, FIRMS, EFFIS, Copernicus flood; frozen samples if a feed is down) → 20 treaty & coverholders → 40 news radar → 50 fire progression → 60 dashboard back to the start → 30 alert sweep → 07 governance — bracketed by `99_reset.py`, which snapshots grants first and restores them last.
 - After it: ACTIVE events are 0–3 days old (Var wildfire today), the news item is 14 h ahead of the satellite, the fire and dashboard are at the start, and the bind / news-decision audit rows are cleared. Hero numbers are deterministic (seed 42) — identical after every reset.
 - System history (alert dispatches, exposure snapshots, raw feed pulls) is append-only and kept.
 Geospatial (`ST_`) needs a serverless / DBR 17.1+ warehouse. Default warehouse: `a3b61648ea4809e3`.

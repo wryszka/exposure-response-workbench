@@ -53,6 +53,12 @@
   .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
   .learn{margin:10px 12px;padding:11px;border:1px solid rgba(52,211,153,.35);border-radius:10px;background:rgba(16,185,129,.06);cursor:pointer}
   .learn b{color:#34d399;font-size:12.5px}.learn p{margin:4px 0 0;font-size:11px;color:#94a3b8;line-height:1.4}
+  .resetbox{margin:10px 12px 0;padding:10px 11px;border:1px solid rgba(255,255,255,.08);border-radius:10px}
+  .resetbtn{background:transparent;border:1px solid rgba(255,255,255,.18);color:#e2e8f0;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer}
+  .resetbtn:hover{background:rgba(255,255,255,.07)} .resetbtn:disabled{opacity:.5;cursor:default}
+  .resetbtn.go{background:var(--brand);border-color:var(--brand);color:#fff} .resetbtn.ghost{border-color:transparent;color:#94a3b8}
+  .resetst{margin-top:6px;font-size:10.5px;color:#94a3b8;line-height:1.4}
+  .resetconfirm{margin-top:8px} .resetconfirm p{margin:0 0 8px;font-size:11px;color:#cbd5e1;line-height:1.45}
   .disc{margin:10px 12px 16px;font-size:10.5px;color:#64748b;line-height:1.45;border-top:1px solid rgba(255,255,255,.06);padding-top:10px}
   .main{margin-left:252px;flex:1;padding:26px 32px;max-width:1200px}
   .head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
@@ -206,7 +212,6 @@
         <a class="navi" data-t="agents" onclick="showTab('agents')">AI agents</a>
         <a class="navi" data-t="ask" onclick="showTab('ask')">Ask the book (Genie)</a>
         <a class="navi" data-t="gov" onclick="showTab('gov')">Governance &amp; provenance</a>
-        <a class="navi" data-t="learn" onclick="showTab('learn')">Learn</a>
       </div>
       <div class="slab">Perils tracked</div>
       <div class="perils">
@@ -216,6 +221,15 @@
       </div>
     </div>
     <div class="learn" onclick="showTab('learn')"><b>▸ Learn — how this works</b><p>Architecture, data flow, and the theory &amp; regulation behind it.</p></div>
+    <div class="resetbox">
+      <button class="resetbtn" id="resetBtn" onclick="askReset()">↻ Reset demo</button>
+      <div class="resetst" id="resetSt">Checking…</div>
+      <div class="resetconfirm" id="resetConfirm" style="display:none">
+        <p>Rolls every date to today, puts the fire back at the start and clears demo clicks. Takes about 15 minutes. Don't run it during a demo.</p>
+        <button class="resetbtn go" onclick="startReset()">Reset now</button>
+        <button class="resetbtn ghost" onclick="$('#resetConfirm').style.display='none'">Cancel</button>
+      </div>
+    </div>
     <div class="disc"><b style="color:#94a3b8">About this demo</b><br/>Synthetic Bricksurance SE data, illustrative event footprints. Not a live operational system. Exposure is computed by governed Unity Catalog functions on real Databricks geospatial SQL.</div>
   </aside>
 
@@ -537,11 +551,41 @@ const eurm=n=>{const v=Number(n||0)/1e6;return '€'+(v>=100?v.toFixed(0):v.toFi
 function toggleWhat(){const w=document.querySelector('.screen.on .whatis');if(w)w.classList.toggle('on');}
 function openLearn(){showTab('learn');}
 
+
+// ── Reset demo: run the one-click reset job (dates roll to today); polls progress while it runs ──
+let RESET_POLL=null;
+function agoText(ms){if(!ms)return'';const m=Math.round((Date.now()-ms)/60000);if(m<1)return'just now';if(m<60)return m+' min ago';const h=Math.round(m/60);return h<48?h+' h ago':Math.round(h/24)+' days ago';}
+async function loadReset(){
+  try{
+    const d=await api('/demo/reset');
+    const btn=$('#resetBtn'), st=$('#resetSt');
+    if(!d.available){btn.disabled=true;st.textContent='Reset not available here.';return;}
+    const L=d.latest, running=L&&(L.state==='RUNNING'||L.state==='PENDING'||L.state==='QUEUED');
+    btn.disabled=!!running;
+    if(running){st.textContent=`Resetting… ${L.steps_done} of ${L.steps_total||'?'} steps done. The app keeps working; numbers settle when it finishes.`;
+      if(!RESET_POLL)RESET_POLL=setInterval(loadReset,20000);}
+    else{
+      if(RESET_POLL){clearInterval(RESET_POLL);RESET_POLL=null;}
+      if(L&&L.result&&L.result!=='SUCCESS'&&L.ended_ms&&(!d.last_success_ms||L.ended_ms>d.last_success_ms))
+        st.textContent=`Last reset didn't finish cleanly (${agoText(L.ended_ms)}). Try again, or run exposure_99_reset in Jobs.`;
+      else st.textContent=d.last_success_ms?`Dates last rolled to today ${agoText(d.last_success_ms)}.`:'Not reset yet.';
+    }
+  }catch(e){$('#resetSt').textContent='Reset status unavailable.';}
+}
+function askReset(){$('#resetConfirm').style.display='';}
+async function startReset(){
+  $('#resetConfirm').style.display='none';$('#resetBtn').disabled=true;$('#resetSt').textContent='Starting the reset…';
+  try{const r=await fetch('/api/demo/reset',{method:'POST'});const d=await r.json();
+    if(!d.ok)$('#resetSt').textContent=(d.reason||'Could not start the reset.');
+    setTimeout(loadReset,3000);
+  }catch(e){$('#resetSt').textContent='Could not start the reset.';$('#resetBtn').disabled=false;}
+}
 async function boot(){
   try{CFG=await api('/config');if(CFG.entity)$('#entityChip').textContent=CFG.entity;if(CFG.dashboard_id&&CFG.workspace_host)$('#dashBtn').style.display='';}catch(e){}
   const d=await api('/events');
   EVENTS=d.events||[]; ZONES=d.zones;   // ZONES = event ids published as active zones (null if not deployed)
   renderBoard();   // land on the clear alert board
+  loadReset();
   loadMaps();      // which dashboard page maps each event (Contract D)
   $('#bufsel').querySelectorAll('button').forEach(b=>b.onclick=()=>{BUF=+b.dataset.b;$('#bufsel').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(SEL)selectEvent(SEL);});
 }

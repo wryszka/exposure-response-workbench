@@ -136,6 +136,59 @@ def api_alerts_run():
         return {"ok": False, "reason": str(e)[:200]}
 
 
+# ─────────────────────────── reset demo (roll every date to today) ───────────────────────────
+def _reset_job_id():
+    jid = os.environ.get("RESET_JOB_ID", "").strip()
+    return int(jid) if jid.isdigit() else None
+
+
+def _reset_run_summary(w, run):
+    tasks = run.tasks or []
+    done = sum(1 for t in tasks if t.state and t.state.result_state is not None)
+    st = run.state
+    return {"run_id": run.run_id,
+            "state": (st.life_cycle_state.value if st and st.life_cycle_state else None),
+            "result": (st.result_state.value if st and st.result_state else None),
+            "started_ms": run.start_time, "ended_ms": run.end_time or None,
+            "steps_done": done, "steps_total": len(tasks)}
+
+
+@app.get("/api/demo/reset")
+def api_demo_reset_status():
+    """Latest run of the reset job: whether one is running, progress, and when the data was last reset."""
+    jid = _reset_job_id()
+    if not jid:
+        return {"available": False, "reason": "reset job not bound to this app"}
+    try:
+        w = config.get_workspace_client()
+        runs = list(w.jobs.list_runs(job_id=jid, limit=5))
+        if not runs:
+            return {"available": True, "latest": None, "last_success_ms": None}
+        latest = w.jobs.get_run(runs[0].run_id)
+        last_ok = next((r.end_time for r in runs if r.state and r.state.result_state
+                        and r.state.result_state.value == "SUCCESS"), None)
+        return {"available": True, "latest": _reset_run_summary(w, latest), "last_success_ms": last_ok}
+    except Exception as e:
+        return {"available": False, "reason": str(e)[:200]}
+
+
+@app.post("/api/demo/reset")
+def api_demo_reset_start():
+    """Start the reset job (dates roll to today, fire back to the start, demo clicks cleared). One at a time."""
+    jid = _reset_job_id()
+    if not jid:
+        return {"ok": False, "reason": "reset job not bound to this app"}
+    try:
+        w = config.get_workspace_client()
+        active = list(w.jobs.list_runs(job_id=jid, active_only=True, limit=1))
+        if active:
+            return {"ok": False, "reason": "a reset is already running", "run_id": active[0].run_id}
+        run = w.jobs.run_now(job_id=jid)
+        return {"ok": True, "run_id": run.run_id}
+    except Exception as e:
+        return {"ok": False, "reason": str(e)[:200]}
+
+
 # ─────────────────────────── event response agent (Claude via FMAPI, governed tools) ───────────────────────────
 @app.get("/api/agent/starters")
 def api_agent_starters():

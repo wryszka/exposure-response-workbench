@@ -24,3 +24,5 @@ env:
     value: databricks-claude-sonnet-4-6
   - name: AGENT_ENDPOINT
     value: exposure-response-agent
+  - name: RESET_JOB_ID
+    valueFrom: reset_job
