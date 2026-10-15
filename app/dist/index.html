@@ -122,6 +122,55 @@
   .lstep .ln{width:26px;height:26px;border-radius:50%;background:#eef2ff;color:#3730a3;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}
   .lstep b{font-size:13.5px}.lstep p{margin:3px 0 0;font-size:12px;color:#475569;line-height:1.5}
   .lstep code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:11px}
+  /* Learn — full page: sticky contents + numbered panels (Solvency II Learn pattern) */
+  .lgrid{display:grid;grid-template-columns:230px 1fr;gap:22px;align-items:start}
+  @media(max-width:900px){.lgrid{grid-template-columns:1fr}}
+  .ltoc{position:sticky;top:16px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px}
+  .ltoc .tk{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut);font-weight:700;margin-bottom:8px}
+  .ltoc a{display:flex;gap:7px;padding:6px 8px;border-radius:7px;font-size:12.5px;color:#334155;text-decoration:none;cursor:pointer;line-height:1.3}
+  .ltoc a:hover{background:#f8fafc}.ltoc a.on{background:var(--brand-soft);color:var(--brand-d);font-weight:600}
+  .ltoc a .tn{color:var(--mut2);font-family:ui-monospace,Menlo,monospace;font-size:11px;min-width:16px}
+  .lpanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:18px;scroll-margin-top:16px}
+  .lpanel .eyebrow{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);font-weight:700}
+  .lpanel h2{font-size:19px;margin:3px 0 4px}.lpanel .lsub{color:var(--mut);font-size:13px;margin:0 0 14px}
+  .lpanel p,.lpanel li{font-size:13px;line-height:1.62;color:#334155}
+  .lpanel ul{margin:6px 0 10px;padding-left:20px}
+  .lpanel code{background:#eef2ff;color:#3730a3;padding:1px 5px;border-radius:4px;font-size:11.5px}
+  .lpanel .voice{border-left:3px solid var(--brand-line);background:#f8fafc;padding:9px 13px;border-radius:0 8px 8px 0;font-size:13px;color:#334155;margin:10px 0}
+  .lpanel .cite{font-size:11.5px;color:var(--mut);margin-top:8px}
+  .lpanel .golive{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+  .lpanel .golive .btn{font-size:12px}
+  .svgbox{border:1px solid var(--line);border-radius:10px;background:#f8fafc;overflow:auto}
+  .svgbox svg{display:block;width:100%;min-width:760px;height:auto}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:900px){.two{grid-template-columns:1fr}}
+  .note{background:var(--amber-bg);border:1px solid #fde68a;color:var(--amber-ink);border-radius:9px;padding:9px 12px;font-size:12.5px;line-height:1.5}
+  /* Data sources & quality */
+  .srcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+  .src{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 14px;display:flex;flex-direction:column;gap:6px}
+  .src .sh{display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .src .sn{font-weight:700;font-size:14px}.src .sp{font-size:11.5px;color:var(--mut)}
+  .src .sc{font-size:12.5px;color:#334155;line-height:1.45}
+  .src .sm{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;margin-top:3px}
+  .src .sm span:nth-child(odd){color:var(--mut)}
+  .rejbanner{display:flex;gap:12px;align-items:flex-start;background:var(--red-bg);border:1px solid #fecaca;color:var(--red-ink);border-radius:12px;padding:13px 15px;margin:4px 0 16px}
+  .rejbanner b{font-size:14px}
+  /* Agents */
+  .agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .agent{background:#fff;border:1px solid var(--line);border-top:4px solid var(--brand);border-radius:12px;padding:14px 15px;font-size:12.5px;line-height:1.5}
+  .agent h4{margin:0;font-size:15px}.agent .ar{color:var(--mut);margin:2px 0 8px}
+  .agent .al{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:700;margin:9px 0 3px}
+  .agent ul{margin:0;padding-left:17px}
+  .agent .sk{display:flex;gap:5px;flex-wrap:wrap}.agent .sk code{background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:5px;font-size:11px}
+  .agent .ex{cursor:pointer;color:var(--brand-d);text-decoration:underline dotted}
+  .sup{background:linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;border-radius:14px;padding:16px 18px;margin-bottom:14px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .sup h3{margin:0;color:#fff;font-size:16px}.sup p{margin:4px 0 0;font-size:12.5px;color:#cbd5e1;line-height:1.5;max-width:720px}
+  .route{display:inline-flex;gap:6px;align-items:center;background:var(--brand-soft);color:var(--brand-d);border-radius:999px;padding:2px 10px;font-size:11.5px;font-weight:700;margin-bottom:6px}
+  /* Also watching (events with no homes in our EU book) */
+  .watchlist{margin-top:14px;border:1px dashed var(--line2);border-radius:12px;padding:11px 14px;background:#fff}
+  .watchlist .wt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:700;margin-bottom:6px}
+  .wrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f1f5f9;font-size:12.5px;flex-wrap:wrap}
+  .wrow:first-of-type{border-top:0}
+  .mapph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:360px;color:var(--mut);background:#f8fafc;border:1px dashed var(--line2);border-radius:10px;text-align:center;padding:20px}
 </style>
 </head>
 <body>
@@ -137,8 +186,14 @@
         <a class="navi on" data-t="exposure" onclick="showTab('exposure')">Exposure — alerts</a>
         <a class="navi" data-t="live" onclick="showTab('live')">Live event <span style="font-size:9px;color:#b45309">● follow</span></a>
         <a class="navi" data-t="radar" onclick="showTab('radar')">Event Radar <span style="font-size:9px;color:#16a34a">● news</span></a>
-        <a class="navi" data-t="ask" onclick="showTab('ask')">Ask the agent &amp; Genie</a>
+      </div>
+      <div class="slab">Explore</div>
+      <div class="nav">
+        <a class="navi" data-t="sources" onclick="showTab('sources')">Data sources &amp; quality</a>
+        <a class="navi" data-t="agents" onclick="showTab('agents')">AI agents</a>
+        <a class="navi" data-t="ask" onclick="showTab('ask')">Ask the book (Genie)</a>
         <a class="navi" data-t="gov" onclick="showTab('gov')">Governance &amp; provenance</a>
+        <a class="navi" data-t="learn" onclick="showTab('learn')">Learn</a>
       </div>
       <div class="slab">Perils tracked</div>
       <div class="perils">
@@ -147,7 +202,7 @@
         <div class="peril"><span class="dot" style="background:var(--violet)"></span> Windstorm <span class="muted" style="margin-left:auto;font-size:11px" title="European severe-weather warnings aggregated from 38 national met services (live)">MeteoAlarm</span></div>
       </div>
     </div>
-    <div class="learn" onclick="openLearn()"><b>▸ Learn — how this works</b><p>From event footprint to threatened properties, in one governed picture.</p></div>
+    <div class="learn" onclick="showTab('learn')"><b>▸ Learn — how this works</b><p>Architecture, data flow, and the theory &amp; regulation behind it.</p></div>
     <div class="disc"><b style="color:#94a3b8">About this demo</b><br/>Synthetic Bricksurance SE data, illustrative event footprints. Not a live operational system. Exposure is computed by governed Unity Catalog functions on real Databricks geospatial SQL.</div>
   </aside>
 
@@ -205,25 +260,19 @@
 
     <div class="screen" id="askScreen">
       <div class="whatis on" style="margin-top:0">
-        <div class="wh">Ask the Event Response agent — and Genie</div>
-        <div class="wb">Two ways to ask in plain English. The <b>Event Response agent</b> (Claude AI) answers <b>only</b> from the real data functions — every number is a genuine lookup, shown under each answer, never made up. <b>Genie</b> answers ad-hoc questions over the book. The <span style="color:#b45309">yellow toggle</span> switches the agent between instant (cached) and live answers.</div>
+        <div class="wh">Ask the book — Genie</div>
+        <div class="wb">Ask ad-hoc questions about the insured book in plain English — totals by country, the most exposed homes, what sits near an active event. Genie writes the query and shows it, so the answer is checkable. For questions about an event's cost, who was told, or a bind decision, use the <a href="#" onclick="showTab('agents');return false">AI agents</a>.</div>
       </div>
-      <div class="grid2">
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-            <div><h3>Event Response agent</h3><p class="h3s">Claude AI — answers from real data functions <span id="agentEp" class="mono muted"></span></p></div>
-            <button class="ybtn" id="liveBtn" onclick="toggleLive()" title="Cached = instant; Live = a fresh answer (slower)">◉ Cached</button>
-          </div>
-          <div class="chat" id="chat"></div>
-          <div id="starters" style="display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 4px"></div>
-          <div class="ask-in"><input id="agentQ" placeholder="e.g. What's my exposure to the Var wildfire, gross and net?" onkeydown="if(event.key==='Enter')askAgent()"><button class="btn" onclick="askAgent()">Ask</button></div>
+      <div class="card">
+        <h3>Ask the Exposure Book — Genie</h3>
+        <p class="h3s">Natural-language analytics over the book; Genie shows the SQL behind the answer. <span id="genieState" class="muted"></span></p>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 10px">
+          <span class="starter" onclick="askGenieQ(this.textContent)">Total sum insured by country</span>
+          <span class="starter" onclick="askGenieQ(this.textContent)">Top 10 most exposed properties</span>
+          <span class="starter" onclick="askGenieQ(this.textContent)">How many properties within 100 m of an active fire?</span>
         </div>
-        <div class="card">
-          <h3>Ask the Exposure Book — Genie</h3>
-          <p class="h3s">Natural-language analytics over the book; Genie shows the SQL behind the answer. <span id="genieState" class="muted"></span></p>
-          <div class="ask-in"><input id="genieQ" placeholder="e.g. total sum insured by country" onkeydown="if(event.key==='Enter')askGenie()"><button class="btn" onclick="askGenie()">Ask Genie</button></div>
-          <div id="genieOut" style="margin-top:12px"></div>
-        </div>
+        <div class="ask-in"><input id="genieQ" placeholder="e.g. total sum insured by country" onkeydown="if(event.key==='Enter')askGenie()"><button class="btn" onclick="askGenie()">Ask Genie</button></div>
+        <div id="genieOut" style="margin-top:12px"></div>
       </div>
     </div><!-- /askScreen -->
 
@@ -256,14 +305,9 @@
             <div id="liveControls" style="display:flex;gap:7px"></div>
           </div>
           <div id="liveBadges" style="margin:2px 0 10px"></div>
-          <div class="mapwrap" id="liveMap"><div class="loading">Not following yet — hit “Follow this story”.</div></div>
+          <div id="liveMap"><div class="mapph"><b>The live map appears here</b><span>Hit “Start following the fire” — the dashboard map follows each update as the fire spreads.</span></div></div>
           <div id="liveKpis"></div>
-          <div class="leg">
-            <span><span class="dot" style="background:var(--red);opacity:.5"></span> fire footprint</span>
-            <span><span class="dot" style="background:#b91c1c"></span> 0-50m</span>
-            <span><span class="dot" style="background:#ea580c"></span> 50-100m</span>
-            <span><span class="dot" style="background:#f59e0b"></span> 100-200m</span>
-          </div>
+          <div class="muted" style="font-size:11.5px;margin-top:6px">Map: Databricks AI/BI dashboard (Live Fire Tracker). Red = insured homes in the fire's path. <a id="liveDashTab" target="_blank" rel="noopener">Open in new tab ↗</a></div>
         </div>
         <div>
           <div class="card" id="vignetteCard"></div>
@@ -274,24 +318,175 @@
         </div>
       </div>
     </div><!-- /liveScreen -->
-  </main>
-</div>
+    <div class="screen" id="sourcesScreen">
+      <div class="whatis on" style="margin-top:0">
+        <div class="wh">Data sources &amp; quality — what we ingest, how fresh it is, and what we refused</div>
+        <div class="wb">Every hazard feed we rely on, in one place: what it carries, whether it's <b>real-time</b>, a <b>batch</b>, or a <b>frozen sample</b> kept for a reproducible room, when it last arrived and how many records came in. Every pull passes a <b>quality gate</b> before it can touch the book — if a batch fails a check (for example, too many records outside Europe), it is <b>rejected and quarantined</b> and the previous good data stays in use. The log below shows every decision and why.</div>
+      </div>
+      <div id="srcView"><div class="loading">Loading sources…</div></div>
+    </div><!-- /sourcesScreen -->
 
-<div class="lov" id="lov" onclick="if(event.target===this)closeLearn()">
-  <div class="lbox">
-    <h2>How Exposure &amp; Event Response works</h2>
-    <p class="lc">Deterministic engines measure; the picture is one governed source of truth.</p>
-    <div class="lstep"><span class="ln">1</span><div><b>Trust the data</b><p>The insured property book (<code>3_property</code>) carries a geocoded location for every exposure — the same policy spine the rest of the estate uses.</p></div></div>
-    <div class="lstep"><span class="ln">2</span><div><b>Find the footprint</b><p>An event footprint (<code>2_event_footprint</code>) arrives from a hazard feed — wildfire perimeter, flood extent, storm swath. Multi-segment events are unioned into one shape.</p></div></div>
-    <div class="lstep"><span class="ln">3</span><div><b>Measure the exposure</b><p>The governed function <code>fn_exposure_in_footprint</code> intersects properties against the footprint using Databricks geospatial SQL (<code>ST_DWithin</code>) in EPSG:3035, so 50/100/200 m are true metres — inside the footprint counts as 0 m.</p></div></div>
-    <div class="lstep"><span class="ln">4</span><div><b>See it whole — across borders</b><p><code>fn_event_exposure_summary</code> rolls the same rows up by band and by country, so one event shows its entire cross-border exposure in a single view — no country silos.</p></div></div>
-    <div class="lstep"><span class="ln">5</span><div><b>Net of treaty, and by coverholder</b><p><code>fn_gross_to_net</code> turns the threatened sum insured into a modelled loss (<code>ref_damage_factor</code>) and cedes it through the Property Cat XL tower to a net retained figure; <code>fn_exposure_by_coverholder</code> splits the same exposure by delegated authority — the gross / net / by-coverholder answer in one governed place.</p></div></div>
-    <div class="lstep"><span class="ln">6</span><div><b>Tell the people who aren't logged in</b><p>When an event clears its peril threshold, <code>fn_event_delta</code> works out what's newly threatened since the last look and an event-grouped digest is dispatched to claims, underwriting &amp; exposure management — one alert carrying the whole cross-border picture. Every dispatch is audited in <code>gov_alert_dispatch</code>, and it runs on a schedule with nobody logged in.</p></div></div>
-    <div class="lstep"><span class="ln">★</span><div><b>Follow it live — and refuse anti-selection</b><p>On the <b>Live event</b> tab, a press report is <b>followed</b> as the fire spreads: the footprint grows (<code>2_event_progression</code>), threatened exposure climbs, and the satellite (FIRMS) catches up and corroborates. At the same time a buyer whose address the fire reaches is <b>declined at bind</b> by the governed <code>fn_bind_check</code> — you can't insure a home already in an active fire zone. The agent explains, an underwriter can override, and every decision is audited in <code>gov_bind_decision</code>.</p></div></div>
-    <div class="lstep"><span class="ln">7</span><div><b>Ask in plain English</b><p>The <b>Event Response agent</b> (Claude on the Foundation Model API) answers only by calling the governed functions — every figure is a real tool call, shown under the answer, never invented. <b>Genie</b> answers ad-hoc questions over the book and shows the SQL it wrote.</p></div></div>
-    <div class="lstep"><span class="ln">8</span><div><b>Govern &amp; trust</b><p>Every event carries provenance (live feed vs frozen footprint, source, ingest time via <code>gov_data_provenance</code>); the book's movement is auditable across snapshots (<code>gov_exposure_history</code>); and every alert dispatch is append-only (<code>gov_alert_audit</code>).</p></div></div>
-    <div style="text-align:right;margin-top:12px"><button class="btn" onclick="closeLearn()">Close</button></div>
-  </div>
+    <div class="screen" id="agentsScreen">
+      <div class="whatis on" style="margin-top:0">
+        <div class="wh">AI agents — a supervisor and six specialists, each with a clear job</div>
+        <div class="wb">Ask a question and the <b>supervisor</b> sends it to the specialist whose job it is — the answer shows <b>who answered, why they were picked, and which governed functions they called</b>. Agents read and explain; they never invent a number (every figure comes from a governed function) and they never take a consequential action on their own — promoting an event, sending an alert or overriding a bind stays with a person. The <span style="color:#b45309">yellow toggle</span> switches between instant (cached) and fresh answers.</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div><h3>Ask the agent team</h3><p class="h3s" id="agentEpState">Checking the agent endpoint…</p></div>
+          <button class="ybtn" id="liveBtn" onclick="toggleLive()" title="Cached = instant; Live = a fresh answer (slower)">◉ Cached</button>
+        </div>
+        <div class="chat" id="chat"></div>
+        <div id="starters" style="display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 4px"></div>
+        <div class="ask-in"><input id="agentQ" placeholder="e.g. What's my exposure to the Var wildfire, gross and net?" onkeydown="if(event.key==='Enter')askAgent()"><button class="btn" onclick="askAgent()">Ask</button></div>
+      </div>
+      <div id="agentsView"><div class="loading">Loading the agent team…</div></div>
+    </div><!-- /agentsScreen -->
+
+    <div class="screen" id="learnScreen">
+      <div class="lgrid">
+        <aside class="ltoc" id="ltoc">
+          <div class="tk">Learn</div>
+          <a data-l="l-how" onclick="lgo('l-how')"><span class="tn">1</span>How it works</a>
+          <a data-l="l-arch" onclick="lgo('l-arch')"><span class="tn">2</span>Architecture</a>
+          <a data-l="l-flow" onclick="lgo('l-flow')"><span class="tn">3</span>Data flow</a>
+          <a data-l="l-cat" onclick="lgo('l-cat')"><span class="tn">4</span>Cat modelling basics</a>
+          <a data-l="l-s2" onclick="lgo('l-s2')"><span class="tn">5</span>Solvency II &amp; reinsurance</a>
+          <a data-l="l-lloyds" onclick="lgo('l-lloyds')"><span class="tn">6</span>Exposure-management practice</a>
+          <a data-l="l-data" onclick="lgo('l-data')"><span class="tn">7</span>Data, licensing &amp; climate</a>
+          <p class="muted" style="font-size:11px;margin:10px 4px 0;line-height:1.45">~12 minutes. Each panel ends with links into the running workbench, so the ideas attach to real things.</p>
+        </aside>
+        <div>
+          <div class="lpanel" id="l-how">
+            <div class="eyebrow">1 · How it works</div>
+            <h2>From a catastrophe to a decision</h2>
+            <p class="lsub">Nine steps, each one a governed function or table you can open.</p>
+            <div class="voice">“When a fire starts, I need three answers fast: which of our homes are in the path, what it could cost us after reinsurance, and who needs to know. Then I need to stop selling cover in that zone.” — an exposure manager</div>
+            <div class="lstep"><span class="ln">1</span><div><b>Trust the data</b><p>The insured property book (<code>3_property</code>) carries a geocoded location for every insured home — the same policy spine the rest of the estate uses.</p></div></div>
+            <div class="lstep"><span class="ln">2</span><div><b>Find the footprint</b><p>An event footprint (<code>2_event_footprint</code>) arrives from a hazard feed — wildfire perimeter, flood extent, storm warning area — after passing the quality gate. Multi-part events are joined into one shape.</p></div></div>
+            <div class="lstep"><span class="ln">3</span><div><b>Measure the exposure</b><p><code>fn_exposure_in_footprint</code> intersects homes with the footprint using Databricks geospatial SQL in a metre-true projection (EPSG:3035), so 50 / 100 / 200 m are real metres; inside the footprint counts as 0 m.</p></div></div>
+            <div class="lstep"><span class="ln">4</span><div><b>See it whole — across borders</b><p><code>fn_event_exposure_summary</code> rolls the same rows up by distance band and by country, so one event shows its whole cross-border exposure — no country silos.</p></div></div>
+            <div class="lstep"><span class="ln">5</span><div><b>Net of reinsurance, and by coverholder</b><p><code>fn_gross_to_net</code> turns the sum insured at risk into a modelled loss (<code>ref_damage_factor</code>) and runs it through the Property Cat XL programme to what we keep; <code>fn_exposure_by_coverholder</code> splits it by delegated authority.</p></div></div>
+            <div class="lstep"><span class="ln">6</span><div><b>Tell the people who aren't logged in</b><p>When an event crosses its threshold, <code>fn_event_delta</code> works out what's new since the last look and one alert per event goes to claims, underwriting and exposure management — every dispatch kept in <code>gov_alert_dispatch</code>.</p></div></div>
+            <div class="lstep"><span class="ln">7</span><div><b>Follow it live — and refuse anti-selection</b><p>A developing fire is followed as it spreads (<code>2_event_progression</code>); at the same time <code>fn_bind_check</code> declines cover on a home inside the active zone, and the underwriting workbench uses <code>fn_zone_check</code> the same way for UK flood warnings. Every decision is recorded.</p></div></div>
+            <div class="lstep"><span class="ln">8</span><div><b>Ask in plain English</b><p>A supervisor agent routes questions to six specialists; each answers only by calling governed functions. Genie answers ad-hoc questions over the book and shows its SQL.</p></div></div>
+            <div class="lstep"><span class="ln">9</span><div><b>Govern &amp; trust</b><p>Every feed is quality-checked and logged (<code>gov_feed_dq_log</code>), every event carries provenance (<code>gov_data_provenance</code>), exposure history is time-travelable (<code>gov_exposure_history</code>) and every alert and bind decision is append-only.</p></div></div>
+            <div class="golive"><button class="btn" onclick="showTab('exposure')">Open the alert board</button><button class="btn" onclick="showTab('live')">Follow the fire</button><button class="btn" onclick="showTab('gov')">Governance</button></div>
+          </div>
+
+          <div class="lpanel" id="l-arch">
+            <div class="eyebrow">2 · Architecture</div>
+            <h2>One governed platform, end to end</h2>
+            <p class="lsub">Feeds come in on the left; decisions go out on the right. Everything in between lives in Unity Catalog.</p>
+            <div class="svgbox" id="archSvg"></div>
+            <div class="two" style="margin-top:12px">
+              <div><b style="font-size:13px">Built from standard Databricks pieces</b><ul>
+                <li><b>Lakeflow Jobs (serverless)</b> pull each feed on a schedule, with retry and back-off; a streaming ingest (Auto Loader) shows records arriving live.</li>
+                <li><b>Delta tables in Unity Catalog</b> hold raw pulls, footprints, the insured book and every audit log — with lineage, permissions and history.</li>
+                <li><b>Governed SQL functions</b> do all the maths (geospatial, gross → net, bind checks). The app, the agents and the dashboards all call the same functions, so the numbers agree everywhere.</li>
+              </ul></div>
+              <div><b style="font-size:13px">Consumed in many places</b><ul>
+                <li><b>This app</b> and <b>AI/BI dashboards</b> (the maps).</li>
+                <li><b>Alerts</b> — a scheduled job emails the right people.</li>
+                <li><b>AI agents</b> on Agent Framework, using the functions as tools through a managed MCP server.</li>
+                <li><b>Genie</b> for ad-hoc questions, and the <b>underwriting workbench</b>, which checks active zones at bind.</li>
+                <li>Everything scales to zero when no one is using it.</li>
+              </ul></div>
+            </div>
+            <div class="golive"><button class="btn" onclick="openCatalog()">Open the schema in Catalog Explorer ↗</button><button class="btn" onclick="showTab('sources')">See the feeds</button><button class="btn" onclick="showTab('agents')">Meet the agents</button></div>
+          </div>
+
+          <div class="lpanel" id="l-flow">
+            <div class="eyebrow">3 · Data flow</div>
+            <h2>Where the data comes from, and what happens to it</h2>
+            <p class="lsub">Six stages from a feed to a decision. Each stage writes to a named table, so any number can be traced back to the pull that produced it.</p>
+            <div class="svgbox" id="flowSvg"></div>
+            <div class="tscroll" style="margin-top:12px;max-height:none"><table>
+              <thead><tr><th>Source</th><th>What it carries</th><th>How it arrives</th><th>Lands in</th></tr></thead>
+              <tbody>
+                <tr><td><b>MeteoAlarm</b></td><td>Severe-weather warnings from 38 European met services</td><td>Real-time feed, pulled by the feeds job</td><td class="mono">1_hazard_feed_raw → 2_event_footprint</td></tr>
+                <tr><td><b>GDACS</b></td><td>Global disaster alerts (wildfire, flood, cyclone)</td><td>Near-real-time RSS, news job</td><td class="mono">1_news_raw → 2_news_signal</td></tr>
+                <tr><td><b>NASA FIRMS</b></td><td>Satellite active-fire hotspots</td><td>Near-real-time (~3 h); frozen sample without a key</td><td class="mono">1_hazard_feed_raw → 2_event_footprint</td></tr>
+                <tr><td><b>Copernicus EFFIS</b></td><td>Burnt-area perimeters (the source our client uses)</td><td>Daily batch; frozen sample in the room</td><td class="mono">1_hazard_feed_raw → 2_event_footprint</td></tr>
+                <tr><td><b>Copernicus EMS / GloFAS</b></td><td>Flood extents and flood forecasts</td><td>Event-driven / forecast; frozen sample</td><td class="mono">1_hazard_feed_raw → 2_event_footprint</td></tr>
+                <tr><td><b>Environment Agency (UK)</b></td><td>Live flood warnings and warning areas</td><td>Real-time (updated every ~15 min), feeds job</td><td class="mono">2_event_footprint → mv_active_zones</td></tr>
+                <tr><td><b>Press wire</b></td><td>Breaking news (synthetic in the demo)</td><td>On arrival; Event Radar scan</td><td class="mono">1_news_raw → fn_news_radar</td></tr>
+                <tr><td><b>Insured book</b></td><td>Geocoded homes, sum insured, coverage, coverholder</td><td>Policy system (synthetic in the demo)</td><td class="mono">3_property</td></tr>
+              </tbody></table></div>
+            <p class="cite">Cadences as configured in this demo; the jobs are scheduled in production and run on demand in the room. A rejected batch never reaches <code>2_event_footprint</code> — it goes to <code>1_feed_quarantine</code> and the previous good data stays in use.</p>
+            <div class="golive"><button class="btn" onclick="showTab('sources')">Live status of every source</button><button class="btn" onclick="showTab('gov')">Provenance per event</button></div>
+          </div>
+
+          <div class="lpanel" id="l-cat">
+            <div class="eyebrow">4 · Theory</div>
+            <h2>Cat-modelling basics</h2>
+            <p class="lsub">Every catastrophe estimate, from a spreadsheet to a full cat model, combines the same four ideas.</p>
+            <div class="two">
+              <div><ul>
+                <li><b>Hazard</b> — where the event is and how intense it is (a fire perimeter, a flood depth, a wind speed).</li>
+                <li><b>Exposure</b> — what we insure, and exactly where: location, sum insured, construction, occupancy.</li>
+                <li><b>Vulnerability</b> — how much damage a given intensity causes, expressed as a damage ratio (share of the sum insured lost).</li>
+                <li><b>Financial terms</b> — deductibles, limits and reinsurance, which turn the ground-up loss into gross and net.</li>
+              </ul></div>
+              <div><div class="voice" style="margin-top:0">Loss ≈ Σ (sum insured × damage ratio at that home's hazard intensity), then apply policy terms and reinsurance.</div>
+                <p>This workbench keeps the vulnerability deliberately simple and visible: a damage factor per peril and distance band (<code>ref_damage_factor</code>). Distance stands in for intensity — embers carry, flood depth falls away — and 50 / 100 / 200 m are the client's own thresholds.</p></div>
+            </div>
+            <p><b>Accumulation</b> is the total we have inside one footprint. It's the concentrations, not the averages, that hurt — which is why the board counts homes in the path, not portfolio totals.</p>
+            <p><b>What a full cat model adds:</b> thousands of simulated years of events (a stochastic event set), uncertainty around each damage estimate, and the outputs capital and reinsurance work with — exceedance-probability curves (occurrence and aggregate), average annual loss, and return-period losses such as 1-in-200. A vendor or open-source model (for example Oasis LMF) can write its results into the same tables; the workbench stays the place where live events meet the book.</p>
+            <div class="golive"><button class="btn" onclick="showTab('exposure')">See the distance bands on an event</button></div>
+          </div>
+
+          <div class="lpanel" id="l-s2">
+            <div class="eyebrow">5 · Regulation</div>
+            <h2>Solvency II natural catastrophe risk, and why reinsurance matters</h2>
+            <p class="lsub">Capital is held against a 1-in-200-year loss; catastrophes are one of its largest drivers for a property insurer.</p>
+            <ul>
+              <li><b>The calibration.</b> The Solvency Capital Requirement is set at the 99.5% value-at-risk over one year — a 1-in-200-year bad outcome (Directive 2009/138/EC, Article 101).</li>
+              <li><b>Where catastrophe risk sits.</b> It is part of the non-life underwriting risk module. In the standard formula, the non-life catastrophe risk sub-module covers natural catastrophes (windstorm, earthquake, flood, hail and subsidence) and man-made catastrophes, including a <b>fire</b> test based on the largest concentration of buildings within a <b>200 m radius</b> (Commission Delegated Regulation (EU) 2015/35). Firms can use an approved internal model instead.</li>
+              <li><b>Reinsurance reduces the charge.</b> Recognised risk-mitigation such as a catastrophe excess-of-loss (Cat XL) programme reduces the net loss in a catastrophe and so the capital needed. Here the programme keeps the first €25m and cedes layers above it up to €400m — exactly what the gross → net card computes.</li>
+              <li><b>Your own view (ORSA).</b> The own risk and solvency assessment (Directive 2009/138/EC, Article 45) expects the firm's own view of its risks, including perils the standard formula handles only indirectly, such as wildfire, and stress and scenario tests.</li>
+            </ul>
+            <div class="note">Why the 200 m matters twice: the client's 200 m alert band and the standard formula's fire-concentration test are the same idea — know where your biggest cluster is.</div>
+            <p class="cite">References at the level of the regulation; the workbench's figures are illustrative and not a capital calculation.</p>
+            <div class="golive"><button class="btn" onclick="showTab('exposure');trackEvent('EVT_FIRE_VAR')">See gross → net on the Var fire</button></div>
+          </div>
+
+          <div class="lpanel" id="l-lloyds">
+            <div class="eyebrow">6 · Practice</div>
+            <h2>Exposure-management practice — what good looks like</h2>
+            <p class="lsub">The disciplines a London-market or European exposure team is expected to run, and where each shows up here.</p>
+            <ul>
+              <li><b>Realistic Disaster Scenarios (RDS).</b> Lloyd's asks managing agents to estimate their gross and net losses under prescribed extreme scenarios (for example a European windstorm or a UK flood). It is the same question this workbench answers for a live event: what does this footprint cost us, gross and net?</li>
+              <li><b>Accumulation control.</b> Aggregates by peril and zone, monitored against appetite limits continuously — not once a year. The alert thresholds are that control made automatic.</li>
+              <li><b>Event response.</b> When an event develops: find the exposed policies, estimate the loss, tell claims, reinsurance and management, and keep tracking as it evolves — then stop writing new business in the zone.</li>
+              <li><b>Delegated-authority oversight.</b> Risk written by coverholders under binders must be visible to the insurer in time to act — hence the exposure split by coverholder.</li>
+            </ul>
+            <div class="golive"><button class="btn" onclick="showTab('live')">Event response, live</button><button class="btn" onclick="showTab('exposure')">Alerts by event</button></div>
+          </div>
+
+          <div class="lpanel" id="l-data">
+            <div class="eyebrow">7 · Data, licensing &amp; climate</div>
+            <h2>Open data you can use — and the obligations that come with it</h2>
+            <p class="lsub">Most live hazard data is free and open, but each source has terms, and location data about people is personal data.</p>
+            <div class="tscroll" style="max-height:none"><table>
+              <thead><tr><th>Source</th><th>Terms of use</th></tr></thead>
+              <tbody>
+                <tr><td><b>Copernicus</b> (EFFIS, EMS, GloFAS)</td><td>EU free, full and open data policy; attribute Copernicus.</td></tr>
+                <tr><td><b>NASA FIRMS</b></td><td>Open NASA Earth-science data; attribute NASA FIRMS.</td></tr>
+                <tr><td><b>MeteoAlarm</b></td><td>Re-use under MeteoAlarm / EUMETNET terms, with attribution.</td></tr>
+                <tr><td><b>GDACS</b></td><td>Free use with attribution (UN and European Commission).</td></tr>
+                <tr><td><b>Environment Agency</b></td><td>Open Government Licence v3.0 — “Contains Environment Agency data”.</td></tr>
+              </tbody></table></div>
+            <ul style="margin-top:10px">
+              <li><b>GDPR.</b> A precise location linked to a policyholder is personal data. Use it for a lawful purpose (the contract), keep only what you need, and control access — Unity Catalog row filters and column masks do this per role. This demo uses synthetic data only.</li>
+              <li><b>Climate.</b> Wildfire seasons in southern Europe are lengthening and heavy-rainfall floods are becoming more frequent. EIOPA expects insurers to assess climate risk in the ORSA, including with scenarios where material, and the CSRD (Directive (EU) 2022/2464) brings climate disclosure under ESRS E1 — the same physical-risk data feeds both.</li>
+            </ul>
+            <div class="golive"><button class="btn" onclick="showTab('sources')">See each source's licence and status</button></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /learnScreen -->
+  </main>
 </div>
 
 <div class="lov" id="dov" onclick="if(event.target===this)closeDigest()">
@@ -306,33 +501,46 @@
 <script>
 const PERIL={FIRE:{c:'var(--red)',label:'Wildfire',ic:'🔥'},FLOOD:{c:'var(--blue)',label:'Flood',ic:'🌊'},STORM:{c:'var(--violet)',label:'Windstorm',ic:'🌀'}};
 const BANDS=[['0-50m','var(--b50)'],['50-100m','var(--b100)'],['100-200m','var(--b200)']];
-let EVENTS=[], SEL=null, BUF=200, CFG={}, FILTER='all', CUR_DIGEST='';
+let EVENTS=[], SEL=null, BUF=200, CFG={}, CUR_DIGEST='', ZONES=null, MAPS={};
 
 const $=s=>document.querySelector(s);
 async function api(p){const r=await fetch('/api'+p);return r.json();}
 // Move the embedded dashboard's tick in step with the in-app follow (fire-and-forget; dashboard reloads after the write).
-function syncDash(i){fetch('/api/live/cursor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t_index:i})}).then(()=>setTimeout(dashReload,1500)).catch(()=>{});}
+function syncDash(i){fetch('/api/live/cursor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t_index:i})}).then(()=>setTimeout(()=>{dashReload();liveDashReload();},1500)).catch(()=>{});}
+// The Live event map is the Live Fire Tracker dashboard, embedded; it reads live_cursor, so each update moves it.
+function liveDashUrls(){return CFG.dashboard_id?mapUrls({dashboard_id:CFG.dashboard_id}):null;}
+function liveDashShow(){
+  const u=liveDashUrls();
+  if(!u){$('#liveMap').innerHTML='<div class="mapph"><b>Map unavailable</b><span>The Live Fire Tracker dashboard is not configured.</span></div>';return;}
+  if(!$('#liveDashFrame')){ $('#liveMap').innerHTML=`<iframe id="liveDashFrame" title="Live fire tracker" style="width:100%;height:560px;border:1px solid var(--line);border-radius:10px;background:#fff"></iframe>`; $('#liveDashFrame').src=u.embed; }
+  const t=$('#liveDashTab'); if(t) t.href=u.tab;
+}
+function liveDashReload(){const f=$('#liveDashFrame');const u=liveDashUrls();if(f&&u)f.src=u.embed;}
 const num=n=>Number(n||0).toLocaleString('en-GB');
 const eurm=n=>{const v=Number(n||0)/1e6;return '€'+(v>=100?v.toFixed(0):v.toFixed(1))+'m';};
 
-function toggleWhat(){$('#whatis').classList.toggle('on');}
-function openLearn(){$('#lov').classList.add('on');}
-function closeLearn(){$('#lov').classList.remove('on');}
+function toggleWhat(){const w=document.querySelector('.screen.on .whatis');if(w)w.classList.toggle('on');}
+function openLearn(){showTab('learn');}
 
 async function boot(){
   try{CFG=await api('/config');if(CFG.entity)$('#entityChip').textContent=CFG.entity;if(CFG.dashboard_id&&CFG.workspace_host)$('#dashBtn').style.display='';}catch(e){}
   const d=await api('/events');
-  EVENTS=d.events||[];
+  EVENTS=d.events||[]; ZONES=d.zones;   // ZONES = event ids published as active zones (null if not deployed)
   renderBoard();   // land on the clear alert board
+  loadMaps();      // which dashboard page maps each event (Contract D)
   $('#bufsel').querySelectorAll('button').forEach(b=>b.onclick=()=>{BUF=+b.dataset.b;$('#bufsel').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(SEL)selectEvent(SEL);});
 }
 
 // ── ALERT BOARD: the landing — one clear card per active event; click Track to follow one ──
 const HERO_EVENT='EVT_FIRE_VAR';  // the story's hero card is always first; live warnings follow
 function renderBoard(){
-  const list=[...EVENTS].sort((a,b)=>(b.event_id===HERO_EVENT)-(a.event_id===HERO_EVENT));
-  if(!list.length){$('#boardList').innerHTML='<div class="loading">No active events.</div>';return;}
-  $('#boardList').innerHTML=list.map(e=>{
+  const all=[...EVENTS].sort((a,b)=>(b.event_id===HERO_EVENT)-(a.event_id===HERO_EVENT));
+  if(!all.length){$('#boardList').innerHTML='<div class="loading">No active events.</div>';return;}
+  // Events that touch our book get a full alert card; events with no insured homes in their path (e.g. a UK
+  // flood warning — our book is European) go in a compact "Also watching" list.
+  const touching=all.filter(e=>Number(e.threatened_count||0)>0);
+  const watching=all.filter(e=>Number(e.threatened_count||0)<=0);
+  const card=e=>{
     const p=PERIL[e.peril_code]||{c:'#64748b',label:e.peril_code,ic:'•'};
     const live=isLive(e);
     const status=live
@@ -348,8 +556,17 @@ function renderBoard(){
         <div class="muted" style="font-size:11.5px;margin-top:2px">as of ${esc(e.event_date)} · ${live?'live feed':'frozen sample'} · ${esc(e.source||'')}</div>
       </div>
       <div style="flex-shrink:0"><span style="display:inline-block;background:#2563eb;color:#fff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px">Track ▸</span></div>
-    </div>`;
-  }).join('');
+    </div>`;};
+  const zoneTag=e=>(ZONES&&ZONES.includes(e.event_id))
+    ? '<span class="pill" style="background:#eef2ff;color:#3730a3">Active zone published to underwriting</span>' : '';
+  const wrow=e=>{const p=PERIL[e.peril_code]||{c:'#64748b',label:e.peril_code,ic:'•'};const live=isLive(e);
+    return `<div class="wrow"><span style="font-size:17px">${p.ic}</span><b>${esc(e.event_name)}</b>
+      <span class="muted">${live?'● live':'frozen'} · ${esc(e.source||'')} · ${esc(e.event_date||'')}</span>
+      <span class="muted">· no homes in our book</span> ${zoneTag(e)}</div>`;};
+  const anyZone=watching.some(e=>ZONES&&ZONES.includes(e.event_id));
+  $('#boardList').innerHTML=(touching.length?touching.map(card).join(''):'<div class="loading">No active event touches our book right now.</div>')
+    +(watching.length?`<div class="watchlist"><div class="wt">Also watching · ${watching.length}</div>${watching.map(wrow).join('')}
+      ${anyZone?'<div class="muted" style="font-size:11.5px;margin-top:6px">These don\'t touch our European book, but every active event is published as an <b>active zone</b>. The underwriting workbench checks new UK business against them at bind — a home inside an active flood-warning area is referred.</div>':''}</div>`:'');
 }
 function trackEvent(eid){
   $('#board').style.display='none';
@@ -383,23 +600,26 @@ function backToBoard(){
   window.scrollTo(0,0);
 }
 
-function setFilter(f){FILTER=f;renderPicker();}
 function isLive(e){return e.is_live===true||e.is_live==='true';}
-function renderPicker(){
-  const fc=(k,l)=>`<span onclick="setFilter('${k}')" style="cursor:pointer;font-size:11.5px;padding:2px 9px;border-radius:20px;border:1px solid ${FILTER===k?'#16a34a':'#cbd5e1'};background:${FILTER===k?'#16a34a':'#fff'};color:${FILTER===k?'#fff':'#475569'}">${l}</span>`;
-  const chips=`<div style="display:flex;gap:6px;margin:0 0 10px">${fc('all','All')}${fc('live','● Live')}${fc('frozen','Frozen')}</div>`;
-  const list=EVENTS.filter(e=>FILTER==='all'||(FILTER==='live'?isLive(e):!isLive(e)));
-  if(!list.length){$('#events').innerHTML=chips+'<div class="loading">No events for this filter.</div>';return;}
-  $('#events').innerHTML=chips+list.map(e=>{const p=PERIL[e.peril_code]||{c:'#64748b',label:e.peril_code,ic:'•'};
-    const live=isLive(e);
-    const badge=`<div style="margin-top:5px;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:${live?'#16a34a':'#94a3b8'}">${live?'● LIVE FEED':'frozen'} · ${esc(e.source||'')}</div>`;
-    return `<div class="ev ${e.event_id===SEL?'on':''}" style="border-left:3px solid ${live?'#16a34a':'transparent'}" onclick="selectEvent('${esc(e.event_id)}')">
-      <div class="ep" style="color:${p.c}">${p.ic} ${esc(p.label)}</div>
-      <div class="en">${esc(e.event_name)}</div>
-      <div class="em">${esc(e.event_date)} · ${e.n_segments>1?e.n_segments+' segments':'single footprint'}</div>
-      <div class="ect">${num(e.threatened_count)} <span>within 200 m</span></div>
-      ${badge}
-    </div>`;}).join('');
+// ── maps: every map is an embedded AI/BI dashboard page (Contract D: ref_dashboard_pages) ──
+async function loadMaps(){
+  try{const d=await api('/maps');MAPS={};(d.pages||[]).forEach(r=>{MAPS[r.event_id]=r;});}catch(e){MAPS={};}
+}
+function wsBase(){let h=CFG.workspace_host||'';if(h&&!/^https?:\/\//.test(h))h='https://'+h;return h;}
+function wsO(){return CFG.workspace_id?('?o='+encodeURIComponent(CFG.workspace_id)):'';}
+function mapUrls(row){
+  if(!row)return null;
+  const h=wsBase(), o=wsO();
+  const embed=row.embed_url||(h+'/embed/dashboardsv3/'+encodeURIComponent(row.dashboard_id)+(row.page_id?'/pages/'+encodeURIComponent(row.page_id):'')+o);
+  const tab=h+'/dashboardsv3/'+encodeURIComponent(row.dashboard_id)+'/published'+(row.page_id?'/pages/'+encodeURIComponent(row.page_id):'')+o;
+  return {embed,tab};
+}
+function mapEmbed(eid){
+  const row=MAPS[eid]||MAPS['*'];
+  const u=mapUrls(row);
+  if(!u)return `<div class="mapph"><b>Map loading</b><span>The dashboard map for this event isn't published yet. The numbers on this page are live.</span></div>`;
+  return `<iframe title="${esc((row&&row.title)||'Event map')}" src="${u.embed}" style="width:100%;height:520px;border:1px solid var(--line);border-radius:10px;background:#fff" loading="lazy"></iframe>
+    <div class="muted" style="font-size:11.5px;margin-top:6px">${row.event_id==='*'?'Book-wide map. ':''}<a href="${u.tab}" target="_blank" rel="noopener">Open in new tab ↗</a></div>`;
 }
 
 async function selectEvent(eid){
@@ -468,13 +688,9 @@ function renderView(d){
     ${kpis}
     <div class="grid2">
       <div class="card">
-        <h3>Event footprint &amp; threatened properties</h3>
-        <p class="h3s">Properties coloured by distance band. Inside the footprint counts as 0 m. Buffer ${BUF} m.</p>
-        <div class="mapwrap" id="mapwrap">${buildMap(d.footprint||[],props,p.c)}</div>
-        <div class="leg">
-          <span><span class="dot" style="background:${p.c};opacity:.5"></span> footprint</span>
-          ${BANDS.map(([b,c])=>`<span><span class="dot" style="background:${c}"></span> ${b} (${num((byBand[b]||{}).n||0)})</span>`).join('')}
-        </div>
+        <h3>Event map</h3>
+        <p class="h3s">The footprint and the insured homes around it — Databricks AI/BI dashboard. Red = in the path.</p>
+        ${mapEmbed(d.event_id)}
       </div>
       <div class="card">
         <h3>Exposure by country</h3>
@@ -581,56 +797,23 @@ async function runSweep(btn){
   }catch(e){btn.disabled=false;btn.textContent=t;}
 }
 
-// ── CSP-safe inline-SVG map: parse POLYGON WKT + project lon/lat into a viewBox ──
-function parsePolys(footprint){
-  // handle POLYGON, POLYGON-with-holes and MULTIPOLYGON (live region footprints) — extract every innermost ring
-  const polys=[];
-  (footprint||[]).forEach(f=>{
-    const rings=(f.footprint_wkt||'').match(/\(([^()]+)\)/g)||[];
-    rings.forEach(r=>{
-      const ring=r.replace(/[()]/g,'').split(',')
-        .map(pair=>{const [lo,la]=pair.trim().split(/\s+/).map(Number);return [lo,la];})
-        .filter(c=>Number.isFinite(c[0])&&Number.isFinite(c[1]));
-      if(ring.length>=3)polys.push(ring);
-    });
-  });
-  return polys;
-}
-function buildMap(footprint,props,accent){
-  const polys=parsePolys(footprint);
-  const pts=props.filter(p=>p.latitude!=null&&p.longitude!=null).map(p=>({lon:+p.longitude,lat:+p.latitude,band:p.band}));
-  const all=[].concat(...polys.map(r=>r.map(c=>({lon:c[0],lat:c[1]}))),pts);
-  if(!all.length)return '<div class="loading">No geometry.</div>';
-  let minLo=Math.min(...all.map(a=>a.lon)),maxLo=Math.max(...all.map(a=>a.lon));
-  let minLa=Math.min(...all.map(a=>a.lat)),maxLa=Math.max(...all.map(a=>a.lat));
-  const padLo=(maxLo-minLo||.02)*0.14,padLa=(maxLa-minLa||.02)*0.14;
-  minLo-=padLo;maxLo+=padLo;minLa-=padLa;maxLa+=padLa;
-  const midLa=(minLa+maxLa)/2,kx=Math.cos(midLa*Math.PI/180);
-  const W=1000,H=Math.max(360,Math.min(680,Math.round(W*((maxLa-minLa)/((maxLo-minLo)*kx||1)))));
-  const X=lo=>((lo-minLo)/(maxLo-minLo))*W;
-  const Y=la=>H-((la-minLa)/(maxLa-minLa))*H;
-  const gridX=[.25,.5,.75].map(t=>`<line x1="${t*W}" y1="0" x2="${t*W}" y2="${H}" stroke="#e2e8f0" stroke-width="1"/>`).join('');
-  const gridY=[.25,.5,.75].map(t=>`<line x1="0" y1="${t*H}" x2="${W}" y2="${t*H}" stroke="#e2e8f0" stroke-width="1"/>`).join('');
-  const paths=polys.map(r=>`<path d="M${r.map(c=>X(c[0]).toFixed(1)+' '+Y(c[1]).toFixed(1)).join(' L')} Z" fill="${accent}" fill-opacity="0.30" stroke="${accent}" stroke-width="2.5" stroke-dasharray="8 5"/>`).join('');
-  const bandCol={'0-50m':'#b91c1c','50-100m':'#ea580c','100-200m':'#f59e0b'};
-  // larger dots with a white halo so they read from the back of a room
-  const circles=pts.map(p=>`<circle cx="${X(p.lon).toFixed(1)}" cy="${Y(p.lat).toFixed(1)}" r="5.5" fill="${bandCol[p.band]||'#94a3b8'}" fill-opacity="0.95" stroke="#fff" stroke-width="1.2"/>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Event footprint map">
-    <rect width="${W}" height="${H}" fill="#eef4fb"/>${gridX}${gridY}${paths}${circles}</svg>`;
-}
-
 // ─────────────────────────── tabs ───────────────────────────
 let LIVE=false, GOV_LOADED=false, STARTED=false, RADAR_LOADED=false, LIVE_LOADED=false;
-const SCREENS={exposure:'exposureScreen',live:'liveScreen',radar:'radarScreen',ask:'askScreen',gov:'govScreen'};
+const SCREENS={exposure:'exposureScreen',live:'liveScreen',radar:'radarScreen',ask:'askScreen',gov:'govScreen',
+  sources:'sourcesScreen',agents:'agentsScreen',learn:'learnScreen'};
+let SRC_LOADED=false, LEARN_BUILT=false;
 function showTab(t){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   $('#'+(SCREENS[t]||'exposureScreen')).classList.add('on');
   document.querySelectorAll('.navi').forEach(n=>n.classList.toggle('on',n.dataset.t===t));
   if(t==='exposure'){$('#track').style.display='none';$('#board').style.display='block';}
-  if(t==='ask'&&!STARTED)initAgent();
+  if(t==='agents'&&!STARTED)initAgent();
   if(t==='gov'&&!GOV_LOADED)loadGov();
   if(t==='radar'&&!RADAR_LOADED)loadRadar();
   if(t==='live'&&!LIVE_LOADED)loadLive();
+  if(t==='sources')loadSources();          // always refresh: "last ingested" should be current
+  if(t==='learn'&&!LEARN_BUILT)buildLearn();
+  window.scrollTo(0,0);
 }
 
 // ─────────────────────────── live event: follow a developing fire + anti-selection vignette ───────────────────────────
@@ -670,7 +853,7 @@ function startFollow(){
 }
 function nextTick(){ if(LIVE_CUR<LIVE_TICKS.length-1){LIVE_CUR++;renderTick(LIVE_CUR);} }
 function resetFollow(){ if(LIVE_TIMER)clearInterval(LIVE_TIMER);LIVE_TIMER=null;LIVE_CUR=-1;syncDash(0);
-  renderNewsroom(false);$('#liveMap').innerHTML='<div class="loading">Not following yet — hit “Follow this story”.</div>';
+  renderNewsroom(false);$('#liveMap').innerHTML='<div class="mapph"><b>The live map appears here</b><span>Hit “Start following the fire” — the dashboard map follows each update as the fire spreads.</span></div>';
   $('#liveSub').textContent='Trigger the story to start following.';$('#liveBadges').innerHTML='';$('#liveKpis').innerHTML='';renderVignette();}
 async function renderTick(i){
   syncDash(i);
@@ -685,9 +868,7 @@ async function renderTick(i){
     <div class="kpi"><div class="k">Sum insured at risk</div><div class="v">${eurm(meta.sum_insured_eur)}</div><div class="bd">climbing with the perimeter</div></div>
     <div class="kpi"><div class="k">Confirmation</div><div class="v" style="font-size:15px;color:${corr?'var(--green)':'var(--amber)'}">${corr?'Satellite + press':'Press only'}</div><div class="bd">${esc(String(meta.as_of||'').slice(0,16))}</div></div>
   </div>`;
-  $('#liveMap').innerHTML='<div class="loading">Redrawing…</div>';
-  try{const d=await api('/live/tick/'+i);$('#liveMap').innerHTML=buildMap(d.footprint||[],d.properties||[],'var(--red)');}
-  catch(e){$('#liveMap').innerHTML='<div class="loading">Map unavailable.</div>';}
+  liveDashShow();   // the embedded dashboard reloads after the cursor write in syncDash()
   renderVignette();
 }
 // ── anti-selection quote → buy → blocked vignette ──
@@ -794,7 +975,7 @@ async function promoteSignal(sid,btn){
   if(btn){btn.disabled=true;btn.textContent='Promoting…';}
   try{const r=await fetch('/api/radar/promote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({signal_id:sid})}).then(x=>x.json());
     if(r.ok){if(btn){btn.textContent='✓ Promoted → '+r.event_id;}
-      try{const d=await api('/events');EVENTS=d.events||[];renderPicker();}catch(e){}
+      try{const d=await api('/events');EVENTS=d.events||[];ZONES=d.zones;renderBoard();}catch(e){}
     }else if(btn){btn.disabled=false;btn.textContent='Promote failed';btn.title=r.reason||'';}
   }catch(e){if(btn){btn.disabled=false;btn.textContent='Promote failed';}}
 }
@@ -802,26 +983,193 @@ async function promoteSignal(sid,btn){
 // ─────────────────────────── event response agent ───────────────────────────
 function pushMsg(cls,html){const m=document.createElement('div');m.className='msg '+cls;m.innerHTML=html;$('#chat').appendChild(m);m.scrollIntoView({block:'nearest'});return m;}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+// The six specialists from the build contract — shown only if ref_agent_roster isn't deployed yet (labelled).
+const ROSTER_FALLBACK=[
+  {agent_key:'event_watch',name:'Event Watch',role:'Watches every feed and the news radar for new or growing events',responsibilities:['Spot new events and changes in live feeds','Triage news signals that beat the satellite feeds','Flag stale or frozen sources'],skills:['fn_events','fn_news_radar','fn_source_status'],reads:['2_event_footprint','2_news_signal'],may_do:['Recommend promoting a signal to an event'],may_not_do:['Promote an event or send an alert itself'],example_questions:["What's on the Event Radar — is there a signal that beats the feed?"]},
+  {agent_key:'exposure_analyst',name:'Exposure Analyst',role:'Says which insured homes are in the path, by band and country',responsibilities:['Count homes and sum insured inside / near a footprint','Show the cross-border split','Explain the distance bands'],skills:['fn_exposure_in_footprint','fn_event_exposure_summary'],reads:['3_property','2_event_footprint'],may_do:['Answer exposure questions with governed numbers'],may_not_do:['Estimate or invent a number'],example_questions:["What's my exposure to the Var wildfire?"]},
+  {agent_key:'reinsurance_analyst',name:'Reinsurance Analyst',role:'Turns exposure into gross loss and what we keep after reinsurance',responsibilities:['Run gross → net through the Cat XL programme','Split exposure by coverholder'],skills:['fn_gross_to_net','fn_exposure_by_coverholder'],reads:['3_treaty_layer','3_coverholder'],may_do:['Explain the waterfall'],may_not_do:['Change treaty terms'],example_questions:['What would we keep after reinsurance on the Var fire?']},
+  {agent_key:'alerts_officer',name:'Alerts Officer',role:'Knows who was told what, and what changed since',responsibilities:['Report newly / still / no-longer threatened homes','Read the alert dispatch log'],skills:['fn_event_delta'],reads:['gov_alert_dispatch'],may_do:['Summarise the alert that went out'],may_not_do:['Send an alert'],example_questions:['What changed since the last alert for the Alpine flood?']},
+  {agent_key:'underwriting_guard',name:'Underwriting Guard',role:'Checks new business against active disaster zones at bind',responsibilities:['Check an address against active zones','Explain a decline or referral'],skills:['fn_zone_check','fn_bind_check'],reads:['mv_active_zones','gov_bind_decision'],may_do:['Explain the governed bind rule'],may_not_do:['Override a decline (an underwriter does)'],example_questions:['Can we bind cover on a home in the Var right now?']},
+  {agent_key:'data_steward',name:'Data Steward',role:'Vouches for the data — sources, freshness and rejected batches',responsibilities:['Report each source and when it last arrived','Explain any rejected batch'],skills:['fn_source_status','fn_dq_recent'],reads:['gov_feed_dq_log','1_feed_quarantine'],may_do:['Explain a quality decision'],may_not_do:['Accept a rejected batch'],example_questions:['Was any data rejected this week, and why?']},
+];
+let ROSTER=[], AGENT_STATE=null;
 async function initAgent(){
   STARTED=true;
-  try{const d=await api('/agent/starters');$('#agentEp').textContent='· '+(d.endpoint||'');
-    $('#starters').innerHTML=(d.starters||[]).map(s=>`<span class="starter" onclick="askAgent(this.textContent)">${esc(s)}</span>`).join('');
-  }catch(e){}
+  let d={};
+  try{d=await api('/agents/roster');}catch(e){d={};}
+  AGENT_STATE=d;
+  const fromTable=(d.roster||[]).length>0;
+  ROSTER=fromTable?d.roster:ROSTER_FALLBACK;
+  const st=d.endpoint_state;
+  $('#agentEpState').innerHTML= st==='READY'
+    ? `Supervisor endpoint <code>${esc(d.endpoint)}</code> <span class="pill" style="background:#dcfce7;color:#166534">● serving</span> — Agent Framework, routes to the specialist below.`
+    : `<span class="pill" style="background:#fef3c7;color:#92400e">fallback</span> The served supervisor (<code>${esc(d.endpoint||'exposure-response-agent')}</code>) is ${st==='NOT_READY'?'starting up':'not available'} — answers come from the in-app agent (same governed functions, no specialist routing).`;
+  const ex=[];ROSTER.forEach(r=>{(r.example_questions||[]).slice(0,1).forEach(q=>ex.push(q));});
+  $('#starters').innerHTML=ex.map(q=>`<span class="starter" onclick="askAgent(this.textContent)">${esc(q)}</span>`).join('');
+  renderRoster(fromTable,d);
+}
+function li(arr){return (arr||[]).length?'<ul>'+arr.map(x=>`<li>${esc(String(x))}</li>`).join('')+'</ul>':'<span class="muted">—</span>';}
+function renderRoster(fromTable,d){
+  const tones=['#2563eb','#059669','#7c3aed','#b45309','#dc2626','#0891b2'];
+  const sup=ROSTER.find(r=>/supervisor/i.test(r.agent_key||'')||/supervisor/i.test(r.name||''));
+  const specs=ROSTER.filter(r=>r!==sup);
+  const h=wsBase();
+  const epLink=(d&&d.endpoint&&h)?`<a class="btn" style="background:#fff" href="${h}/ml/endpoints/${encodeURIComponent(d.endpoint)}${wsO()}" target="_blank" rel="noopener">Open the serving endpoint ↗</a>`:'';
+  const supCard=`<div class="sup">
+    <div style="font-size:30px">🧭</div>
+    <div style="flex:1;min-width:260px"><div class="slab" style="margin:0;color:#94a3b8">Supervisor</div>
+      <h3>${esc(sup?sup.name:'Supervisor')}</h3>
+      <p>${esc(sup&&sup.role?sup.role:'Reads each question, picks the one specialist whose job it is, and passes it on — then returns that specialist’s answer with the routing reason and the tools used. One served endpoint on Agent Framework; tools come from Unity Catalog functions through the managed MCP server.')}</p></div>
+    ${epLink}</div>`;
+  const card=(r,i)=>`<div class="agent" style="border-top-color:${tones[i%tones.length]}">
+    <h4>${esc(r.name)}</h4><div class="ar">${esc(r.role||'')}</div>
+    <div class="al">Responsibilities</div>${li(r.responsibilities)}
+    <div class="al">Skills — governed functions it can call</div><div class="sk">${(r.skills||[]).map(x=>`<code>${esc(x)}</code>`).join('')||'<span class="muted">—</span>'}</div>
+    <div class="al">Data it reads</div><div class="sk">${(r.reads||[]).map(x=>`<code>${esc(x)}</code>`).join('')||'<span class="muted">—</span>'}</div>
+    <div class="two" style="gap:10px"><div><div class="al" style="color:#166534">May</div>${li(r.may_do)}</div><div><div class="al" style="color:#991b1b">May not</div>${li(r.may_not_do)}</div></div>
+    ${(r.example_questions||[]).length?`<div class="al">Try</div>${r.example_questions.map(q=>`<div class="ex" onclick="askAgent(this.textContent)">${esc(q)}</div>`).join('')}`:''}
+  </div>`;
+  $('#agentsView').innerHTML=supCard+`<div class="agrid">${specs.map(card).join('')}</div>`+
+    (fromTable?'':'<p class="muted" style="font-size:11.5px;margin-top:8px">Roster shown from the build contract — the governed roster table (<code>ref_agent_roster</code>) is not deployed yet.</p>');
 }
 function toggleLive(){LIVE=!LIVE;const b=$('#liveBtn');b.classList.toggle('live',LIVE);b.textContent=LIVE?'● Live':'◉ Cached';}
 async function askAgent(q){
   q=(typeof q==='string'?q:$('#agentQ').value).trim();if(!q)return;
+  if(!$('#agentsScreen').classList.contains('on'))showTab('agents');
   $('#agentQ').value='';pushMsg('u',esc(q));
-  const wait=pushMsg('a','<span class="muted">Calling governed tools…</span>');
+  const wait=pushMsg('a','<span class="muted">The supervisor is routing your question…</span>');
   try{
-    const r=await fetch('/api/agent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,live:LIVE})}).then(x=>x.json());
-    let tools='';
-    if((r.tools_called||[]).length){tools=`<div class="tools">Called: ${r.tools_called.map(t=>`<code>${esc(t.tool)}</code>${t.rows!=null?' ('+t.rows+' rows)':''}`).join(' · ')} <span style="float:right">${r.cache==='hit'?'cached':r.cache} · ${esc(r.endpoint||'')}</span></div>`;}
-    wait.innerHTML=esc(r.text||'(no answer)')+tools;
+    const r=await fetch('/api/agents/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,live:LIVE})}).then(x=>x.json());
+    const who=r.specialist?`<div class="route">🧭 Answered by ${esc(r.specialist)}</div>${r.route_reason?`<div class="muted" style="font-size:11.5px;margin:-2px 0 6px">Why: ${esc(r.route_reason)}</div>`:''}`
+      : (r.mode==='fallback'?`<div class="route" style="background:#fef3c7;color:#92400e">In-app agent (fallback)</div>`:'');
+    const tl=(r.tools||[]);
+    const tools=tl.length?`<div class="tools">Called: ${tl.map(t=>`<code>${esc(String(t.name||t.tool||''))}</code>${t.rows!=null?' ('+t.rows+' rows)':''}`).join(' · ')} <span style="float:right">${esc(r.cache==='hit'?'cached':(r.cache||''))} · ${esc(r.endpoint||'')}</span></div>`:'';
+    wait.innerHTML=who+esc(r.text||'(no answer)')+tools;
   }catch(e){wait.innerHTML='<span class="muted">Agent unavailable.</span>';}
 }
 
+// ─────────────────────────── data sources & quality (Contract B) ───────────────────────────
+function ago(ts,nowUtc){
+  if(!ts)return '—';
+  const t=Date.parse(String(ts).replace(' ','T')+(String(ts).match(/[zZ]|[+-]\d\d:?\d\d$/)?'':'Z'));
+  const n=nowUtc?Date.parse(String(nowUtc).replace(' ','T')+'Z'):Date.now();
+  if(!isFinite(t))return esc(String(ts));
+  const m=Math.max(0,Math.round((n-t)/60000));
+  return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago';
+}
+function decChip(d){
+  const m={ACCEPTED:['#166534','#dcfce7','✓ Accepted'],REJECTED:['#991b1b','#fee2e2','✕ Rejected'],FALLBACK_FROZEN:['#92400e','#fef3c7','↺ Frozen fallback']};
+  const [c,bg,l]=m[String(d||'').toUpperCase()]||['#475569','#f1f5f9',d||'—'];
+  return `<span class="pill" style="background:${bg};color:${c}">${esc(l)}</span>`;
+}
+function modeChip(mo,live){
+  const M=String(mo||'').toUpperCase();
+  if(M.includes('REAL'))return `<span class="pill" style="background:#dcfce7;color:#166534">● ${esc(mo)}</span>`;
+  if(M.includes('FROZEN'))return `<span class="pill" style="background:#f1f5f9;color:#475569">${esc(mo)}</span>`;
+  return `<span class="pill" style="background:#eff6ff;color:#1d4ed8">${esc(mo||'BATCH')}</span>`;
+}
+async function loadSources(){
+  SRC_LOADED=true;
+  try{const d=await api('/sources');renderSources(d);}catch(e){$('#srcView').innerHTML='<div class="card"><div class="muted">Sources unavailable.</div></div>';}
+}
+function renderSources(d){
+  const src=d.sources||[], bat=d.batches||[], now=d.now_utc;
+  if(!d.available||(!d.available.sources&&!d.available.batches)){
+    $('#srcView').innerHTML='<div class="card"><div class="loading">The source catalogue and quality log are being deployed — check back shortly.</div></div>';return;}
+  const rej=bat.filter(b=>String(b.decision).toUpperCase()==='REJECTED');
+  const acc=bat.filter(b=>String(b.decision).toUpperCase()==='ACCEPTED').length;
+  const live=src.filter(x=>x.is_live===true||x.is_live==='true').length;
+  const banner=rej.length?`<div class="rejbanner"><div style="font-size:22px">⛔</div><div>
+      <b>Batch rejected: ${esc(rej[0].source_id)} · ${esc(String(rej[0].pulled_at||'').slice(0,16))} UTC</b>
+      <div style="font-size:12.5px;margin-top:3px">${esc(rej[0].reason||'failed the quality gate')} — quarantined, previous data kept.</div>
+      ${rej.length>1?`<div style="font-size:11.5px;margin-top:3px">${rej.length-1} more rejected batch${rej.length>2?'es':''} this week — see the log below.</div>`:''}</div></div>`:'';
+  const kpis=`<div class="kpis">
+    <div class="kpi"><div class="k">Sources</div><div class="v">${num(src.length)}</div><div class="bd">${num(live)} live right now</div></div>
+    <div class="kpi"><div class="k">Batches checked · 7 days</div><div class="v">${num(bat.length)}</div><div class="bd">every pull passes the gate</div></div>
+    <div class="kpi"><div class="k">Accepted</div><div class="v" style="color:var(--emerald)">${bat.length?Math.round(acc/bat.length*100):0}<small>%</small></div><div class="bd">${num(acc)} batches</div></div>
+    <div class="kpi"><div class="k">Rejected</div><div class="v" style="color:${rej.length?'var(--red)':'var(--ink)'}">${num(rej.length)}</div><div class="bd">quarantined, never used</div></div>
+  </div>`;
+  const card=x=>{const p=PERIL[x.peril_code]||{c:'#64748b',label:x.peril_code||'',ic:'•'};
+    return `<div class="src" style="border-left:4px solid ${p.c}">
+      <div class="sh"><div><div class="sn">${p.ic} ${esc(x.source_name||x.source_id)}</div><div class="sp">${esc(x.provider||'')}</div></div>${modeChip(x.mode,x.is_live)}</div>
+      <div class="sc">${esc(x.carries||'')}</div>
+      <div class="sm"><span>Cadence</span><span>${esc(x.cadence||'—')}</span>
+        <span>Last ingested</span><span><b>${ago(x.last_ingested_at,now)}</b> <span class="muted mono">${esc(String(x.last_ingested_at||'').slice(0,16))}</span></span>
+        <span>Records</span><span>${x.last_records!=null?num(x.last_records):'—'}</span>
+        <span>Last batch</span><span>${decChip(x.last_decision)}</span>
+        <span>Licence</span><span class="muted">${esc(x.licence||'—')}</span></div>
+    </div>`;};
+  const rows=bat.map(b=>{const fc=(b.failed_checks||[]).map(c=>`<code>${esc(typeof c==='string'?c:JSON.stringify(c))}</code>`).join(' ');
+    return `<tr${String(b.decision).toUpperCase()==='REJECTED'?' style="background:#fff7f7"':''}><td class="mono">${esc(String(b.pulled_at||'').slice(0,16))}</td><td>${esc(b.source_id)}</td><td class="r">${num(b.n_records)}</td><td>${decChip(b.decision)}</td><td>${esc(b.reason||'')} ${fc}</td></tr>`;}).join('')
+    ||'<tr><td colspan="5" class="muted" style="padding:16px;text-align:center">No batches logged in the last 7 days.</td></tr>';
+  const th=(d.thresholds||[]);
+  const thTable=th.length?`<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--mut);font-size:12.5px">▸ The checks and thresholds (${th.length})</summary>
+    <div class="tscroll" style="margin-top:8px"><table><thead><tr><th>Source</th><th>Check</th><th>Rule</th><th>What it protects</th></tr></thead><tbody>${
+      th.map(t=>`<tr><td>${esc(t.source_id)}</td><td class="mono">${esc(t.check_name)}</td><td class="mono">${esc(t.comparator||'')} ${esc(String(t.threshold??''))}</td><td class="muted">${esc(t.description||'')}</td></tr>`).join('')}</tbody></table></div></details>`:'';
+  $('#srcView').innerHTML=banner+kpis+
+    (src.length?`<div class="srcgrid">${src.map(card).join('')}</div>`:'<div class="card"><div class="muted">Source catalogue not available yet.</div></div>')+
+    `<div class="card" style="margin-top:16px"><h3>Quality gate — batch log <span class="muted" style="font-weight:400;font-size:12px">· last 7 days · append-only <code>gov_feed_dq_log</code></span></h3>
+      <p class="h3s">Each pull is checked before it can touch the book: is the shape right, are the coordinates inside Europe / the UK, is the geometry valid, is it fresh, are there duplicates? Fail a threshold and the batch is rejected and quarantined (<code>1_feed_quarantine</code>) — the previous good data stays in use.</p>
+      <div class="tscroll"><table><thead><tr><th>Pulled (UTC)</th><th>Source</th><th class="r">Records</th><th>Decision</th><th>Why</th></tr></thead><tbody>${rows}</tbody></table></div>${thTable}</div>`;
+}
+
+// ─────────────────────────── Learn (architecture / data-flow diagrams, contents) ───────────────────────────
+function svgBox(x,y,w,h,title,sub,fill,stroke,tc){
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="9" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/>
+    <text x="${x+10}" y="${y+19}" font-size="12.5" font-weight="700" fill="${tc||'#0f172a'}">${title}</text>
+    ${sub?`<text x="${x+10}" y="${y+35}" font-size="10.5" fill="#475569">${sub}</text>`:''}`;
+}
+function arrow(x1,y1,x2,y2){return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#64748b" stroke-width="1.6" marker-end="url(#ah)"/>`;}
+function archSvg(){
+  const defs=`<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/></marker></defs>`;
+  const col=(x,t)=>`<text x="${x}" y="22" font-size="11" font-weight="700" fill="#64748b" letter-spacing=".06em">${t}</text>`;
+  const srcs=[['MeteoAlarm','EU warnings · live'],['GDACS','disaster alerts · live'],['NASA FIRMS','fire hotspots'],['Copernicus EFFIS','burnt areas'],['Copernicus EMS / GloFAS','flood extent'],['Environment Agency','UK flood warnings · live'],['Press wire','breaking news']];
+  let g=defs+col(14,'SOURCES')+col(204,'INGEST')+col(410,'UNITY CATALOG')+col(612,'GOVERNED FUNCTIONS')+col(812,'USED BY');
+  srcs.forEach((s,i)=>{g+=svgBox(10,34+i*54,172,44,s[0],s[1],'#fff','#cbd5e1');});
+  g+=svgBox(200,34,190,96,'Lakeflow Jobs (serverless)','feed adapters · retry & back-off','#eff6ff','#bfdbfe','#1d4ed8');
+  g+=`<text x="210" y="103" font-size="10.5" fill="#475569">+ streaming ingest (Auto Loader)</text>`;
+  g+=svgBox(200,150,190,62,'Quality gate','schema · bounds · geometry · fresh','#fef3c7','#fde68a','#92400e');
+  g+=`<text x="210" y="201" font-size="10.5" fill="#92400e">accept → continue · reject →</text>`;
+  g+=svgBox(200,232,190,44,'Quarantine','1_feed_quarantine','#fee2e2','#fecaca','#991b1b');
+  g+=svgBox(406,34,186,44,'Raw landing','1_hazard_feed_raw · 1_news_raw','#fff','#cbd5e1');
+  g+=svgBox(406,88,186,44,'Event footprints','2_event_footprint','#fff','#cbd5e1');
+  g+=svgBox(406,142,186,44,'Insured book','3_property','#fff','#cbd5e1');
+  g+=svgBox(406,196,186,44,'Active zones','mv_active_zones','#fff','#cbd5e1');
+  g+=svgBox(406,250,186,44,'Audit & governance','gov_* · append-only','#ecfdf5','#a7f3d0','#065f46');
+  g+=svgBox(406,304,186,44,'Reference','ref_* thresholds · treaty','#fff','#cbd5e1');
+  const fns=[['fn_exposure_in_footprint','who is in the path'],['fn_gross_to_net','cost after reinsurance'],['fn_zone_check · fn_bind_check','can we bind here?'],['fn_news_radar','early signals'],['fn_source_status · fn_dq_recent','is the data good?']];
+  fns.forEach((f,i)=>{g+=svgBox(608,34+i*58,188,48,f[0],f[1],'#eef2ff','#c7d2fe','#3730a3');});
+  const uses=[['Workbench app','alerts · tracking · buy'],['AI/BI dashboards','the maps'],['Alerts job','email / Slack'],['AI agents','Agent Framework + MCP'],['Genie','ad-hoc questions'],['Underwriting workbench','refer in active zones']];
+  uses.forEach((u,i)=>{g+=svgBox(812,34+i*54,176,44,u[0],u[1],'#fff','#cbd5e1');});
+  g+=arrow(182,190,198,110)+arrow(295,130,295,148)+arrow(295,212,295,230)+arrow(390,180,404,110)+arrow(592,170,606,170)+arrow(796,170,810,170);
+  g+=`<rect x="10" y="414" width="978" height="34" rx="8" fill="#0f172a"/><text x="499" y="436" text-anchor="middle" font-size="12" fill="#e2e8f0">Unity Catalog governs it all — one set of permissions, lineage from every number back to its source pull, full history</text>`;
+  return `<svg viewBox="0 0 1000 460" role="img" aria-label="Architecture diagram" font-family="-apple-system,Segoe UI,Roboto,sans-serif">${g}</svg>`;
+}
+function flowSvg(){
+  const defs=`<defs><marker id="ah2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/></marker></defs>`;
+  const st=[['1 · Source','a feed is pulled','#fff','#cbd5e1','#0f172a'],['2 · Raw landing','1_hazard_feed_raw','#fff','#cbd5e1','#0f172a'],['3 · Quality gate','gov_feed_dq_log','#fef3c7','#fde68a','#92400e'],['4 · Footprint','2_event_footprint','#fff','#cbd5e1','#0f172a'],['5 · Exposure','fn_exposure_in_footprint','#eef2ff','#c7d2fe','#3730a3'],['6 · Decisions','alerts · bind · maps · agents','#ecfdf5','#a7f3d0','#065f46']];
+  let g=defs;const w=150,gap=17;
+  st.forEach((x,i)=>{const X=10+i*(w+gap);g+=svgBox(X,20,w,56,x[0],x[1],x[2],x[3],x[4]);if(i<st.length-1)g+=`<line x1="${X+w}" y1="48" x2="${X+w+gap-2}" y2="48" stroke="#64748b" stroke-width="1.6" marker-end="url(#ah2)"/>`;});
+  g+=`<path d="M${10+2*(w+gap)+w/2} 76 L${10+2*(w+gap)+w/2} 104" stroke="#dc2626" stroke-width="1.6" marker-end="url(#ah2)"/>`;
+  g+=svgBox(10+2*(w+gap)-5,106,w+10,40,'Rejected → quarantine','previous data kept','#fee2e2','#fecaca','#991b1b');
+  g+=`<text x="${10+4*(w+gap)}" y="122" font-size="10.5" fill="#475569">Insured book (3_property) joins here,</text><text x="${10+4*(w+gap)}" y="137" font-size="10.5" fill="#475569">in true metres (EPSG:3035)</text>`;
+  return `<svg viewBox="0 0 1000 156" role="img" aria-label="Data flow diagram" font-family="-apple-system,Segoe UI,Roboto,sans-serif">${g}</svg>`;
+}
+function buildLearn(){
+  LEARN_BUILT=true;
+  $('#archSvg').innerHTML=archSvg();
+  $('#flowSvg').innerHTML=flowSvg();
+  const ids=[...document.querySelectorAll('#learnScreen .lpanel')].map(x=>x.id);
+  const spy=()=>{if(!$('#learnScreen').classList.contains('on'))return;let cur=ids[0];
+    ids.forEach(id=>{const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<140)cur=id;});
+    document.querySelectorAll('#ltoc a').forEach(a=>a.classList.toggle('on',a.dataset.l===cur));};
+  window.addEventListener('scroll',spy,{passive:true});spy();
+}
+function lgo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+function openCatalog(){const h=wsBase();if(!h)return;window.open(h+'/explore/data/'+encodeURIComponent(CFG.catalog||'')+'/'+encodeURIComponent(CFG.schema||'')+wsO(),'_blank','noopener');}
+
 // ─────────────────────────── genie ───────────────────────────
+function askGenieQ(q){$('#genieQ').value=q;askGenie();}
 async function askGenie(){
   const q=$('#genieQ').value.trim();if(!q)return;
   $('#genieOut').innerHTML='<div class="loading">Asking Genie…</div>';
