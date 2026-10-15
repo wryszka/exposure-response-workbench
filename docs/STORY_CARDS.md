@@ -106,7 +106,7 @@ How to use them:
 
 **Who:** the head of exposure, wanting an answer without opening five screens.
 **Today:** an email to three people and a wait.
-**Show:** **Explore → AI agents** → ask *"What's my exposure to the Var wildfire, gross and net?"*
+**Show:** **Explore → Ask AI** → click the example *"What's my exposure to the Var wildfire, gross and net?"*
 **Say:** *"Each agent has one job. The supervisor sent this to the reinsurance specialist — and every number comes from the governed calculation, not from the AI."*
 **The number:** **59 homes · we keep €25m** — answered by the Reinsurance Analyst.
 **Why it lands:** fast answers, with a clear line on what the AI may and may not do.

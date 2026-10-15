@@ -104,7 +104,7 @@ Every feed batch passes a data-quality gate before it can change the events the 
 ## UK flood → underwriting workbench
 The Environment Agency flood-warning feed publishes active zones (`mv_active_zones`, `fn_zone_check`). The **underwriting workbench** checks every quote against them (`fn_disaster_zone_check`, Referral Control rule `CAT_ACTIVE_ZONE`): Calder Valley Fine Foods in Hebden Bridge refers with the reason and can't be quoted; a Cheshire risk quotes normally.
 
-## The agent team (Explore → AI agents)
+## Ask AI — the agent team + Genie (Explore → Ask AI)
 A served Agent-Framework endpoint, `exposure-response-agent`: a supervisor routes each question to one of six specialists, each limited to its own governed functions. See `docs/AGENTS.md`. It scales to zero — ask each example question once ~10 minutes before a demo to wake it.
 
 ## Maps
