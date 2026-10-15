@@ -6,9 +6,11 @@ resources:
         project: exposure_response_workbench
       description: >-
         Refresh live hazard-event footprints from open feeds into 2_event_footprint, alongside the frozen
-        synthetic demo events. MeteoAlarm (windstorm/severe) is keyless and runs LIVE; FIRMS (wildfire) and
-        GloFAS/EFAS+EMS (flood) run live when their free keys are set (secrets exposure_response/MAP_KEY and
-        /CDS_API_KEY) and fall back to frozen real-shape samples otherwise. Daily schedule; run on demand too.
+        synthetic demo events. MeteoAlarm (windstorm/severe) and the Environment Agency UK flood warnings are
+        keyless and run LIVE; FIRMS (wildfire) and GloFAS/EFAS+EMS (flood) run live when their free keys are set
+        (secrets exposure_response/MAP_KEY and /CDS_API_KEY) and fall back to frozen real-shape samples otherwise.
+        Every batch passes the data-quality gate (rejected batches are quarantined, previous data kept); then the
+        active zones are published to underwriting and the sources catalogue is refreshed. Daily; on demand too.
       parameters:
         - name: catalog
           default: ${var.catalog}
@@ -54,6 +56,40 @@ resources:
             base_parameters:
               catalog: ${var.catalog}
               schema: ${var.schema}
+          environment_key: serverless
+        - task_key: flood_ea_uk
+          depends_on:
+            - task_key: flood_copernicus
+          notebook_task:
+            notebook_path: ../notebooks/14_feed_ea_flood.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+        - task_key: active_zones
+          depends_on:
+            - task_key: flood_ea_uk
+          notebook_task:
+            notebook_path: ../notebooks/51_active_zones.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+              extra_grantees: "81589066-5ed3-49c3-8093-f723a711cc2d"   # underwriting app SP (reads active zones)
+          environment_key: serverless
+        - task_key: dq_and_sources
+          depends_on:
+            - task_key: active_zones
+          notebook_task:
+            notebook_path: ../notebooks/15_dq_and_sources.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
           environment_key: serverless
       environments:
         - environment_key: serverless

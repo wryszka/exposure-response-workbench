@@ -12,6 +12,8 @@
 # MAGIC
 # MAGIC **Credential:** CDS key → secret `exposure_response/CDS_API_KEY` (or env `CDS_API_KEY`). Sign up (free):
 # MAGIC https://cds.climate.copernicus.eu/  — attribution: *Copernicus Emergency Management Service*.
+# MAGIC
+# MAGIC **Data-quality gate:** the frozen EMS footprint is checked by `dq_gate` and logged as FALLBACK_FROZEN.
 
 # COMMAND ----------
 
@@ -53,5 +55,10 @@ rows = [
      "source_detail": "Frozen Copernicus-EMS-shaped delineation (AT segment); cross-border, one event_id"},
 ]
 land_raw("EMS", "frozen-sample", len(rows), f"cds_key={'yes' if cds_key else 'no'}")
-n = replace_events_from_source("EMS", rows, is_live=False)
-print(f"flood adapter: {n} row(s), live=False (frozen EMS sample)")
+accepted, dec = dq_gate("EMS", rows, frozen=True,
+                        note="frozen Copernicus EMS flood extent" + ("" if cds_key else "; no CDS key for the live GloFAS/EFAS forecast"))
+if dec["decision"] == "REJECTED":
+    print(f"EMS batch REJECTED — previous accepted footprint kept ({dec['reason']})")
+else:
+    n = replace_events_from_source("EMS", accepted, is_live=False)
+    print(f"flood adapter: {n} row(s), live=False (frozen EMS sample), dq={dec['decision']}")

@@ -11,6 +11,9 @@
 # MAGIC adapter falls back to a small **frozen real-shape sample** over the SE-France / Var wildfire zone (labelled
 # MAGIC `is_live=false`) so the pipeline never crashes and the demo still has a fire event. Get a key (instant, free):
 # MAGIC https://firms.modaps.eosdis.nasa.gov/api/map_key/  — attribution: *NASA FIRMS / EOSDIS LANCE*.
+# MAGIC
+# MAGIC **Data-quality gate:** a live batch passes `dq_gate` before it may replace the FIRMS footprint (rejected →
+# MAGIC quarantined, previous data kept); the frozen fallback is logged as FALLBACK_FROZEN (and checked too).
 
 # COMMAND ----------
 
@@ -75,5 +78,10 @@ if not rows:
              "source_detail": "Frozen FIRMS-shaped sample over the Var fire belt; set MAP_KEY to ingest live VIIRS hotspots"}]
     land_raw("FIRMS", "frozen-sample", len(rows), "no MAP_KEY")
 
-n = replace_events_from_source("FIRMS", rows, is_live=is_live)
-print(f"wildfire adapter: {n} row(s), live={is_live}")
+accepted, dec = dq_gate("FIRMS", rows, frozen=not is_live,
+                        note=None if is_live else ("no MAP_KEY set" if not map_key else "live pull returned no usable data"))
+if dec["decision"] == "REJECTED":
+    print(f"FIRMS batch REJECTED — previous accepted footprint kept ({dec['reason']})")
+else:
+    n = replace_events_from_source("FIRMS", accepted, is_live=is_live)
+    print(f"wildfire adapter: {n} row(s), live={is_live}, dq={dec['decision']}")
