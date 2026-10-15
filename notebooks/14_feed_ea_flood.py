@@ -35,8 +35,7 @@ dbutils.widgets.text("max_warnings", "15")
 MAX_WARNINGS = int(dbutils.widgets.get("max_warnings"))
 
 # 10_feeds_common's replace helper only accepts known sources; register EA here (T1 may also add it there).
-if "EA" not in SOURCES:
-    SOURCES = tuple(SOURCES) + ("EA",)
+
 
 EA_BASE = "https://environment.data.gov.uk/flood-monitoring"
 ATTRIB = "Contains Environment Agency data © Crown copyright, Open Government Licence v3.0"
@@ -121,8 +120,10 @@ for i in active:
 
 # COMMAND ----------
 
+live_rejected = False
 if "dq_gate" in globals():
     records, decision = dq_gate("EA", records)
+    live_rejected = decision.get("decision") == "REJECTED"
     print("dq_gate:", decision)
 else:
     print("dq_gate not defined yet — passing EA records through")
@@ -130,13 +131,16 @@ else:
 live_area_ids = {r["event_id"] for r in records}
 if f"EVT_EA_{HERO_AREA_ID}" not in live_area_ids:
     issued = now - datetime.timedelta(hours=2)
-    records.append({
+    hero = [{
         "event_id": "EVT_EA_SAMPLE_UK", "peril_code": "FLOOD",
         "event_name": f"EA Flood Warning — {HERO_AREA} (frozen sample)", "event_date": issued.date(),
         "footprint_wkt": HERO_WKT, "country_code": "GB", "detected_at": issued, "is_live": False,
         "source_detail": f"EA Flood Warning (severity 2) · area: {HERO_AREA} · {HERO_AREA_ID} · Yorkshire · "
                          f"issued {issued:%Y-%m-%d %H:%M} UTC · frozen sample on the real EA flood-area polygon · {ATTRIB}",
-    })
+    }]
+    if "dq_gate" in globals():   # the frozen sample is gated + logged too (FALLBACK_FROZEN)
+        hero, _ = dq_gate("EA", hero, frozen=True)
+    records.extend(hero)
     print("frozen hero EVT_EA_SAMPLE_UK added (Hebden Bridge)")
 else:
     print("live warning already covers the hero area — no frozen sample needed")
@@ -147,6 +151,9 @@ else:
 # COMMAND ----------
 
 ensure_footprint_columns()
+if live_rejected:
+    # A rejected live batch never replaces good data: keep the previous EA rows exactly as they are.
+    dbutils.notebook.exit("EA live batch REJECTED by the data-quality gate — previous EA data kept")
 spark.sql(f"DELETE FROM {fqn}.`2_event_footprint` WHERE source = 'EA'")
 recs = [(r["event_id"], r["peril_code"], r["event_name"], r["event_date"], r["footprint_wkt"], r["country_code"],
          "EA", r["detected_at"], bool(r["is_live"]), r["source_detail"], now) for r in records]
