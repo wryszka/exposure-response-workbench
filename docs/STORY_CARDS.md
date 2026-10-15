@@ -1,11 +1,13 @@
 # Story Cards
 
-**Six short stories, each one person, one moment, one number. Each stands on its own — pick the ones that fit the room.**
+**Nine short stories, each one person, one moment, one number. Each stands on its own — pick the ones that fit the room.**
 
 How to use them:
 - **5 minutes:** cards 1 → 2 → 6. *(Alert, watch it spread, the buyer at the window.)*
 - **10 minutes:** cards 1 → 2 → 3 → 4 → 6.
 - **"Wow" add-on:** card 5, if the room is engaged.
+- **For a technical or data room:** add card 7 (the batch we refused) and card 9 (the agent team).
+- **For underwriters:** add card 8 (one rule, two workbenches) after card 6.
 - Every number below is what the screen shows — read it off the screen, don't recite it.
 - Plain words only. No platform names unless someone asks.
 
@@ -75,6 +77,39 @@ How to use them:
 **Say:** *"Same product, same rule. The house in the fire zone — no. The flat in Munich — yes. Decided by what's happening right now."*
 **The number:** Var — **declined, in the active zone.** Munich — **approved, €33,573 a year.**
 **Why it lands:** everyone understands this one instantly. It's the punchline — finish on it.
+
+---
+
+## 7 · "The batch we refused"
+
+**Who:** the data or exposure team, the morning after a feed went wrong.
+**Today:** bad data flows straight into the spreadsheet; someone notices days later, if at all.
+**Show:** **Explore → Data sources & quality** — the red *rejected* batch at the top.
+**Say:** *"Overnight a weather feed sent us coordinates the wrong way round. The system refused the batch, kept yesterday's good data, and told us why."*
+**The number:** **38% of records outside Europe — limit 5%. Rejected, quarantined.**
+**Why it lands:** live data you can actually trust — the system says no to bad data, not just to bad risks.
+
+---
+
+## 8 · "One rule, two workbenches"
+
+**Who:** an underwriter quoting a commercial property in the UK.
+**Today:** the underwriting system has no idea there's a live flood warning on the street.
+**Show:** the **underwriting workbench** → submission **Calder Valley Fine Foods** (Hebden Bridge) → the *Disaster zone (live)* check.
+**Say:** *"The flood team publishes the live warning zones. Underwriting checks every quote against them. This mill is inside an Environment Agency warning — refer, don't quote."*
+**The number:** **inside the zone — refer, quote blocked.** A Cheshire risk 45 km away quotes normally.
+**Why it lands:** the same live picture protects the whole business, not just one team.
+
+---
+
+## 9 · "Ask the team"
+
+**Who:** the head of exposure, wanting an answer without opening five screens.
+**Today:** an email to three people and a wait.
+**Show:** **Explore → AI agents** → ask *"What's my exposure to the Var wildfire, gross and net?"*
+**Say:** *"Each agent has one job. The supervisor sent this to the reinsurance specialist — and every number comes from the governed calculation, not from the AI."*
+**The number:** **59 homes · we keep €25m** — answered by the Reinsurance Analyst.
+**Why it lands:** fast answers, with a clear line on what the AI may and may not do.
 
 ---
 

@@ -46,7 +46,7 @@ The app opens on the **alert board** — one card per active event. Make sure it
 **Pre-flight (do ~10 min before the room — tested):**
 1. **Warm the warehouse:** open the app (it lands on the **alert board**), click **Track ▸** on the Var wildfire and wait for the map, then open the live dashboard once. First query is the slow one — this avoids a stall in the room.
 2. **Start the live-ingestion job** ~5 min before, so the dashboard's ingestion counter is ticking when you get there: in Databricks **Jobs → exposure_61_stream_proof → Run now** (set `reset=true`), or from a terminal `databricks bundle run exposure_61_stream_proof -t dev -p DEV --params reset=true`. It stops by itself after 45 min; cancel the run in Jobs to stop early.
-3. **Pre-cache the agent:** go to **Ask** → click all 5 starter prompts once (each caches instantly) → so the first live question is instant.
+3. **Warm the agent team:** go to **Explore → AI agents** and ask each example question once. The first call wakes the served agent (it sleeps when idle and can take a minute or two to wake); after that answers come back quickly and are cached.
 4. **Confirm reset:** fire back to the start (no promoted `EVT_NEWS_*`, no bind rows); dates roll to today.
 5. One browser tab, full screen, zoom so one KPI reads from the back of the room.
 
@@ -67,8 +67,10 @@ Open these **only when asked** — they are the answer to "can it also…", neve
 - **Gross → net → by coverholder** (Exposure tab): the full reinsurance waterfall. It varies honestly — a small fire stays under the €25m retention (net = gross €13.7m); a severe one pierces the €400m tower (net €231.9m). By delegated authority: the Alpine flood sits mostly under one binder (Alpine Cover Underwriting, 78 cross-border homes).
 - **Cross-border** (Exposure tab): the Alpine flood is **one event** spanning Italy (69) + Austria (53) — not two country silos.
 - **We knew before the satellite** (Event Radar tab): a wildfire in the press, verified against our book — **36 homes / €103.6m, 14 hours before** the satellite feed caught it. Promotion to a live event is a human click, audited.
-- **Ask the agent** (Ask tab): plain-language questions; it answers with the governed numbers, not guesses.
-- **Ask Genie** (Ask tab): free-form questions over the book.
+- **Data sources & quality** (Explore): every source, real-time or batch, when it last arrived, and the quality gate. One batch is always on show as **rejected**: 38% of a weather-warning pull fell outside Europe (limit 5%) because the coordinates were swapped — it was quarantined and the previous data kept.
+- **The agent team** (Explore → AI agents): a supervisor routes each question to one of six specialists — Event Watch, Exposure Analyst, Reinsurance Analyst, Alerts Officer, Underwriting Guard, Data Steward. Each card says what it's responsible for, which governed functions it may call, and what it may not do. The chat shows who answered and why.
+- **UK flood → underwriting**: a live Environment Agency flood-warning feed publishes active zones; the separate **underwriting workbench** checks every quote against them. Calder Valley Fine Foods (Hebden Bridge, HX7) is inside a warning area → **refer**, quote blocked, with the reason. A risk in Cheshire quotes normally.
+- **Ask Genie** (Explore → Ask): free-form questions over the book.
 - **Governance**: every detection, alert, and decision is audited and reproducible.
 - **Three perils, one engine**: wildfire, flood, windstorm all run the same way.
 
@@ -104,6 +106,8 @@ Open these **only when asked** — they are the answer to "can it also…", neve
 **Technical / SA:** all business maths lives in governed functions; AI narrates but never invents a number; everything's audited and reproducible. Happy to open the hood in Explore.
 
 **Tough questions — arm these (from the review panel); answer honestly, don't dodge:**
+- *"How do we know the feed data is right?"* Every batch passes a quality gate (empty, missing locations, outside Europe, broken shapes, duplicates, staleness). A failing batch is quarantined and the previous good data stays — show the rejected batch on the Data sources & quality screen.
+- *"Do the agents decide anything?"* No. They explain and look things up through governed functions; the rules decide, and a person approves anything consequential.
 - *"Do the alerts actually send?"* The engine builds + audits the alert; real send is one free credential (SMTP/Slack) away, no code change. *(If we've wired it: "yes — here's the one that just sent.")*
 - *"Is the wildfire feed live?"* MeteoAlarm and GDACS are live; the EFFIS wildfire perimeter is a real Copernicus sample, frozen for a reproducible room — live EFFIS ingestion is a known next step.
 - *"Is that net number a real cat-model loss?"* No — it's a transparent, governed first-order damage curve, not a calibrated cat model. Don't read €25m as a signed-off capital figure; a real cat model would feed the curve (roadmap).
