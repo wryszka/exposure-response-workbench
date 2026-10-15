@@ -6,6 +6,30 @@
 
 ---
 
+# Opening — "You asked to see"
+
+**Set the scene in about a minute, before you touch the app. Their words, read back to them — every beat after this answers one of them.**
+
+**Say:**
+
+*"On the 16th you walked us through how you track wildfire exposure today. A fire is reported, someone pulls the policies out of SQL, finds the fire outlines, and overlays them by hand. Miguel then sent us the data he uses — the Copernicus burnt-area outlines. You asked to see five things:"*
+
+1. **Where the risk is, right now** — which fires threaten which of your locations, what's new, what's out.
+2. **The distances that matter to you** — 50, 100 and 200 metres from the fire.
+3. **The right people told automatically** — claims and underwriting, who won't be logging into Databricks.
+4. **One picture across borders** — so a flood that hits Italy, France and Austria is one event, not three teams finding out separately.
+5. **A process, not just a dashboard** — running on its own, on open data, without the API timeouts.
+
+*"And the dream you mentioned: a view for Justin of what an event could cost us."*
+
+*"What you'll see is a fictional insurer, Bricksurance SE — about 5,400 homes across France, Italy, Austria, Spain and Germany — on real open hazard feeds, including the Copernicus data Miguel uses. No Hiscox data anywhere."*
+
+*"We'll take one fire from the first alert to three questions: who do we tell, what does it cost us, and what do we refuse to write. Then two things you didn't ask for. At the end, how you get from Miguel's notebook to this, one step at a time."*
+
+> Then go straight to the alert board. If short on time, say only the five numbered asks and the last line.
+
+---
+
 # Simple Talk Track
 
 **The whole demo in four beats. One idea, one number, one screen per beat. Plain words — no platform jargon. ~4 minutes.**
