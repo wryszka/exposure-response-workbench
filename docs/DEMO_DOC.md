@@ -23,10 +23,10 @@ The app opens on the **alert board** — one card per active event. Make sure it
 - NUMBERS: homes in the path climbing as it grows (0 → 73 → 90 → 105 homes; €287.5m at full size — the app and the dashboard show the same numbers), and the **live-ingestion** counter ticking.
 
 **Beat 3 — What it costs us, and who's told.**
-- DO: Back in the event view: the cost card, then the alert.
-- SAY: *"That's the cover at risk. After our reinsurance, we keep €25m. And the moment it crossed the line, this alert went to claims and underwriting — one event, both countries — before anyone opened a laptop."*
+- DO: Back in the event view: the cost card, then the alert card → **Run alert sweep now**. Switch to your inbox and open the email that's already waiting from the pre-room sweep (a fresh one lands ~3 minutes after the click).
+- SAY: *"That's the cover at risk. After our reinsurance, we keep €25m. And the moment it crossed the line, this email went to claims and underwriting — every event, one row each, both countries together — sent by Databricks, before anyone opened a laptop."*
 - NUMBER: we keep **€25m**.
-- IF ASKED "did it actually email?": *"The alert is built and audited; turning on the send is one free credential — no code change."*
+- IF ASKED "is that a real email?": *"Yes — Databricks sent it, from a governed alert on the exposure data. No mail server, no extra tool."*
 
 **Beat 4 — A stranger tries to buy cover with the fire at their door.**
 - DO: In the **Get cover** panel pick 🔥 **Villa in the Var** → quote → **Buy cover now** → **Declined**. Then pick 🏡 **Apartment in Munich** → quote → **Buy** → **Bound**.
@@ -49,7 +49,8 @@ The app opens on the **alert board** — one card per active event. Make sure it
 2. **Start the live-ingestion job** ~5 min before, so the dashboard's ingestion counter is ticking when you get there: in Databricks **Jobs → exposure_61_stream_proof → Run now** (set `reset=true`), or from a terminal `databricks bundle run exposure_61_stream_proof -t dev -p DEV --params reset=true`. It stops by itself after 45 min; cancel the run in Jobs to stop early.
 3. **Warm the agent team:** go to **Explore → Ask AI** and click each example question once. The first call wakes the served agent (it sleeps when idle and can take a minute or two to wake); after that answers come back quickly and are cached.
 4. **Confirm reset:** fire back to the start (no promoted `EVT_NEWS_*`, no bind rows); dates roll to today.
-5. One browser tab, full screen, zoom so one KPI reads from the back of the room.
+5. **Send yourself a fresh alert email:** open any event → **Run alert sweep now**, and check it lands in your inbox (~3 min). Keep that email open in a tab for Beat 3.
+6. One browser tab for the app, full screen, zoom so one KPI reads from the back of the room.
 
 **Fallbacks:** the fire auto-advances; if it stalls, use **Next update ▸**. If the dashboard won't show inside the app, use its **open in new tab** link. If the dashboard is down entirely, the event view's own map tells the same story.
 - App URL: https://exposure-response-workbench-7474656169654171.aws.databricksapps.com
@@ -109,7 +110,7 @@ Open these **only when asked** — they are the answer to "can it also…", neve
 - *"How do we know the feed data is right?"* Every batch passes a quality gate (empty, missing locations, outside Europe, broken shapes, duplicates, staleness). A failing batch is quarantined and the previous good data stays — show the rejected batch on the Data sources & quality screen.
 - *"Our customers are insured all year — why would we block a sale?"* It isn't about the existing book. It's the uninsured stranger trying to buy cover as the fire reaches them — adverse selection at the point of sale. New business only; renewals and existing policies are untouched.
 - *"Do the agents decide anything?"* No. They explain and look things up through governed functions; the rules decide, and a person approves anything consequential.
-- *"Do the alerts actually send?"* The engine builds + audits the alert; real send is one free credential (SMTP/Slack) away, no code change. *(If we've wired it: "yes — here's the one that just sent.")*
+- *"Do the alerts actually send?"* Yes. A Databricks SQL alert on the governed exposure data emails the stakeholders after every sweep — show the one in the inbox. Every send is logged; Slack or Teams is one more destination on the same alert.
 - *"Is the wildfire feed live?"* MeteoAlarm and GDACS are live; the EFFIS wildfire perimeter is a real Copernicus sample, frozen for a reproducible room — live EFFIS ingestion is a known next step.
 - *"Is that net number a real cat-model loss?"* No — it's a transparent, governed first-order damage curve, not a calibrated cat model. Don't read €25m as a signed-off capital figure; a real cat model would feed the curve (roadmap).
 - *"Does it really block a bind in our underwriting system?"* The control logic + audit are real; wiring it into the live underwriting workflow is the deferred next phase (scope decision). Today it's a self-contained vignette.
