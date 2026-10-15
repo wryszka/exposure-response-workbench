@@ -134,9 +134,9 @@ SPECIALISTS: dict[str, dict[str, Any]] = {
         "responsibilities": [
             "List the data sources: what each carries, real-time or batch, and when it last arrived",
             "Report the data-quality checks on each batch and their thresholds",
-            "Explain any batch that was rejected or quarantined, and why",
+            "Explain any batch that was rejected or quarantined, and why — down to the failed check, observed value and threshold",
         ],
-        "tools": ["fn_source_status", "fn_dq_recent", "fn_events"],
+        "tools": ["fn_source_status", "fn_dq_recent", "fn_dq_batch_checks", "fn_events"],
         "reads": ["gov_source_catalog", "gov_feed_dq_log", "1_feed_quarantine", "ref_dq_threshold", "1_hazard_feed_raw"],
         "may_do": ["Report source status and data-quality decisions"],
         "may_not_do": ["Accept a rejected batch or lower a quality threshold", "Edit or delete feed data"],
@@ -203,6 +203,24 @@ _KEYWORDS = [
 ]
 
 
+def _as_text(content) -> str:
+    """Message content as plain text — Claude on the Foundation Model API may return a string OR a list of blocks."""
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for b in content:
+            if isinstance(b, dict):
+                parts.append(str(b.get("text", "")) if b.get("type", "text") in ("text", "output_text") else "")
+            else:
+                t = getattr(b, "text", None)
+                parts.append(str(t) if t is not None else "")
+        return "".join(parts)
+    return str(content)
+
+
 def _sql_type(t: str) -> str:
     t = (t or "STRING").upper()
     if t.startswith(("INT", "BIGINT", "SMALLINT", "TINYINT", "LONG")):
@@ -230,6 +248,7 @@ class ExposureAgentTeam(ResponsesAgent):
         self.tool_specs = {t["name"]: t for t in cfg.get("tools", [])}
         self._w = None
         self._oa = None
+        self.router_note: list[str] = []
 
     # ── clients (lazy: created inside the serving container with passthrough credentials) ──
     @property
@@ -303,18 +322,21 @@ class ExposureAgentTeam(ResponsesAgent):
         roster = "\n".join(f"- {k}: {v['name']} — {v['role']} Handles: {'; '.join(v['responsibilities'][:3])}."
                            for k, v in SPECIALISTS.items())
         prompt = ROUTER_PROMPT.format(roster=roster, keys=", ".join(SPECIALISTS))
-        try:
-            resp = self.llm.chat.completions.create(
-                model=self.cfg["router_endpoint"], max_tokens=200,
-                messages=[{"role": "system", "content": prompt}, {"role": "user", "content": question}])
-            text = resp.choices[0].message.content or ""
-            m = re.search(r"\{.*\}", text, re.S)
-            d = json.loads(m.group(0)) if m else {}
-            keys = [k for k in d.get("specialists", []) if k in SPECIALISTS][:2]
-            if keys:
-                return keys, str(d.get("route_reason", "")).strip() or "routed by the supervisor"
-        except Exception:
-            pass
+        # Fast router model first; if it isn't reachable from this endpoint, route with the main model instead.
+        for model in dict.fromkeys([self.cfg["router_endpoint"], self.cfg["llm_endpoint"]]):
+            try:
+                resp = self.llm.chat.completions.create(
+                    model=model, max_tokens=200,
+                    messages=[{"role": "system", "content": prompt}, {"role": "user", "content": question}])
+                text = _as_text(resp.choices[0].message.content)
+                m = re.search(r"\{.*\}", text, re.S)
+                d = json.loads(m.group(0)) if m else {}
+                keys = [k for k in d.get("specialists", []) if k in SPECIALISTS][:2]
+                if keys:
+                    return keys, str(d.get("route_reason", "")).strip() or "routed by the supervisor"
+                self.router_note.append(f"{model}: unparseable reply {text[:120]!r}")
+            except Exception as e:
+                self.router_note.append(f"{model}: {type(e).__name__}: {str(e)[:200]}")
         q = question.lower()
         for key, pat in _KEYWORDS:  # deterministic fallback if the router reply can't be parsed
             if re.search(pat, q):
@@ -344,8 +366,8 @@ class ExposureAgentTeam(ResponsesAgent):
             msg = resp.choices[0].message
             calls = msg.tool_calls or []
             if not calls:
-                return (msg.content or "").strip()
-            msgs.append({"role": "assistant", "content": msg.content or "",
+                return _as_text(msg.content).strip()
+            msgs.append({"role": "assistant", "content": _as_text(msg.content),
                          "tool_calls": [{"id": c.id, "type": "function",
                                          "function": {"name": c.function.name, "arguments": c.function.arguments or "{}"}}
                                         for c in calls]})
@@ -374,6 +396,7 @@ class ExposureAgentTeam(ResponsesAgent):
 
     def predict(self, request: ResponsesAgentRequest) -> ResponsesAgentResponse:
         self._oa = None  # fresh Foundation Model client per request (short-lived OAuth tokens in serving)
+        self.router_note = []
         history = self._history(request)
         question = next((m["content"] for m in reversed(history) if m["role"] == "user"), "")
         keys, reason = self.route(question)
@@ -391,6 +414,7 @@ class ExposureAgentTeam(ResponsesAgent):
                 "route_reason": reason,
                 "tools": [{"name": t["name"], "args": t["args"]} for t in tool_log],
                 "tool_calls": tool_log,
+                "router_note": self.router_note,
             },
         )
 

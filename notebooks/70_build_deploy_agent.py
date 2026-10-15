@@ -114,12 +114,24 @@ except Exception as e:
     print("mkdirs:", e)
 mlflow.set_experiment(exp_dir + "/experiment")
 
-tables = [f"{fqn}.{t.name}" for t in w.tables.list(catalog_name=catalog, schema_name=schema)]
-uw_centroids = f"{catalog}.{uw_schema}.ref_postcode_centroid"
-try:
-    w.tables.get(uw_centroids); tables.append(uw_centroids)
-except Exception:
-    pass
+# Declare ONLY the tables the team's functions actually read (a model version has a cap on dependencies).
+# UC SQL functions run with the caller's rights, so the endpoint needs SELECT on what each function body reads;
+# views run with their owner's rights, so a view counts once and its base tables don't need declaring.
+import re
+schema_tables = [t.name for t in w.tables.list(catalog_name=catalog, schema_name=schema)]
+names_sql = ", ".join(f"'{t['name']}'" for t in tool_specs)
+defs = spark.sql(f"""SELECT routine_name, routine_definition FROM {catalog}.information_schema.routines
+                     WHERE routine_schema = '{schema}' AND routine_name IN ({names_sql})""").collect()
+tables, uw_centroids = set(), f"{catalog}.{uw_schema}.ref_postcode_centroid"
+for r in defs:
+    body = r["routine_definition"] or ""
+    for t in schema_tables:
+        if re.search(r"(?<![0-9A-Za-z_])" + re.escape(t) + r"(?![0-9A-Za-z_])", body):
+            tables.add(f"{fqn}.{t}")
+    if f"{uw_schema}.ref_postcode_centroid" in body:
+        tables.add(uw_centroids)
+tables = sorted(tables)
+print("tables read by the team's functions:", tables)
 resources = [DatabricksServingEndpoint(endpoint_name=LLM), DatabricksServingEndpoint(endpoint_name=ROUTER),
              DatabricksSQLWarehouse(warehouse_id=warehouse_id),
              *[DatabricksFunction(function_name=f"{fqn}.{t['name']}") for t in tool_specs],
