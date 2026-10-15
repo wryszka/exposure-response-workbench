@@ -26,3 +26,5 @@ env:
     value: exposure-response-agent
   - name: RESET_JOB_ID
     valueFrom: reset_job
+  - name: ALERTS_JOB_ID
+    valueFrom: alerts_job

@@ -2,6 +2,12 @@
 
 > Dated, reverse-chronological, self-contained entries. The single source of truth for what changed and why.
 
+## Real alert email via a Databricks SQL alert (2026-10-15)
+- **No SMTP server needed.** The `exposure_30_alerts` job now evaluates a Databricks SQL alert ("Bricksurance exposure alert", `96a09f00-…`) after the sweep (`sql_task.alert` with a user subscription); when the latest sweep has breached events, Databricks emails the subscriber with a custom HTML template (intro, event table with readable headings, link to the app). `seconds_to_retrigger=60` so each demo sweep can email again. Verified: two sweeps triggered from the app → two emails received (14:57, 15:01 UTC).
+- **Delivery is its own append-only log.** `gov_alert_delivery` (written by `31_alert_email` only after confirming the alert TRIGGERED) records the send; `gov_alert_dispatch` stays the decision log, untouched. The app derives SENT from the join.
+- **App runs the sweep by bound job id** (`alerts_job` resource, CAN_MANAGE_RUN, env `ALERTS_JOB_ID`) — the old name lookup missed dev-mode prefixed job names. Refuses if a sweep is already running.
+- The reset job runs the sweep notebook directly and never emails.
+
 ## Overnight build for the Hiscox review (2026-10-15) — newest first
 Five parallel tracks against fixed interfaces (`docs/BUILD_CONTRACTS.md`), each on its own branch, merged and deployed once. Per-track detail: `docs/notes/<track>.md`.
 - **Data-quality gate (T1).** Every feed batch passes `dq_gate()` (`10_feeds_common.py`) before it can touch `2_event_footprint`: record count, missing locations (≤2%), malformed geometry (≤1%), outside Europe+UK (≤5%), duplicates (≤10%), freshness (≤72 h; per-source overrides). Thresholds in `ref_dq_threshold`; every check of every batch in append-only `gov_feed_dq_log`; a REJECTED batch goes to `1_feed_quarantine` and **never replaces good data**. Frozen samples are gated too and logged FALLBACK_FROZEN. A deterministic seeded rejection (MeteoAlarm, 8 of 21 regions with lat/lon swapped → 38% vs 5%) is re-created by the reset so the story is always visible. Catalogue: `ref_feed_source` → `gov_source_catalog`; functions `fn_source_status()`, `fn_dq_recent(p_days)`, `fn_dq_batch_checks(p_run_id)`.

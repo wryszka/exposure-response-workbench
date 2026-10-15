@@ -13,3 +13,7 @@ resources:
           job:
             id: ${resources.jobs.exposure_99_reset.id}
             permission: CAN_MANAGE_RUN
+        - name: alerts_job
+          job:
+            id: ${resources.jobs.exposure_30_alerts.id}
+            permission: CAN_MANAGE_RUN

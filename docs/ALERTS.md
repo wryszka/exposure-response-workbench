@@ -1,3 +1,24 @@
+# Stakeholder alerts — how the email is sent
+
+**The email is sent by Databricks itself — no SMTP server.** The `exposure_30_alerts` job runs three tasks:
+1. `alert_sweep` (`notebooks/30_alerts.py`) — snapshots exposure, computes the delta, applies the per-peril
+   threshold, writes one row per event to `gov_alert_dispatch` (the decision + the digest).
+2. `send_alert_email` (`sql_task.alert`) — evaluates the Databricks SQL alert **"Bricksurance exposure alert"**
+   (`96a09f00-2640-4a81-8d54-ff4356094d14`) on the saved query over `mv_alert_email` (the latest sweep's breached
+   events). If there are any, the alert triggers and Databricks emails the subscriber(s) with a custom subject and
+   an HTML body (intro, the event table, a link to the app). Re-arms after 60 s, so each sweep can email again.
+3. `record_delivery` (`notebooks/31_alert_email.py`) — confirms the alert really triggered and appends a row to
+   `gov_alert_delivery` (append-only: sweep, channel, recipients, time). The app shows that sweep as **SENT ·
+   Databricks alert → email**.
+
+Recipients: bundle variable `alert_email_recipients` (default `laurence.ryszka@databricks.com`). Rebuild or
+change the alert's query / template with `python3 resources/alerts/build_alert_email.py --profile DEV`.
+The reset job runs the sweep notebook directly and never emails. Slack / Teams: add a notification destination
+(webhook) as another subscription on the `send_alert_email` task.
+
+---
+
+## Older note — SMTP / Slack secrets (optional, superseded)
 # Stakeholder alerts — how they work, and the one credential to send for real
 
 The alert path answers the Hiscox requirement head-on: **the people who never open Databricks** (claims

@@ -104,21 +104,33 @@ def api_event(eid: str, buffer: int = 200):
 def _latest_alert(eid: str):
     """The most recent dispatch row for one event — status, the governed numbers, and the exact digest sent."""
     return sql.query_one(
-        f"SELECT run_id, status, breached, threshold_rule, threatened_count, gross_eur, ceded_eur, net_eur, "
-        f"countries, n_countries, new_count, still_count, gone_count, channel, recipients, "
-        f"CAST(sent_at AS STRING) AS sent_at, digest_html "
-        f"FROM {config.fqn('gov_alert_dispatch')} WHERE event_id = :eid ORDER BY run_id DESC LIMIT 1", {"eid": eid})
+        f"SELECT d.run_id, CASE WHEN d.breached AND dl.run_id IS NOT NULL THEN 'SENT' ELSE d.status END AS status, "
+        f"d.breached, d.threshold_rule, d.threatened_count, d.gross_eur, d.ceded_eur, d.net_eur, "
+        f"d.countries, d.n_countries, d.new_count, d.still_count, d.gone_count, "
+        f"CASE WHEN d.breached AND dl.run_id IS NOT NULL THEN 'Databricks alert → email' ELSE d.channel END AS channel, "
+        f"COALESCE(CASE WHEN d.breached THEN dl.recipients END, d.recipients) AS recipients, "
+        f"CAST(COALESCE(CASE WHEN d.breached THEN dl.delivered_at END, d.sent_at) AS STRING) AS sent_at, d.digest_html "
+        f"FROM {config.fqn('gov_alert_dispatch')} d "
+        f"LEFT JOIN (SELECT run_id, max(recipients) AS recipients, max(delivered_at) AS delivered_at "
+        f"           FROM {config.fqn('gov_alert_delivery')} GROUP BY run_id) dl ON dl.run_id = d.run_id "
+        f"WHERE d.event_id = :eid ORDER BY d.run_id DESC LIMIT 1", {"eid": eid})
 
 
 @app.get("/api/alerts")
 def api_alerts():
     """The dispatch log for the latest sweep — the record of who was told what, when (grouped by event)."""
     rows = sql.query(
-        f"SELECT event_id, event_name, peril_code, status, breached, threatened_count, n_countries, countries, "
-        f"new_count, gross_eur, net_eur, channel, recipients, CAST(sent_at AS STRING) AS sent_at "
-        f"FROM {config.fqn('gov_alert_dispatch')} "
-        f"WHERE run_id = (SELECT max(run_id) FROM {config.fqn('gov_alert_dispatch')}) "
-        f"ORDER BY gross_eur DESC")
+        f"SELECT d.event_id, d.event_name, d.peril_code, "
+        f"CASE WHEN d.breached AND dl.run_id IS NOT NULL THEN 'SENT' ELSE d.status END AS status, "
+        f"d.breached, d.threatened_count, d.n_countries, d.countries, d.new_count, d.gross_eur, d.net_eur, "
+        f"CASE WHEN d.breached AND dl.run_id IS NOT NULL THEN 'Databricks alert → email' ELSE d.channel END AS channel, "
+        f"COALESCE(CASE WHEN d.breached THEN dl.recipients END, d.recipients) AS recipients, "
+        f"CAST(COALESCE(CASE WHEN d.breached THEN dl.delivered_at END, d.sent_at) AS STRING) AS sent_at "
+        f"FROM {config.fqn('gov_alert_dispatch')} d "
+        f"LEFT JOIN (SELECT run_id, max(recipients) AS recipients, max(delivered_at) AS delivered_at "
+        f"           FROM {config.fqn('gov_alert_delivery')} GROUP BY run_id) dl ON dl.run_id = d.run_id "
+        f"WHERE d.run_id = (SELECT max(run_id) FROM {config.fqn('gov_alert_dispatch')}) "
+        f"ORDER BY d.gross_eur DESC")
     return {"dispatch": rows}
 
 
@@ -127,10 +139,12 @@ def api_alerts_run():
     """Fire the alert sweep on demand (the same serverless job the schedule runs). Degrades gracefully."""
     try:
         w = config.get_workspace_client()
-        jobs = list(w.jobs.list(name="exposure_30_alerts"))
-        if not jobs:
-            return {"ok": False, "reason": "alert sweep job not found in this workspace"}
-        run = w.jobs.run_now(job_id=jobs[0].job_id)
+        jid = os.environ.get("ALERTS_JOB_ID", "").strip()
+        if not jid.isdigit():
+            return {"ok": False, "reason": "alert sweep job not bound to this app"}
+        if list(w.jobs.list_runs(job_id=int(jid), active_only=True, limit=1)):
+            return {"ok": False, "reason": "an alert sweep is already running"}
+        run = w.jobs.run_now(job_id=int(jid))
         return {"ok": True, "run_id": run.run_id}
     except Exception as e:
         return {"ok": False, "reason": str(e)[:200]}

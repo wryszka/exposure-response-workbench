@@ -6,8 +6,8 @@ resources:
         Event-response alert sweep — snapshots live exposure, computes the delta vs the previous snapshot
         (new / progressing / extinguished), applies the per-peril threshold, and dispatches an event-grouped
         digest (one alert per event, whole cross-border picture) to the stakeholder distribution. Runs on a
-        schedule so alerts fire with nobody logged in. Real send when a channel secret is configured; audited
-        to gov_alert_dispatch either way.
+        schedule so alerts fire with nobody logged in. Databricks emails the digest itself via a SQL alert
+        (send_alert_email); every send is recorded in gov_alert_delivery, every decision in gov_alert_dispatch.
       tags:
         project: exposure_response_workbench
       # Paused by default — armed on demand / for the demo. Change pause_status to UNPAUSED to run hourly.
@@ -33,6 +33,28 @@ resources:
               warehouse_id: ${var.warehouse_id}
               app_sp: ${var.app_service_principal_id}
               buffer_m: "200"
+          environment_key: serverless
+        # Databricks emails the digest itself: evaluate the SQL alert; it triggers when the sweep has breached
+        # events and notifies the subscriber (no SMTP server needed).
+        - task_key: send_alert_email
+          depends_on:
+            - task_key: alert_sweep
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            alert:
+              alert_id: ${var.alert_email_id}
+              subscriptions:
+                - user_name: ${var.alert_email_recipients}
+        - task_key: record_delivery
+          depends_on:
+            - task_key: send_alert_email
+          notebook_task:
+            notebook_path: ../notebooks/31_alert_email.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              alert_id: ${var.alert_email_id}
+              recipients: ${var.alert_email_recipients}
           environment_key: serverless
       environments:
         - environment_key: serverless

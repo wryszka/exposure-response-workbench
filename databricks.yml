@@ -26,6 +26,12 @@ variables:
   dashboard_id:
     description: AI/BI "Live Fire Tracker" dashboard — Track-live surface (published, embed_credentials=true)
     default: ""
+  alert_email_id:
+    description: Databricks SQL alert that emails the stakeholder digest (built by resources/alerts/build_alert_email.py)
+    default: "96a09f00-2640-4a81-8d54-ff4356094d14"
+  alert_email_recipients:
+    description: Who the alert email goes to (workspace user)
+    default: "laurence.ryszka@databricks.com"
   use_cache:
     description: Switchable latency aid wrapping LLM narration only (never structured / geospatial outputs)
     default: "true"
