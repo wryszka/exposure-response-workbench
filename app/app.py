@@ -202,6 +202,18 @@ def api_sources():
             "available": {"sources": e1 is None, "batches": e2 is None}, "now_utc": _now_utc()}
 
 
+@app.get("/api/sources/batch")
+def api_sources_batch(run_id: str = ""):
+    """Every quality check run on one feed batch (from fn_dq_batch_checks): the rule, the observed value,
+    pass or fail — the detail behind an accepted or rejected batch."""
+    if not run_id:
+        return {"checks": [], "available": False}
+    checks, err = _try(
+        f"SELECT check_name, description, comparator, threshold, observed, passed, decision "
+        f"FROM {config.fqn('fn_dq_batch_checks')}(:r)", {"r": run_id})
+    return {"checks": checks, "available": err is None}
+
+
 def _now_utc():
     import datetime
     return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")

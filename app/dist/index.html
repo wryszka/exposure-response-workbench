@@ -146,26 +146,37 @@
   .svgbox svg{display:block;width:100%;min-width:760px;height:auto}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:900px){.two{grid-template-columns:1fr}}
   .note{background:var(--amber-bg);border:1px solid #fde68a;color:var(--amber-ink);border-radius:9px;padding:9px 12px;font-size:12.5px;line-height:1.5}
-  /* Data sources & quality */
-  .srcgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
-  .src{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 14px;display:flex;flex-direction:column;gap:6px}
-  .src .sh{display:flex;align-items:center;gap:8px;justify-content:space-between}
-  .src .sn{font-weight:700;font-size:14px}.src .sp{font-size:11.5px;color:var(--mut)}
-  .src .sc{font-size:12.5px;color:#334155;line-height:1.45}
-  .src .sm{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12px;margin-top:3px}
-  .src .sm span:nth-child(odd){color:var(--mut)}
-  .rejbanner{display:flex;gap:12px;align-items:flex-start;background:var(--red-bg);border:1px solid #fecaca;color:var(--red-ink);border-radius:12px;padding:13px 15px;margin:4px 0 16px}
-  .rejbanner b{font-size:14px}
-  /* Agents */
-  .agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-  .agent{background:#fff;border:1px solid var(--line);border-top:4px solid var(--brand);border-radius:12px;padding:14px 15px;font-size:12.5px;line-height:1.5}
-  .agent h4{margin:0;font-size:15px}.agent .ar{color:var(--mut);margin:2px 0 8px}
-  .agent .al{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:700;margin:9px 0 3px}
-  .agent ul{margin:0;padding-left:17px}
-  .agent .sk{display:flex;gap:5px;flex-wrap:wrap}.agent .sk code{background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:5px;font-size:11px}
-  .agent .ex{cursor:pointer;color:var(--brand-d);text-decoration:underline dotted}
-  .sup{background:linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;border-radius:14px;padding:16px 18px;margin-bottom:14px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-  .sup h3{margin:0;color:#fff;font-size:16px}.sup p{margin:4px 0 0;font-size:12.5px;color:#cbd5e1;line-height:1.5;max-width:720px}
+  /* One line per item; details in a roll-down (sources, batches, agents) */
+  .rows{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .rows>details{border-top:1px solid var(--line)}.rows>details:first-child{border-top:0}
+  .rows summary{list-style:none;display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none}
+  .rows summary::-webkit-details-marker{display:none}
+  .rows summary:hover{background:#f8fafc}
+  .rows .chev{color:var(--mut);font-size:11px;width:10px;flex-shrink:0;transition:transform .15s}
+  .rows details[open]>summary .chev{transform:rotate(90deg)}
+  .rows details[open]>summary{background:#f8fafc}
+  .rows .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .rows .nm{font-weight:700;font-size:13.5px;white-space:nowrap}
+  .rows .ds{color:var(--mut);font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rows .meta{display:flex;gap:8px;align-items:center;flex-shrink:0;font-size:12px;color:var(--mut)}
+  .rows .tm{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--mut);white-space:nowrap}
+  .rb{padding:6px 16px 14px 46px;font-size:12.5px;line-height:1.55;color:#334155}
+  .rb .al{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);font-weight:700;margin:10px 0 3px}
+  .rb .al:first-child{margin-top:4px}
+  .rb ul{margin:0;padding-left:17px}
+  .rb .sk{display:flex;gap:5px;flex-wrap:wrap}.rb .sk code{background:#eef2ff;color:#3730a3;padding:1px 6px;border-radius:5px;font-size:11px}
+  .rb .ex{cursor:pointer;color:var(--brand-d);text-decoration:underline dotted;margin:2px 0}
+  .rb .kv{display:grid;grid-template-columns:120px 1fr;gap:3px 12px}.rb .kv span:nth-child(odd){color:var(--mut)}
+  .rb table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+  .rb th,.rb td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}.rb th{color:var(--mut);font-weight:600}
+  .sechead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 2px 8px}
+  .sechead h3{margin:0;font-size:14px}.sechead span{font-size:12px;color:var(--mut)}
+  .rejbanner{display:flex;gap:10px;align-items:flex-start;background:var(--red-bg);border:1px solid #fecaca;color:var(--red-ink);border-radius:12px;padding:11px 14px;margin:4px 0 14px;font-size:12.5px;line-height:1.5}
+  .summaryline{font-size:13px;color:#334155;margin:2px 2px 12px}
+  .gatehow{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:12px}
+  .gatehow>summary{list-style:none;cursor:pointer;padding:10px 14px;font-size:12.5px;color:var(--mut);user-select:none}
+  .gatehow>summary::-webkit-details-marker{display:none}
+  .gatehow .gb{padding:0 14px 14px;font-size:12.5px;line-height:1.55;color:#334155}
   .route{display:inline-flex;gap:6px;align-items:center;background:var(--brand-soft);color:var(--brand-d);border-radius:999px;padding:2px 10px;font-size:11.5px;font-weight:700;margin-bottom:6px}
   /* Also watching (events with no homes in our EU book) */
   .watchlist{margin-top:14px;border:1px dashed var(--line2);border-radius:12px;padding:11px 14px;background:#fff}
@@ -321,18 +332,20 @@
       </div>
     </div><!-- /liveScreen -->
     <div class="screen" id="sourcesScreen">
-      <div class="whatis on" style="margin-top:0">
+      <div class="whatis" style="margin-top:0">
         <div class="wh">Data sources &amp; quality — what we ingest, how fresh it is, and what we refused</div>
         <div class="wb">Every hazard feed we rely on, in one place: what it carries, whether it's <b>real-time</b>, a <b>batch</b>, or a <b>frozen sample</b> kept for a reproducible room, when it last arrived and how many records came in. Every pull passes a <b>quality gate</b> before it can touch the book — if a batch fails a check (for example, too many records outside Europe), it is <b>rejected and quarantined</b> and the previous good data stays in use. The log below shows every decision and why.</div>
       </div>
+      <p class="summaryline" style="margin-top:0">What we ingest, how fresh it is, and what we refused. Click any row for the detail.</p>
       <div id="srcView"><div class="loading">Loading sources…</div></div>
     </div><!-- /sourcesScreen -->
 
     <div class="screen" id="agentsScreen">
-      <div class="whatis on" style="margin-top:0">
+      <div class="whatis" style="margin-top:0">
         <div class="wh">AI agents — a supervisor and six specialists, each with a clear job</div>
         <div class="wb">Ask a question and the <b>supervisor</b> sends it to the specialist whose job it is — the answer shows <b>who answered, why they were picked, and which governed functions they called</b>. Agents read and explain; they never invent a number (every figure comes from a governed function) and they never take a consequential action on their own — promoting an event, sending an alert or overriding a bind stays with a person. The <span style="color:#b45309">yellow toggle</span> switches between instant (cached) and fresh answers.</div>
       </div>
+      <p class="summaryline" style="margin-top:0">A supervisor and six specialists, each with one job. Ask below, or click an agent to see what it does.</p>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
           <div><h3>Ask the agent team</h3><p class="h3s" id="agentEpState">Checking the agent endpoint…</p></div>
@@ -1013,7 +1026,9 @@ async function initAgent(){
   $('#agentEpState').innerHTML= st==='READY'
     ? `Supervisor endpoint <code>${esc(d.endpoint)}</code> <span class="pill" style="background:#dcfce7;color:#166534">● serving</span> — Agent Framework, routes to the specialist below.`
     : `<span class="pill" style="background:#fef3c7;color:#92400e">fallback</span> The served supervisor (<code>${esc(d.endpoint||'exposure-response-agent')}</code>) is ${st==='NOT_READY'?'starting up':'not available'} — answers come from the in-app agent (same governed functions, no specialist routing).`;
-  const ex=[];ROSTER.forEach(r=>{(r.example_questions||[]).slice(0,1).forEach(q=>ex.push(q));});
+  const pick=['reinsurance_analyst','data_steward','underwriting_guard'];
+  let ex=pick.map(k=>(ROSTER.find(r=>r.agent_key===k)||{}).example_questions||[]).map(a=>a[0]).filter(Boolean);
+  if(ex.length<3){ROSTER.forEach(r=>{const q=(r.example_questions||[])[0];if(q&&!ex.includes(q)&&ex.length<3)ex.push(q);});}
   $('#starters').innerHTML=ex.map(q=>`<span class="starter" onclick="askAgent(this.textContent)">${esc(q)}</span>`).join('');
   renderRoster(fromTable,d);
 }
@@ -1038,25 +1053,25 @@ function md(src){
 function li(arr){return (arr||[]).length?'<ul>'+arr.map(x=>`<li>${esc(String(x))}</li>`).join('')+'</ul>':'<span class="muted">—</span>';}
 function renderRoster(fromTable,d){
   const tones=['#2563eb','#059669','#7c3aed','#b45309','#dc2626','#0891b2'];
-  const sup=ROSTER.find(r=>/supervisor/i.test(r.agent_key||'')||/supervisor/i.test(r.name||''));
-  const specs=ROSTER.filter(r=>r!==sup);
+  const sup=ROSTER.find(r=>/supervisor/i.test(r.agent_key||'')||/supervisor/i.test(r.name||''))||
+    {agent_key:'supervisor',name:'Supervisor',role:'Reads each question and hands it to the right specialist, saying why.'};
+  const specs=ROSTER.filter(r=>r!==sup&&!/supervisor/i.test(r.agent_key||''));
   const h=wsBase();
-  const epLink=(d&&d.endpoint&&h)?`<a class="btn" style="background:#fff" href="${h}/ml/endpoints/${encodeURIComponent(d.endpoint)}${wsO()}" target="_blank" rel="noopener">Open the serving endpoint ↗</a>`:'';
-  const supCard=`<div class="sup">
-    <div style="font-size:30px">🧭</div>
-    <div style="flex:1;min-width:260px"><div class="slab" style="margin:0;color:#94a3b8">Supervisor</div>
-      <h3>${esc(sup?sup.name:'Supervisor')}</h3>
-      <p>${esc(sup&&sup.role?sup.role:'Reads each question, picks the one specialist whose job it is, and passes it on — then returns that specialist’s answer with the routing reason and the tools used. One served endpoint on Agent Framework; tools come from Unity Catalog functions through the managed MCP server.')}</p></div>
-    ${epLink}</div>`;
-  const card=(r,i)=>`<div class="agent" style="border-top-color:${tones[i%tones.length]}">
-    <h4>${esc(r.name)}</h4><div class="ar">${esc(r.role||'')}</div>
-    <div class="al">Responsibilities</div>${li(r.responsibilities)}
-    <div class="al">Skills — governed functions it can call</div><div class="sk">${(r.skills||[]).map(x=>`<code>${esc(x)}</code>`).join('')||'<span class="muted">—</span>'}</div>
-    <div class="al">Data it reads</div><div class="sk">${(r.reads||[]).map(x=>`<code>${esc(x)}</code>`).join('')||'<span class="muted">—</span>'}</div>
-    <div class="two" style="gap:10px"><div><div class="al" style="color:#166534">May</div>${li(r.may_do)}</div><div><div class="al" style="color:#991b1b">May not</div>${li(r.may_not_do)}</div></div>
-    ${(r.example_questions||[]).length?`<div class="al">Try</div>${r.example_questions.map(q=>`<div class="ex" onclick="askAgent(this.textContent)">${esc(q)}</div>`).join('')}`:''}
+  const epUrl=(d&&d.endpoint&&h)?`${h}/ml/endpoints/${encodeURIComponent(d.endpoint)}${wsO()}`:'';
+  const codes=a=>(a||[]).map(x=>`<code>${esc(String(x))}</code>`).join('')||'<span class="muted">—</span>';
+  const body=(r,isSup)=>`<div class="rb">
+    ${isSup?`<p style="margin:2px 0 6px">One served endpoint on Agent Framework; the specialists' tools are governed Unity Catalog functions.${epUrl?` <a href="${epUrl}" target="_blank" rel="noopener">Open the endpoint ↗</a>`:''}</p>`:''}
+    ${(r.responsibilities||[]).length?`<div class="al">Responsibilities</div>${li(r.responsibilities)}`:''}
+    ${(r.skills||[]).length?`<div class="al">Skills — governed functions it can call</div><div class="sk">${codes(r.skills)}</div>`:''}
+    ${(r.reads||[]).length?`<div class="al">Data it reads</div><div class="sk">${codes(r.reads)}</div>`:''}
+    ${((r.may_do||[]).length||(r.may_not_do||[]).length)?`<div class="two" style="gap:10px"><div><div class="al" style="color:#166534">May</div>${li(r.may_do)}</div><div><div class="al" style="color:#991b1b">May not</div>${li(r.may_not_do)}</div></div>`:''}
+    ${(r.example_questions||[]).length?`<div class="al">Try asking</div>${r.example_questions.map(q=>`<div class="ex" onclick="askAgent(this.textContent)">${esc(q)}</div>`).join('')}`:''}
   </div>`;
-  $('#agentsView').innerHTML=supCard+`<div class="agrid">${specs.map(card).join('')}</div>`+
+  const row=(r,tone,isSup)=>`<details><summary><span class="chev">▸</span><span class="dot" style="background:${tone}"></span>
+    <span class="nm">${isSup?'🧭 ':''}${esc(r.name)}</span><span class="ds">${esc(r.role||'')}</span>
+    ${isSup?'<span class="meta"><span class="pill" style="background:#e2e8f0;color:#334155">routes every question</span></span>':''}</summary>${body(r,isSup)}</details>`;
+  $('#agentsView').innerHTML=`<div class="sechead"><h3>The team</h3><span>Click an agent for its job, skills and limits</span></div>
+    <div class="rows">${row(sup,'#0f172a',true)}${specs.map((r,i)=>row(r,tones[i%tones.length],false)).join('')}</div>`+
     (fromTable?'':'<p class="muted" style="font-size:11.5px;margin-top:8px">Roster shown from the build contract — the governed roster table (<code>ref_agent_roster</code>) isn\'t populated yet.</p>');
 }
 function toggleLive(){LIVE=!LIVE;const b=$('#liveBtn');b.classList.toggle('live',LIVE);b.textContent=LIVE?'● Live':'◉ Cached';}
@@ -1070,7 +1085,7 @@ async function askAgent(q){
     const who=r.specialist?`<div class="route">🧭 Answered by ${esc(r.specialist)}</div>${r.route_reason?`<div class="muted" style="font-size:11.5px;margin:-2px 0 6px">Why: ${esc(r.route_reason)}</div>`:''}`
       : (r.mode==='fallback'?`<div class="route" style="background:#fef3c7;color:#92400e">In-app agent (fallback)</div>`:'');
     const tl=(r.tools||[]);
-    const tools=tl.length?`<div class="tools">Called: ${tl.map(t=>`<code>${esc(String(t.name||t.tool||''))}</code>${t.rows!=null?' ('+t.rows+' rows)':''}`).join(' · ')} <span style="float:right">${esc(r.cache==='hit'?'cached':(r.cache||''))} · ${esc(r.endpoint||'')}</span></div>`:'';
+    const tools=tl.length?`<details class="tools"><summary style="cursor:pointer;user-select:none">Governed functions used (${tl.length}) <span style="float:right">${esc(r.cache==='hit'?'cached':(r.cache||''))} · ${esc(r.endpoint||'')}</span></summary><div style="margin-top:5px">${tl.map(t=>`<code>${esc(String(t.name||t.tool||''))}</code>${t.rows!=null?' ('+t.rows+' rows)':''}`).join(' · ')}</div></details>`:'';
     wait.innerHTML=who+md(r.text||'(no answer)')+tools;
   }catch(e){wait.innerHTML='<span class="muted">Agent unavailable.</span>';}
 }
@@ -1099,45 +1114,57 @@ async function loadSources(){
   SRC_LOADED=true;
   try{const d=await api('/sources');renderSources(d);}catch(e){$('#srcView').innerHTML='<div class="card"><div class="muted">Sources unavailable.</div></div>';}
 }
+function fmtTs(ts){const t=String(ts||'');return t?esc(t.slice(8,10)+'/'+t.slice(5,7)+' '+t.slice(11,16)):'—';}
 function renderSources(d){
-  const src=d.sources||[], bat=d.batches||[], now=d.now_utc;
+  const src=d.sources||[], bat=d.batches||[], now=d.now_utc, th=d.thresholds||[];
   if(!d.available||(!d.available.sources&&!d.available.batches)){
     $('#srcView').innerHTML='<div class="card"><div class="loading">The source catalogue and quality log are being deployed — check back shortly.</div></div>';return;}
   const rej=bat.filter(b=>String(b.decision).toUpperCase()==='REJECTED');
-  const acc=bat.filter(b=>String(b.decision).toUpperCase()==='ACCEPTED').length;
   const live=src.filter(x=>x.is_live===true||x.is_live==='true').length;
-  const banner=rej.length?`<div class="rejbanner"><div style="font-size:22px">⛔</div><div>
-      <b>Batch rejected: ${esc(rej[0].source_id)} · ${esc(String(rej[0].pulled_at||'').slice(0,16))} UTC</b>
-      <div style="font-size:12.5px;margin-top:3px">${esc(rej[0].reason||'failed the quality gate')} — quarantined, previous data kept.</div>
-      ${rej.length>1?`<div style="font-size:11.5px;margin-top:3px">${rej.length-1} more rejected batch${rej.length>2?'es':''} this week — see the log below.</div>`:''}</div></div>`:'';
-  const kpis=`<div class="kpis">
-    <div class="kpi"><div class="k">Sources</div><div class="v">${num(src.length)}</div><div class="bd">${num(live)} live right now</div></div>
-    <div class="kpi"><div class="k">Batches checked · 7 days</div><div class="v">${num(bat.length)}</div><div class="bd">every pull passes the gate</div></div>
-    <div class="kpi"><div class="k">Accepted</div><div class="v" style="color:var(--emerald)">${bat.length?Math.round(acc/bat.length*100):0}<small>%</small></div><div class="bd">${num(acc)} batches</div></div>
-    <div class="kpi"><div class="k">Rejected</div><div class="v" style="color:${rej.length?'var(--red)':'var(--ink)'}">${num(rej.length)}</div><div class="bd">quarantined, never used</div></div>
-  </div>`;
-  const card=x=>{const p=PERIL[x.peril_code]||{c:'#64748b',label:x.peril_code||'',ic:'•'};
-    return `<div class="src" style="border-left:4px solid ${p.c}">
-      <div class="sh"><div><div class="sn">${p.ic} ${esc(x.source_name||x.source_id)}</div><div class="sp">${esc(x.provider||'')}</div></div>${modeChip(x.mode,x.is_live)}</div>
-      <div class="sc">${esc(x.carries||'')}</div>
-      <div class="sm"><span>Cadence</span><span>${esc(x.cadence||'—')}</span>
-        <span>Last ingested</span><span><b>${ago(x.last_ingested_at,now)}</b> <span class="muted mono">${esc(String(x.last_ingested_at||'').slice(0,16))}</span></span>
-        <span>Records</span><span>${x.last_records!=null?num(x.last_records):'—'}</span>
-        <span>Last batch</span><span>${decChip(x.last_decision)}</span>
-        <span>Licence</span><span class="muted">${esc(x.licence||'—')}</span></div>
-    </div>`;};
-  const rows=bat.map(b=>{const fc=(b.failed_checks||[]).map(c=>`<code>${esc(typeof c==='string'?c:JSON.stringify(c))}</code>`).join(' ');
-    return `<tr${String(b.decision).toUpperCase()==='REJECTED'?' style="background:#fff7f7"':''}><td class="mono">${esc(String(b.pulled_at||'').slice(0,16))}</td><td>${esc(b.source_id)}</td><td class="r">${num(b.n_records)}</td><td>${decChip(b.decision)}</td><td>${esc(b.reason||'')} ${fc}</td></tr>`;}).join('')
-    ||'<tr><td colspan="5" class="muted" style="padding:16px;text-align:center">No batches logged in the last 7 days.</td></tr>';
-  const th=(d.thresholds||[]);
-  const thTable=th.length?`<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--mut);font-size:12.5px">▸ The checks and thresholds (${th.length})</summary>
-    <div class="tscroll" style="margin-top:8px"><table><thead><tr><th>Source</th><th>Check</th><th>Rule</th><th>What it protects</th></tr></thead><tbody>${
-      th.map(t=>`<tr><td>${esc(t.source_id)}</td><td class="mono">${esc(t.check_name)}</td><td class="mono">${esc(t.comparator||'')} ${esc(String(t.threshold??''))}</td><td class="muted">${esc(t.description||'')}</td></tr>`).join('')}</tbody></table></div></details>`:'';
-  $('#srcView').innerHTML=banner+kpis+
-    (src.length?`<div class="srcgrid">${src.map(card).join('')}</div>`:'<div class="card"><div class="muted">Source catalogue not available yet.</div></div>')+
-    `<div class="card" style="margin-top:16px"><h3>Quality gate — batch log <span class="muted" style="font-weight:400;font-size:12px">· last 7 days · append-only <code>gov_feed_dq_log</code></span></h3>
-      <p class="h3s">Each pull is checked before it can touch the book: is the shape right, are the coordinates inside Europe / the UK, is the geometry valid, is it fresh, are there duplicates? Fail a threshold and the batch is rejected and quarantined (<code>1_feed_quarantine</code>) — the previous good data stays in use.</p>
-      <div class="tscroll"><table><thead><tr><th>Pulled (UTC)</th><th>Source</th><th class="r">Records</th><th>Decision</th><th>Why</th></tr></thead><tbody>${rows}</tbody></table></div>${thTable}</div>`;
+  const nameOf=id=>{const x=src.find(s=>s.source_id===id);return x?(x.source_name||id):id;};
+  const summary=`<p class="summaryline"><b>${num(src.length)}</b> sources · <b>${num(live)}</b> live right now · ${rej.length?`<b style="color:var(--red)">${num(rej.length)} batch${rej.length>1?'es':''} rejected</b> this week`:'no batches rejected this week'}</p>`;
+  const banner=rej.length?`<div class="rejbanner"><span style="font-size:16px">⛔</span><div><b>Batch rejected — ${esc(nameOf(rej[0].source_id))}, ${fmtTs(rej[0].pulled_at)} UTC.</b> ${esc(rej[0].reason||'Failed the quality gate.')}</div></div>`:'';
+  const checksFor=id=>th.filter(t=>t.source_id===id);
+  const srcRow=x=>{const p=PERIL[x.peril_code]||{c:'#64748b',ic:'•'};const ch=checksFor(x.source_id);
+    return `<details><summary><span class="chev">▸</span><span class="dot" style="background:${p.c}"></span>
+      <span class="nm" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(x.source_name||x.source_id)}</span>
+      <span class="meta">${modeChip(x.mode,x.is_live)}<span style="min-width:92px;text-align:right">${x.last_ingested_at?'arrived '+ago(x.last_ingested_at,now):'never'}</span>${decChip(x.last_decision)}</span></summary>
+      <div class="rb"><div class="kv">
+        <span>Carries</span><span>${esc(x.carries||'—')}</span>
+        <span>Provider</span><span>${esc(x.provider||'—')}</span>
+        <span>Cadence</span><span>${esc(x.cadence||'—')}</span>
+        <span>Last arrived</span><span class="mono">${esc(String(x.last_ingested_at||'—').slice(0,16))}${x.last_records!=null?' · '+num(x.last_records)+' records':''}</span>
+        <span>Licence</span><span>${esc(x.licence||'—')}</span></div>
+        ${ch.length?`<div class="al">Quality checks on every batch</div><table><thead><tr><th>Check</th><th>Rule</th><th>What it protects</th></tr></thead><tbody>${ch.map(t=>`<tr><td class="mono">${esc(t.check_name)}</td><td class="mono">${esc(t.comparator||'')} ${esc(String(t.threshold??''))}</td><td class="muted">${esc(t.description||'')}</td></tr>`).join('')}</tbody></table>`:''}
+      </div></details>`;};
+  const batRow=b=>{const R=String(b.decision).toUpperCase()==='REJECTED';
+    return `<details data-run="${esc(b.run_id)}" ontoggle="loadChecks(this)"${R?' style="background:#fff7f7"':''}><summary><span class="chev">▸</span>
+      <span class="tm">${fmtTs(b.pulled_at)}</span><span class="nm" style="font-weight:600;min-width:110px">${esc(b.source_id)}</span>${decChip(b.decision)}
+      <span class="ds">${esc(b.reason||'')}</span></summary>
+      <div class="rb"><p style="margin:2px 0 6px">${esc(b.reason||'')}${b.n_records!=null?` <span class="muted">· ${num(b.n_records)} records</span>`:''}</p><div class="chk muted">Loading the checks…</div></div></details>`;};
+  const how=`<details class="gatehow"><summary>▸ How the quality gate works — all checks and thresholds (${th.length})</summary><div class="gb">
+      <p style="margin:0 0 8px">Every pull is checked before it can touch the book: is anything there, are the locations present, is the geometry valid, are the records inside Europe and the UK, are there duplicates, is it fresh? Fail a threshold and the batch is <b>rejected and quarantined</b> (<code>1_feed_quarantine</code>) — the previous good data stays in use. Every check of every batch is logged (<code>gov_feed_dq_log</code>, append-only). If a live feed can't be reached, a frozen sample is used and labelled.</p>
+      ${th.length?`<div class="tscroll"><table><thead><tr><th>Source</th><th>Check</th><th>Rule</th><th>What it protects</th></tr></thead><tbody>${th.map(t=>`<tr><td>${esc(t.source_id)}</td><td class="mono">${esc(t.check_name)}</td><td class="mono">${esc(t.comparator||'')} ${esc(String(t.threshold??''))}</td><td class="muted">${esc(t.description||'')}</td></tr>`).join('')}</tbody></table></div>`:''}
+    </div></details>`;
+  $('#srcView').innerHTML=summary+banner+
+    `<div class="sechead"><h3>Sources</h3><span>mode · last arrived · last decision</span></div>`+
+    (src.length?`<div class="rows">${src.map(srcRow).join('')}</div>`:'<div class="card"><div class="muted">Source catalogue not available yet.</div></div>')+
+    `<div class="sechead"><h3>Batch log</h3><span>last 7 days · click a batch for its checks</span></div>`+
+    (bat.length?`<div class="rows">${bat.map(batRow).join('')}</div>`:'<div class="card"><div class="muted">No batches logged in the last 7 days.</div></div>')+how;
+}
+function fmtNum(v){const n=Number(v);return (v===null||v===undefined||v==='')?'—':isFinite(n)?(Number.isInteger(n)?String(n):String(Math.round(n*10)/10)):esc(String(v));}
+async function loadChecks(el){
+  if(!el.open||el.dataset.loaded)return;
+  el.dataset.loaded='1';
+  const box=el.querySelector('.chk');
+  try{
+    const d=await api('/sources/batch?run_id='+encodeURIComponent(el.dataset.run));
+    const ch=d.checks||[];
+    box.classList.remove('muted');
+    box.innerHTML=ch.length?`<table><thead><tr><th>Check</th><th>Rule</th><th>Observed</th><th>Result</th></tr></thead><tbody>${ch.map(c=>{const ok=c.passed===true||c.passed==='true';
+      return `<tr><td><span class="mono">${esc(c.check_name)}</span>${c.description?`<div class="muted" style="font-size:11px">${esc(c.description)}</div>`:''}</td><td class="mono">${esc(c.comparator||'')} ${fmtNum(c.threshold)}</td><td class="mono">${fmtNum(c.observed)}</td><td>${ok?'<span class="pill" style="background:#dcfce7;color:#166534">✓ pass</span>':'<span class="pill" style="background:#fee2e2;color:#991b1b">✕ fail</span>'}</td></tr>`;}).join('')}</tbody></table>`
+      :'<span class="muted">No per-check detail logged for this batch.</span>';
+  }catch(e){box.textContent='Check detail unavailable.';}
 }
 
 // ─────────────────────────── Learn (architecture / data-flow diagrams, contents) ───────────────────────────
