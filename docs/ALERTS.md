@@ -21,7 +21,7 @@ The reset job runs the sweep notebook directly and never emails. Slack / Teams: 
 ## Older note — SMTP / Slack secrets (optional, superseded)
 # Stakeholder alerts — how they work, and the one credential to send for real
 
-The alert path answers the Hiscox requirement head-on: **the people who never open Databricks** (claims
+The alert path answers the client requirement head-on: **the people who never open Databricks** (claims
 handlers, underwriters, seniors) get told when a catastrophe event develops — and a cross-border event arrives
 as **one alert**, not fragmented across country-siloed teams.
 

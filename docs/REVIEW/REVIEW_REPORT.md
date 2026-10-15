@@ -1,6 +1,6 @@
 # Exposure & Event Response — 8-Agent Demo Review
 
-**Date:** 2026-10-06 · **Target review:** Hiscox Europe, 16 Oct 2026 · **Repo:** wryszka/exposure-response-workbench @ a4aa06d · **App:** https://exposure-response-workbench-7474656169654171.aws.databricksapps.com
+**Date:** 2026-10-06 · **Target review:** client review, 16 Oct 2026 · **Repo:** wryszka/exposure-response-workbench @ a4aa06d · **App:** https://exposure-response-workbench-7474656169654171.aws.databricksapps.com
 **Panel:** practitioner · decision-maker · Databricks SA · senior developer · security · current-Databricks expert · incumbent champion · UI/UX + "scared Excel analyst". Extra lens: the **clear demo track** rule (don't overwhelm).
 
 ---

@@ -75,7 +75,7 @@ def wh_rows(stmt, label=""):
 gaz = [
     # place_name, lat, lon   (name is matched case-insensitively as a substring of the news text;
     # longer names win, so "southern france" doesn't beat "Var")
-    ("Var", 43.610, 6.720),            # SE-France insured cluster (the Hiscox wildfire story)
+    ("Var", 43.610, 6.720),            # SE-France insured cluster (the hero wildfire story)
     ("Vidauban", 43.432, 6.434),
     ("Le Luc", 43.393, 6.312),
     ("Fréjus", 43.433, 6.737),

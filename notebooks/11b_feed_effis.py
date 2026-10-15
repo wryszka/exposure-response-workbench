@@ -4,7 +4,7 @@
 # MAGIC
 # MAGIC Complements the FIRMS adapter (`11_feed_wildfire`). Where **FIRMS** gives near-real-time active-fire
 # MAGIC *hotspots* (points, clustered into a rough footprint), **EFFIS Burnt Areas** gives the authoritative
-# MAGIC *burnt-area perimeters* (polygons) — this is the dataset Hiscox's exposure team actually uses. Both land
+# MAGIC *burnt-area perimeters* (polygons) — this is the dataset the client's exposure team actually uses. Both land
 # MAGIC in the same `2_event_footprint` shape (WKT, EPSG:4326) and flow through the same governed functions, so an
 # MAGIC EFFIS burnt-area event overlays the portfolio exactly like any other event.
 # MAGIC

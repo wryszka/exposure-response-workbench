@@ -1,7 +1,7 @@
 # Requirements — Exposure & Event Response workbench
 
 What this demo must satisfy, so it can be scored against the client's actual asks and the
-Bricksurance demo standard. Derived from the **Hiscox Europe exposure-management call
+Bricksurance demo standard. Derived from the **client exposure-management discovery call
 (2026-09-16)** and the `exposure-management` hub tile's canonical question:
 
 > *"A named storm makes landfall in 36 hours. What is my exposure — gross, net of treaty,
@@ -32,7 +32,7 @@ Status key: **MET** (built & verified) · **PARTIAL** (built, with a labelled ga
 | N3 | **Deterministic + reset closes the loop.** | **MET** | seed=42; dates roll from `current_date()`; setup/feeds/treaty/alerts jobs re-runnable; heroes deterministic conditional on as-of date. |
 | N4 | **Built for three audiences** (C-suite / practitioner / SA·AE). | **PARTIAL** | App + Learn panel + agent serve all three; per-audience runsheet beats finalised in the review pass. |
 | N5 | **AI narrates, deterministic functions decide** (never invent a number). | **MET** | Event Response agent answers by calling `fn_*` — verified it returns the governed figures (Var net €25.0m), not hallucinations. |
-| N6 | **No real customer names or recognizable estates.** | **MET** | Synthetic Bricksurance SE European book; no Hiscox data, names, or estate anywhere. |
+| N6 | **No real customer names or recognizable estates.** | **MET** | Synthetic Bricksurance SE European book; no client data, names, or estate anywhere. |
 
 ## Review
 

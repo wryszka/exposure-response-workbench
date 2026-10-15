@@ -2,7 +2,7 @@
 
 > Source of truth for the live demo. Each `#` section below is a **tab** in the Google Doc.
 > The Google Doc link is **stable** — it is updated in place, never re-created.
-> Audience: Hiscox Europe exposure-management team (Dawn, Miguel ×2). Review: 16 Oct 2026.
+> Audience: a client exposure-management team (exposure manager, analysts, underwriting/claims leads).
 
 ---
 
@@ -12,7 +12,7 @@
 
 **Say:**
 
-*"On the 16th you walked us through how you track wildfire exposure today. A fire is reported, someone pulls the policies out of SQL, finds the fire outlines, and overlays them by hand. Miguel then sent us the data he uses — the Copernicus burnt-area outlines. You asked to see five things:"*
+*"In discovery you walked us through how you track wildfire exposure today. A fire is reported, someone pulls the policies out of the database, finds the fire outlines, and overlays them by hand. Your analyst then sent us the data source they use — the Copernicus burnt-area outlines. You asked to see five things:"*
 
 1. **Where the risk is, right now** — which fires threaten which of your locations, what's new, what's out.
 2. **The distances that matter to you** — 50, 100 and 200 metres from the fire.
@@ -20,11 +20,11 @@
 4. **One picture across borders** — so a flood that hits Italy, France and Austria is one event, not three teams finding out separately.
 5. **A process, not just a dashboard** — running on its own, on open data, without the API timeouts.
 
-*"And the dream you mentioned: a view for Justin of what an event could cost us."*
+*"And the ambition you mentioned: a view for the CEO of what an event could cost us."*
 
-*"What you'll see is a fictional insurer, Bricksurance SE — about 5,400 homes across France, Italy, Austria, Spain and Germany — on real open hazard feeds, including the Copernicus data Miguel uses. No Hiscox data anywhere."*
+*"What you'll see is a fictional insurer, Bricksurance SE — about 5,400 homes across France, Italy, Austria, Spain and Germany — on real open hazard feeds, including the Copernicus data your analyst uses. No client data anywhere."*
 
-*"We'll take one fire from the first alert to three questions: who do we tell, what does it cost us, and what do we refuse to write. Then two things you didn't ask for. At the end, how you get from Miguel's notebook to this, one step at a time."*
+*"We'll take one fire from the first alert to three questions: who do we tell, what does it cost us, and what do we refuse to write. Then two things you didn't ask for. At the end, how you get from your analyst's notebook to this, one step at a time."*
 
 > Then go straight to the alert board. If short on time, say only the five numbered asks and the last line. The "two things you didn't ask for" are story card 5 (*we knew before the satellite*) and card 8 (*one rule, two workbenches* — the UK flood refused in underwriting); drop that sentence if you won't have time for them.
 
@@ -80,9 +80,9 @@ The app opens on the **alert board** — one card per active event. Make sure it
 - App URL: https://exposure-response-workbench-7474656169654171.aws.databricksapps.com
 - Warehouse `a3b61648ea4809e3` must be running.
 
-**If asked "is this real data?":** yes — MeteoAlarm (windstorm) and GDACS (disaster news) are live keyless feeds; wildfire perimeters are EFFIS Burnt Areas (the source Hiscox uses), on a frozen sample in the room for reproducibility. The property book is synthetic — no customer data.
+**If asked "is this real data?":** yes — MeteoAlarm (windstorm) and GDACS (disaster news) are live keyless feeds; wildfire perimeters are EFFIS Burnt Areas (the source your analysts use), on a frozen sample in the room for reproducibility. The property book is synthetic — no customer data.
 
-**Disclaimer (say once, early):** *"This is a demonstration on synthetic data — a fictional insurer, Bricksurance SE. No Hiscox data is used."*
+**Disclaimer (say once, early):** *"This is a demonstration on synthetic data — a fictional insurer, Bricksurance SE. No client data is used."*
 
 ---
 
@@ -105,19 +105,19 @@ Open these **only when asked** — they are the answer to "can it also…", neve
 
 **Only after they want it.** This answers the "that's years away for us" fear by turning the gap into steps.
 
-- *Today:* an analyst hand-pulls fire outlines and overlays policies in a spreadsheet (exactly what Miguel described).
+- *Today:* an analyst hand-pulls fire outlines and overlays policies in a spreadsheet (exactly what your analyst described).
 - *Step 1:* the same overlay, once, in a notebook — no more manual export.
 - *Step 2:* it runs on a schedule and emails the result — the analyst stops babysitting it.
 - *Step 3:* a simple dashboard anyone can open.
 - *Step 4:* the app you've just seen — same logic, now a product.
 
-*"You don't rebuild everything. You start exactly where you are and climb one rung at a time — Miguel's notebook is already rung one."*
+*"You don't rebuild everything. You start exactly where you are and climb one rung at a time — your analyst's notebook is already rung one."*
 
 ---
 
 # Q&A (by persona)
 
-**Exposure manager / underwriter (Dawn, Miguel):**
+**Exposure manager / underwriter:**
 - *How close counts as "threatened"?* 50 / 100 / 200 m bands — the distances you specified.
 - *Where do the fire outlines come from?* EFFIS Burnt Areas — your source. FIRMS hotspots too, as an earlier signal.
 - *Does one event really cover both countries?* Yes — grouped by event, not country; the Alpine flood is one alert, IT + AT together.
@@ -126,7 +126,7 @@ Open these **only when asked** — they are the answer to "can it also…", neve
 - *What's the point in one line?* Know our exposure to a live event, tell the right people, and stop writing risk we shouldn't — in minutes.
 - *Is it expensive to run?* Serverless, scale-to-zero — nothing runs when idle.
 
-**Sceptic / "we could never have this":** see **The Ladder** — it starts at Miguel's current notebook.
+**Sceptic / "we could never have this":** see **The Ladder** — it starts at your analyst's current notebook.
 
 **Technical / SA:** all business maths lives in governed functions; AI narrates but never invents a number; everything's audited and reproducible. Happy to open the hood in Explore.
 
@@ -144,4 +144,4 @@ Open these **only when asked** — they are the answer to "can it also…", neve
 
 # About this demo
 
-Synthetic data only — a fictional European insurer, **Bricksurance SE** (~5,420 properties, ~€14bn insured). Live feeds (MeteoAlarm, GDACS) are real and keyless; wildfire perimeters use EFFIS (frozen sample in the room). Built on Databricks; no Hiscox or any real customer data, names, or systems are used.
+Synthetic data only — a fictional European insurer, **Bricksurance SE** (~5,420 properties, ~€14bn insured). Live feeds (MeteoAlarm, GDACS) are real and keyless; wildfire perimeters use EFFIS (frozen sample in the room). Built on Databricks; no real client data, names, or systems are used.
