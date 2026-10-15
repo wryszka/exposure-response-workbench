@@ -22,3 +22,5 @@ env:
     value: "01f1c169c0e0157496036dc765800f30"
   - name: FM_ENDPOINT
     value: databricks-claude-sonnet-4-6
+  - name: AGENT_ENDPOINT
+    value: exposure-response-agent

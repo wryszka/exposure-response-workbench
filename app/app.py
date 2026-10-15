@@ -27,6 +27,29 @@ def _events():
     return sql.query(f"SELECT * FROM {config.fqn('fn_events')}(200)")
 
 
+def _try(statement: str, params: dict = None):
+    """(rows, error) — for panels built on objects another workstream deploys; a missing object degrades
+    the panel to an honest 'not available yet' instead of a 500."""
+    try:
+        return sql.query(statement, params), None
+    except Exception as e:
+        return [], str(e)[:200]
+
+
+def _arr(v):
+    """Statement Execution returns ARRAY columns as JSON text — parse to a list (tolerant of plain strings)."""
+    import json as _json
+    if v is None:
+        return []
+    if isinstance(v, list):
+        return v
+    try:
+        out = _json.loads(v)
+        return out if isinstance(out, list) else [out]
+    except Exception:
+        return [s.strip() for s in str(v).split(",") if s.strip()]
+
+
 # ─────────────────────────── config ───────────────────────────
 @app.get("/api/config")
 def api_config():
@@ -38,7 +61,10 @@ def api_config():
 # ─────────────────────────── events (picker) ───────────────────────────
 @app.get("/api/events")
 def api_events():
-    return {"events": _events()}
+    """Active events + which of them are published as active zones (Contract A: mv_active_zones), so the
+    board can truthfully tag 'active zone published to underwriting'. zones=None when the view isn't there."""
+    zones, err = _try(f"SELECT DISTINCT event_id FROM {config.fqn('mv_active_zones')}")
+    return {"events": _events(), "zones": None if err else [z["event_id"] for z in zones]}
 
 
 # ─────────────────────────── one event: exposure view ───────────────────────────
@@ -153,6 +179,143 @@ def api_governance():
     })
 
 
+# ─────────────────────────── data sources & quality (Contract B) ───────────────────────────
+@app.get("/api/sources")
+def api_sources():
+    """Every feed we ingest (what it carries, real-time/batch/frozen, cadence, licence, last ingested, last
+    decision) + the recent batch log from the quality gate (ACCEPTED / REJECTED / FALLBACK_FROZEN, with the
+    plain reason). Both come from governed functions; missing objects degrade honestly."""
+    fq = config.fqn
+    sources, e1 = _try(
+        f"SELECT source_id, source_name, peril_code, provider, carries, mode, cadence, licence, "
+        f"CAST(last_ingested_at AS STRING) last_ingested_at, last_records, last_decision, is_live "
+        f"FROM {fq('fn_source_status')}()")
+    batches, e2 = _try(
+        f"SELECT run_id, source_id, CAST(pulled_at AS STRING) pulled_at, n_records, decision, reason, failed_checks "
+        f"FROM {fq('fn_dq_recent')}(:d) ORDER BY pulled_at DESC LIMIT 60", {"d": 7})
+    for b in batches:
+        b["failed_checks"] = _arr(b.get("failed_checks"))
+    thresholds, _ = _try(
+        f"SELECT source_id, check_name, threshold, comparator, description FROM {fq('ref_dq_threshold')} "
+        f"ORDER BY source_id, check_name")
+    return {"sources": sources, "batches": batches, "thresholds": thresholds,
+            "available": {"sources": e1 is None, "batches": e2 is None}, "now_utc": _now_utc()}
+
+
+def _now_utc():
+    import datetime
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
+# ─────────────────────────── AI agent team (Contract C) ───────────────────────────
+AGENT_ENDPOINT = os.getenv("AGENT_ENDPOINT", "exposure-response-agent")
+
+
+def _endpoint_state():
+    """Is the served supervisor endpoint up? → ('READY'|'NOT_READY'|'MISSING', detail)."""
+    try:
+        ep = config.get_workspace_client().serving_endpoints.get(AGENT_ENDPOINT)
+        st = ep.state
+        ready = getattr(getattr(st, "ready", None), "value", str(getattr(st, "ready", "")))
+        return ("READY" if str(ready).upper().endswith("READY") and "NOT" not in str(ready).upper() else "NOT_READY",
+                str(ready))
+    except Exception as e:
+        return ("MISSING", str(e)[:160])
+
+
+@app.get("/api/agents/roster")
+def api_agents_roster():
+    """The agent team from ref_agent_roster (role, responsibilities, skills = UC functions, data read, may /
+    may-not, example questions) + whether the served supervisor endpoint is ready."""
+    rows, err = _try(
+        f"SELECT agent_key, name, role, responsibilities, skills, reads, may_do, may_not_do, example_questions, endpoint "
+        f"FROM {config.fqn('ref_agent_roster')}")
+    for r in rows:
+        for k in ("responsibilities", "skills", "reads", "may_do", "may_not_do", "example_questions"):
+            r[k] = _arr(r.get(k))
+    state, detail = _endpoint_state()
+    return {"roster": rows, "roster_available": err is None, "endpoint": AGENT_ENDPOINT,
+            "endpoint_state": state, "endpoint_detail": detail, "workspace_host": config.workspace_host()}
+
+
+def _parse_agent_response(d: dict):
+    """Pull text + routing out of an Agent-Framework (Responses) reply; tolerant of chat-completions shape."""
+    text_parts = []
+    for item in d.get("output") or []:
+        if item.get("type") == "message":
+            for c in item.get("content") or []:
+                if c.get("type") in ("output_text", "text") and c.get("text"):
+                    text_parts.append(c["text"])
+    if not text_parts and d.get("choices"):
+        text_parts.append(((d["choices"][0] or {}).get("message") or {}).get("content") or "")
+    co = d.get("custom_outputs") or {}
+    tools = co.get("tools") or []
+    if not tools:  # derive from function_call items if the agent didn't summarise them
+        for item in d.get("output") or []:
+            if item.get("type") == "function_call":
+                tools.append({"name": item.get("name"), "args": item.get("arguments")})
+    return {"text": "\n\n".join(t for t in text_parts if t).strip(), "specialist": co.get("specialist"),
+            "route_reason": co.get("route_reason"), "tools": tools}
+
+
+@app.post("/api/agents/ask")
+async def api_agents_ask(request: Request):
+    """Ask the agent team. Goes to the served supervisor endpoint (Agent Framework) which routes to a
+    specialist; the reply carries which specialist answered, why, and the tools it called. Cached (LLM turn
+    only, `live=true` bypasses). If the endpoint isn't available, falls back to the in-app agent — labelled."""
+    import hashlib, json as _json, requests
+    body = await request.json()
+    q = (body.get("question") or "").strip()
+    if not q:
+        return {"text": "Ask the team about an event, its cost, who was told, a bind decision, or a data source.",
+                "mode": "n/a", "tools": []}
+    live = bool(body.get("live", False))
+    key = hashlib.sha256(_json.dumps({"q": q, "m": AGENT_ENDPOINT}, sort_keys=True).encode()).hexdigest()[:32]
+    if not live:
+        try:
+            agent._ensure_cache()
+            hit = agent._read(key)
+            if hit is not None:
+                return {**_json.loads(hit), "cache": "hit"}
+        except Exception:
+            pass
+    state, _ = _endpoint_state()
+    if state == "READY":
+        try:
+            w = config.get_workspace_client()
+            host = config.workspace_host()
+            if host and not host.startswith("http"):
+                host = "https://" + host
+            r = requests.post(f"{host}/serving-endpoints/{AGENT_ENDPOINT}/invocations",
+                              headers={**w.config._header_factory(), "Content-Type": "application/json"},
+                              json={"input": [{"role": "user", "content": q}]}, timeout=180)
+            r.raise_for_status()
+            out = {**_parse_agent_response(r.json()), "mode": "served", "endpoint": AGENT_ENDPOINT}
+            try:
+                agent._ensure_cache()
+                agent._write(key, q, _json.dumps(out))
+            except Exception:
+                pass
+            return {**out, "cache": "live" if live else "miss"}
+        except Exception as e:
+            fallback_reason = f"served endpoint call failed: {str(e)[:120]}"
+    else:
+        fallback_reason = f"served endpoint {AGENT_ENDPOINT} is {state.lower().replace('_', ' ')}"
+    fb = agent.ask(q, use_cache=not live)
+    return {"text": fb.get("text", ""), "specialist": None, "route_reason": None,
+            "tools": [{"name": t.get("tool"), "args": t.get("args"), "rows": t.get("rows")} for t in fb.get("tools_called", [])],
+            "mode": "fallback", "fallback_reason": fallback_reason, "endpoint": config.FM_ENDPOINT,
+            "cache": fb.get("cache")}
+
+
+# ─────────────────────────── event maps (Contract D) ───────────────────────────
+@app.get("/api/maps")
+def api_maps():
+    """Which AI/BI dashboard page shows the map for each event (ref_dashboard_pages)."""
+    rows, err = _try(f"SELECT * FROM {config.fqn('ref_dashboard_pages')}")  # incl. page_url / map_widget if present
+    return {"pages": rows, "available": err is None}
+
+
 # ─────────────────────────── event radar (unstructured news sensor) ───────────────────────────
 @app.get("/api/radar")
 def api_radar():
@@ -246,27 +409,6 @@ async def api_live_cursor(request: Request):
         return {"ok": True, "t_index": ti}
     except Exception as e:
         return {"ok": False, "reason": str(e)[:200]}
-
-
-@app.get("/api/live/tick/{i}")
-def api_live_tick(i: int):
-    """One progression tick: the footprint at that moment + the properties it now threatens (for the live map)."""
-    try:
-        ti = int(i)
-    except (TypeError, ValueError):
-        ti = 0
-    fq = config.fqn
-    out = sql.query_many({
-        "meta": (f"SELECT t_index, label, as_of, corroborated, feed_source, footprint_wkt, threatened_count, "
-                 f"sum_insured_eur FROM {fq('mv_progression_exposure')} WHERE t_index = {ti}"),
-        "props": (f"SELECT insured_object_id, latitude, longitude, city, country_code, sum_insured, "
-                  f"round(distance_m,1) AS distance_m, band FROM {fq('fn_progression_props')}({ti}) ORDER BY distance_m"),
-    })
-    meta = (out["meta"] or [{}])[0]
-    fw = meta.get("footprint_wkt")
-    return {"t_index": ti, "meta": meta,
-            "footprint": [{"footprint_wkt": fw, "peril_code": "FIRE"}] if fw else [],
-            "properties": out["props"]}
 
 
 @app.post("/api/bind/quote")
