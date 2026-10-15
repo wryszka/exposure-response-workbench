@@ -23,3 +23,21 @@ Status: endpoint `exposure-response-agent` READY on model version 4 (100% traffi
 - The reset recreates functions/tables (drops grants). The endpoint's identity relies on grants restored to `account users`; if tools fail with permission errors after a reset, re-run `70_deploy_agent_version` (re-applies the endpoint's resource grants).
 - `w.serving_endpoints.get_open_ai_client()` needs `httpx` — not in the serverless base image; pinned in pip reqs.
 - Specialists only get functions that exist at BUILD time — re-run the build after T1 (`fn_source_status`, `fn_dq_recent`) lands.
+
+## Final verification (2026-10-15, after the consolidated exposure_99_reset + endpoint refresh) — ALL PASS
+Endpoint `exposure-response-agent`, model `exposure_response.exposure_response_agent` v4 (@prod), 100% traffic, READY, scale-to-zero. App SP fc3ac835-… has CAN_QUERY.
+
+| Question | Specialist (supervisor route) | Tools | Key numbers |
+|---|---|---|---|
+| Var wildfire, gross and net? | Exposure Analyst → Reinsurance Analyst (chained) | fn_event_exposure_summary, fn_gross_to_net | 59 homes / EUR 164.3m SI; modelled gross 87.2m, ceded 62.2m, net 25.0m |
+| Alpine flood homes by country? | Exposure Analyst | fn_event_exposure_summary, fn_exposure_in_footprint | 122 homes / EUR 331.4m; IT 69 (185.6m), AT 53 (145.8m) |
+| Any feed batch rejected today and why? | Data Steward | fn_dq_recent, fn_dq_batch_checks | MeteoAlarm 07:00 batch REJECTED: 8 of 21 (38%) outside Europe/UK vs 5% limit, coords swapped, quarantined; other checks passed |
+| Bind cover at UK postcode HX7? | Underwriting Guard | fn_place_lookup, fn_zone_check, fn_bind_check | REFER — inside active EA flood warning EVT_EA_SAMPLE_UK (0 m); Var fire 1,270 km away |
+| Who was alerted about the Alpine flood? | Alerts Officer | fn_alert_log | built, not sent (no channel); 3 recipients; IT+AT one alert; threshold gross >= EUR 15m OR new >= 20 |
+| Radar signal that beats the satellite? | Event Watch | fn_news_radar | Var wire report: 36 homes / EUR 103.6m, beats_feed, confidence 1.0; GDACS items dismissed at 0.15 |
+
+Same six via the app's POST /api/agents/ask (live:true): all `mode=served`, same specialists, real supervisor route_reason, same tools and numbers.
+
+## ⚠️ ACTION FOR MAIN SESSION — reset breaks the agent until it is refreshed
+The endpoint authenticates to its tools with automatic credential passthrough, scoped to the functions/tables resolved AT DEPLOY TIME. `exposure_99_reset` drops and re-creates functions (fn_gross_to_net, fn_news_radar, fn_bind_check, fn_zone_check, fn_dq_*, fn_source_status) and tables, so after a reset those tool calls fail with "insufficient privileges" even though `account users` + app-SP grants look correct (verified — the agents correctly said "permissions error" and invented nothing).
+**Fix (tested):** run `notebooks/70_deploy_agent_version` (no params → @prod) as the LAST task of `exposure_99_reset`. When the version is already served it re-pushes the same served entity → fresh deployment → passthrough re-resolved (~3–5 min, verified SUCCESS + tools work). Add it to resources/reset_job.yml after 07 governance (and 70_agent_tools after 30 alerts). Then warm the endpoint with one question before the room.
