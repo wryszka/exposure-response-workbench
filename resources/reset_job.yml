@@ -171,9 +171,20 @@ resources:
               app_sp: ${var.app_service_principal_id}
               buffer_m: "200"
           environment_key: serverless
-        - task_key: governance_views
+        - task_key: agent_tools
           depends_on:
             - task_key: alert_sweep
+          notebook_task:
+            notebook_path: ../notebooks/70_agent_tools.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+        - task_key: governance_views
+          depends_on:
+            - task_key: agent_tools
           notebook_task:
             notebook_path: ../notebooks/07_governance.py
             base_parameters:
@@ -191,6 +202,16 @@ resources:
               schema: ${var.schema}
               app_sp: ${var.app_service_principal_id}
               mode: "finish"
+          environment_key: serverless
+        # The agent endpoint's credentials only cover the objects that existed when it was deployed; the reset
+        # recreates several, so refresh the endpoint last or its tool calls fail with "insufficient privileges".
+        - task_key: refresh_agent_endpoint
+          depends_on:
+            - task_key: finish_clear_and_regrant
+          notebook_task:
+            notebook_path: ../notebooks/70_deploy_agent_version.py
+            base_parameters:
+              app_sp: ${var.app_service_principal_id}
           environment_key: serverless
       environments:
         - environment_key: serverless
