@@ -267,7 +267,7 @@ run_wh(f"""
 CREATE OR REPLACE FUNCTION {fqn}.fn_dq_recent(p_days INT)
 RETURNS TABLE (run_id STRING, source_id STRING, source_name STRING, pulled_at TIMESTAMP, n_records INT,
                decision STRING, reason STRING, failed_checks STRING, checks_run INT, checks_passed INT)
-COMMENT 'Recent data-quality decisions, one row per pulled feed batch over the last p_days days, newest first: source, when it was pulled, records, decision (ACCEPTED = loaded; REJECTED = failed a governed threshold, quarantined, previous data kept; FALLBACK_FROZEN = live pull unavailable, frozen sample used), the plain-English reason and which checks failed. Use it to answer: was any batch rejected, why was it rejected, what happened to the bad data, how often do feeds fail.'
+COMMENT 'Recent data-quality decisions, one row per pulled feed batch over the last p_days days, REJECTED batches first (so a problem is never pushed off the list), then newest first: source, when it was pulled, records, decision (ACCEPTED = loaded; REJECTED = failed a governed threshold, quarantined, previous data kept; FALLBACK_FROZEN = live pull unavailable, frozen sample used), the plain-English reason and which checks failed. Use it to answer: was any batch rejected, why was it rejected, what happened to the bad data, how often do feeds fail.'
 RETURN
   SELECT b.run_id, b.source_id, s.source_name, b.pulled_at, b.n_records, b.decision, b.reason,
          b.failed_checks, b.checks_run, b.checks_passed
@@ -279,7 +279,7 @@ RETURN
         WHERE pulled_at >= current_timestamp() - make_interval(0, 0, 0, p_days)
         GROUP BY run_id, source_id) b
   LEFT JOIN {fqn}.ref_feed_source s ON s.source_id = b.source_id
-  ORDER BY b.pulled_at DESC
+  ORDER BY CASE b.decision WHEN 'REJECTED' THEN 0 ELSE 1 END, b.pulled_at DESC
 """, "fn_dq_recent")
 
 run_wh(f"""
