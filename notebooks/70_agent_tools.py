@@ -49,6 +49,14 @@ def run_wh(stmt, label="", max_wait=300):
 
 # COMMAND ----------
 
+# The real send is recorded by the alert-sweep job (Databricks SQL alert → email) in gov_alert_delivery, one row
+# per sweep that was delivered. Make sure it exists so this function can always be created.
+run_wh(f"""
+CREATE TABLE IF NOT EXISTS {fqn}.gov_alert_delivery (
+  run_id STRING, alert_id STRING, channel STRING, recipients STRING, n_events INT, alert_state STRING,
+  delivered_at TIMESTAMP)
+""", "gov_alert_delivery")
+
 run_wh(f"""
 CREATE OR REPLACE FUNCTION {fqn}.fn_alert_log(p_event_id STRING DEFAULT NULL)
 RETURNS TABLE (
@@ -56,16 +64,27 @@ RETURNS TABLE (
   threshold_rule STRING, threatened_count BIGINT, sum_insured_eur DOUBLE, gross_eur DOUBLE, net_eur DOUBLE,
   countries STRING, n_countries INT, top_coverholder STRING, new_count BIGINT, still_count BIGINT,
   gone_count BIGINT, channel STRING, recipients STRING, sent_at TIMESTAMP)
-COMMENT 'Stakeholder alert record (append-only gov_alert_dispatch): for each event, the LATEST alert decision — whether it breached its threshold (threshold_rule), the headline numbers in the digest (threatened homes, sum insured, modelled gross/net), the countries covered (one alert per event even across borders), new/still/no-longer threatened counts vs the previous snapshot, the recipients (claims, underwriting, exposure management) and when it was dispatched. status: SENT = delivered; RENDERED_NOT_SENT = built and audited but no delivery channel configured yet; SUPPRESSED = below threshold. Pass p_event_id (e.g. EVT_FLOOD_ALPS) or NULL for all events. Used by the Alerts Officer agent.'
+COMMENT 'Stakeholder alert record (append-only gov_alert_dispatch): for each event, the LATEST alert decision — whether it breached its threshold (threshold_rule), the headline numbers in the digest (threatened homes, sum insured, modelled gross/net), the countries covered (one alert per event even across borders), new/still/no-longer threatened counts vs the previous snapshot, the recipients (claims, underwriting, exposure management) and when it was dispatched. status: SENT = the alert email was delivered by a Databricks SQL alert (channel DATABRICKS_ALERT_EMAIL; recipients shows who it went to; sent_at = delivery time); RENDERED_NOT_SENT = built and audited but not delivered for that sweep (e.g. the silent morning reset); SUPPRESSED = below threshold. Pass p_event_id (e.g. EVT_FLOOD_ALPS) or NULL for all events. Used by the Alerts Officer agent.'
 RETURN
-  SELECT event_id, event_name, peril_code, status, breached, threshold_rule,
-         threatened_count, sum_insured_eur, gross_eur, net_eur, countries, n_countries, top_coverholder,
-         new_count, still_count, gone_count, channel, recipients, sent_at
+  SELECT x.event_id, x.event_name, x.peril_code,
+         CASE WHEN x.status = 'RENDERED_NOT_SENT' AND dl.run_id IS NOT NULL THEN 'SENT' ELSE x.status END AS status,
+         x.breached, x.threshold_rule,
+         x.threatened_count, x.sum_insured_eur, x.gross_eur, x.net_eur, x.countries, x.n_countries, x.top_coverholder,
+         x.new_count, x.still_count, x.gone_count,
+         CASE WHEN dl.run_id IS NOT NULL AND x.breached THEN dl.channel ELSE x.channel END AS channel,
+         CASE WHEN dl.run_id IS NOT NULL AND x.breached
+              THEN concat(coalesce(x.recipients, 'stakeholders'), ' — delivered to: ', dl.recipients)
+              ELSE x.recipients END AS recipients,
+         CASE WHEN dl.run_id IS NOT NULL AND x.breached THEN dl.delivered_at ELSE x.sent_at END AS sent_at
   FROM (
     SELECT d.*, row_number() OVER (PARTITION BY d.event_id ORDER BY d.sent_at DESC) AS rn
     FROM {fqn}.gov_alert_dispatch d
     WHERE p_event_id IS NULL OR d.event_id = p_event_id
-  ) WHERE rn = 1
+  ) x
+  LEFT JOIN (SELECT run_id, max(channel) AS channel, max(recipients) AS recipients, max(delivered_at) AS delivered_at
+             FROM {fqn}.gov_alert_delivery GROUP BY run_id) dl
+    ON dl.run_id = x.run_id
+  WHERE x.rn = 1
   ORDER BY sent_at DESC
 """, "fn_alert_log")
 print("fn_alert_log created")

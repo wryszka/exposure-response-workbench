@@ -97,7 +97,7 @@ SPECIALISTS: dict[str, dict[str, Any]] = {
         "responsibilities": [
             "Report the stakeholder alert for an event: threshold breached, recipients, countries, time",
             "Explain what changed since the last snapshot (newly, still and no-longer threatened homes)",
-            "Explain alert status — sent, built-but-not-sent (no delivery channel yet), or suppressed below threshold",
+            "Explain alert status — sent (emailed by a Databricks alert), built but not yet sent for that sweep, or suppressed below threshold",
         ],
         "tools": ["fn_events", "fn_alert_log", "fn_event_delta"],
         "reads": ["gov_alert_dispatch", "gov_exposure_snapshot", "ref_alert_threshold"],
