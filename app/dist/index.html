@@ -37,7 +37,9 @@
   .chat{display:flex;flex-direction:column;gap:12px}
   .msg{padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.55;max-width:88%;white-space:pre-wrap}
   .msg.u{align-self:flex-end;background:var(--blue);color:#fff}
-  .msg.a{align-self:flex-start;background:#fff;border:1px solid var(--line)}
+  .msg.a{align-self:flex-start;background:#fff;border:1px solid var(--line);white-space:normal}
+  .msg.a table{margin:6px 0;font-size:12px}.msg.a th,.msg.a td{padding:4px 8px;border:1px solid #e2e8f0}
+  .msg.a h4{margin:8px 0 4px;font-size:13.5px}.msg.a p{margin:5px 0}.msg.a ul{margin:4px 0;padding-left:18px}
   .tools{margin-top:8px;font-size:11px;color:var(--mut);border-top:1px dashed var(--line);padding-top:7px}
   .tools code{background:#f1f5f9;padding:1px 5px;border-radius:4px}
   .ybtn{border:1px solid #f59e0b;background:#fffbeb;color:#b45309;border-radius:8px;padding:6px 11px;font-size:12px;cursor:pointer;font-weight:600}
@@ -611,11 +613,18 @@ function mapUrls(row){
   if(!row)return null;
   const h=wsBase(), o=wsO();
   const embed=row.embed_url||(h+'/embed/dashboardsv3/'+encodeURIComponent(row.dashboard_id)+(row.page_id?'/pages/'+encodeURIComponent(row.page_id):'')+o);
-  const tab=h+'/dashboardsv3/'+encodeURIComponent(row.dashboard_id)+'/published'+(row.page_id?'/pages/'+encodeURIComponent(row.page_id):'')+o;
+  const tab=row.page_url||(h+'/dashboardsv3/'+encodeURIComponent(row.dashboard_id)+'/published'+(row.page_id?'/pages/'+encodeURIComponent(row.page_id):'')+o);
   return {embed,tab};
 }
+// Lookup: exact event first; any Environment Agency event → the UK page; anything else → the book-wide overview.
+function mapRowFor(eid){
+  if(MAPS[eid])return MAPS[eid];
+  const ev=EVENTS.find(e=>e.event_id===eid)||{};
+  if(String(ev.source||'').toUpperCase()==='EA'&&MAPS['EVT_EA_SAMPLE_UK'])return MAPS['EVT_EA_SAMPLE_UK'];
+  return MAPS['*'];
+}
 function mapEmbed(eid){
-  const row=MAPS[eid]||MAPS['*'];
+  const row=mapRowFor(eid);
   const u=mapUrls(row);
   if(!u)return `<div class="mapph"><b>Map loading</b><span>The dashboard map for this event isn't published yet. The numbers on this page are live.</span></div>`;
   return `<iframe title="${esc((row&&row.title)||'Event map')}" src="${u.embed}" style="width:100%;height:520px;border:1px solid var(--line);border-radius:10px;background:#fff" loading="lazy"></iframe>
@@ -1008,6 +1017,24 @@ async function initAgent(){
   $('#starters').innerHTML=ex.map(q=>`<span class="starter" onclick="askAgent(this.textContent)">${esc(q)}</span>`).join('');
   renderRoster(fromTable,d);
 }
+// Escape-first mini Markdown for agent answers: headings, bold, inline code, bullet lists, tables, rules.
+function md(src){
+  const lines=esc(String(src||'')).split('\n'); let out=[], tbl=[], list=[];
+  const inline=t=>t.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>');
+  const flushT=()=>{ if(!tbl.length)return; const rows=tbl.filter(r=>!/^\s*\|?\s*:?-{2,}/.test(r));
+    const cells=r=>r.replace(/^\s*\|/,'').replace(/\|\s*$/,'').split('|').map(c=>inline(c.trim()));
+    out.push('<table><thead><tr>'+cells(rows[0]).map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+
+      rows.slice(1).map(r=>'<tr>'+cells(r).map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+'</tbody></table>'); tbl=[]; };
+  const flushL=()=>{ if(!list.length)return; out.push('<ul>'+list.map(x=>`<li>${inline(x)}</li>`).join('')+'</ul>'); list=[]; };
+  lines.forEach(l=>{
+    if(/^\s*\|/.test(l)){flushL();tbl.push(l);return;} flushT();
+    if(/^\s*[-*]\s+/.test(l)){list.push(l.replace(/^\s*[-*]\s+/,''));return;} flushL();
+    if(/^\s*-{3,}\s*$/.test(l)){out.push('<hr style="border:0;border-top:1px solid #e2e8f0;margin:8px 0">');return;}
+    const h=l.match(/^\s*#{1,4}\s+(.*)$/); if(h){out.push(`<h4>${inline(h[1])}</h4>`);return;}
+    if(l.trim())out.push(`<p>${inline(l)}</p>`);
+  });
+  flushT();flushL(); return out.join('');
+}
 function li(arr){return (arr||[]).length?'<ul>'+arr.map(x=>`<li>${esc(String(x))}</li>`).join('')+'</ul>':'<span class="muted">—</span>';}
 function renderRoster(fromTable,d){
   const tones=['#2563eb','#059669','#7c3aed','#b45309','#dc2626','#0891b2'];
@@ -1030,7 +1057,7 @@ function renderRoster(fromTable,d){
     ${(r.example_questions||[]).length?`<div class="al">Try</div>${r.example_questions.map(q=>`<div class="ex" onclick="askAgent(this.textContent)">${esc(q)}</div>`).join('')}`:''}
   </div>`;
   $('#agentsView').innerHTML=supCard+`<div class="agrid">${specs.map(card).join('')}</div>`+
-    (fromTable?'':'<p class="muted" style="font-size:11.5px;margin-top:8px">Roster shown from the build contract — the governed roster table (<code>ref_agent_roster</code>) is not deployed yet.</p>');
+    (fromTable?'':'<p class="muted" style="font-size:11.5px;margin-top:8px">Roster shown from the build contract — the governed roster table (<code>ref_agent_roster</code>) isn\'t populated yet.</p>');
 }
 function toggleLive(){LIVE=!LIVE;const b=$('#liveBtn');b.classList.toggle('live',LIVE);b.textContent=LIVE?'● Live':'◉ Cached';}
 async function askAgent(q){
@@ -1044,7 +1071,7 @@ async function askAgent(q){
       : (r.mode==='fallback'?`<div class="route" style="background:#fef3c7;color:#92400e">In-app agent (fallback)</div>`:'');
     const tl=(r.tools||[]);
     const tools=tl.length?`<div class="tools">Called: ${tl.map(t=>`<code>${esc(String(t.name||t.tool||''))}</code>${t.rows!=null?' ('+t.rows+' rows)':''}`).join(' · ')} <span style="float:right">${esc(r.cache==='hit'?'cached':(r.cache||''))} · ${esc(r.endpoint||'')}</span></div>`:'';
-    wait.innerHTML=who+esc(r.text||'(no answer)')+tools;
+    wait.innerHTML=who+md(r.text||'(no answer)')+tools;
   }catch(e){wait.innerHTML='<span class="muted">Agent unavailable.</span>';}
 }
 

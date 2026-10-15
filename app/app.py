@@ -312,7 +312,7 @@ async def api_agents_ask(request: Request):
 @app.get("/api/maps")
 def api_maps():
     """Which AI/BI dashboard page shows the map for each event (ref_dashboard_pages)."""
-    rows, err = _try(f"SELECT event_id, dashboard_id, page_id, embed_url, title FROM {config.fqn('ref_dashboard_pages')}")
+    rows, err = _try(f"SELECT * FROM {config.fqn('ref_dashboard_pages')}")  # incl. page_url / map_widget if present
     return {"pages": rows, "available": err is None}
 
 
