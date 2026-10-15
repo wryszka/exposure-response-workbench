@@ -112,7 +112,8 @@ def _latest_alert(eid: str):
         f"CAST(COALESCE(CASE WHEN d.breached THEN dl.delivered_at END, d.sent_at) AS STRING) AS sent_at, d.digest_html "
         f"FROM {config.fqn('gov_alert_dispatch')} d "
         f"LEFT JOIN (SELECT run_id, max(recipients) AS recipients, max(delivered_at) AS delivered_at "
-        f"           FROM {config.fqn('gov_alert_delivery')} GROUP BY run_id) dl ON dl.run_id = d.run_id "
+        f"           FROM {config.fqn('gov_alert_delivery')} WHERE alert_state = 'TRIGGERED' GROUP BY run_id) dl "
+        f"ON dl.run_id = d.run_id "
         f"WHERE d.event_id = :eid ORDER BY d.run_id DESC LIMIT 1", {"eid": eid})
 
 
@@ -128,7 +129,8 @@ def api_alerts():
         f"CAST(COALESCE(CASE WHEN d.breached THEN dl.delivered_at END, d.sent_at) AS STRING) AS sent_at "
         f"FROM {config.fqn('gov_alert_dispatch')} d "
         f"LEFT JOIN (SELECT run_id, max(recipients) AS recipients, max(delivered_at) AS delivered_at "
-        f"           FROM {config.fqn('gov_alert_delivery')} GROUP BY run_id) dl ON dl.run_id = d.run_id "
+        f"           FROM {config.fqn('gov_alert_delivery')} WHERE alert_state = 'TRIGGERED' GROUP BY run_id) dl "
+        f"ON dl.run_id = d.run_id "
         f"WHERE d.run_id = (SELECT max(run_id) FROM {config.fqn('gov_alert_dispatch')}) "
         f"ORDER BY d.gross_eur DESC")
     return {"dispatch": rows}
@@ -244,6 +246,61 @@ def api_governance():
                   f"n_countries, recipients, CAST(sent_at AS STRING) sent_at "
                   f"FROM {fq('gov_alert_audit')} ORDER BY sent_at DESC LIMIT 50"),
     })
+
+
+# ─────────────────────────── governance register + reporting queue ───────────────────────────
+@app.get("/api/governance/overview")
+def api_governance_overview(days: int = 7):
+    """What we record and how (the register, with live counts) + the queue of things that may need reporting."""
+    days = max(1, min(int(days), 90))
+    fq = config.fqn
+    out = sql.query_many({
+        "register": (f"SELECT record_key, name, what_is_recorded, how_kept, table_or_source, who_can_see, "
+                     f"retention_note, supports, n_records, CAST(last_written AS STRING) AS last_written, live_note "
+                     f"FROM {fq('fn_record_register')}()"),
+        "items": (f"SELECT item_id, CAST(detected_at AS STRING) AS detected_at, severity, category, title, "
+                  f"what_happened, why_it_matters, who_to_tell, rule_basis, source_record, status, status_note, "
+                  f"status_by, CAST(status_at AS STRING) AS status_at FROM {fq('fn_reportable')}(:days)",
+                  {"days": days}),
+        "now": "SELECT CAST(current_timestamp() AS STRING) AS now_utc",
+    })
+    now = (out.get("now") or [{}])[0].get("now_utc")
+    items = out.get("items") or []
+    return {"register": out.get("register") or [], "items": items, "now_utc": now,
+            "open": sum(1 for i in items if i.get("status") == "OPEN")}
+
+
+@app.get("/api/governance/open")
+def api_governance_open():
+    """Count of open reporting items — drives the chip on the alert board."""
+    try:
+        r = sql.query_one(f"SELECT count(*) AS n, sum(CASE WHEN severity = 'HIGH' THEN 1 ELSE 0 END) AS high "
+                          f"FROM {config.fqn('fn_reportable')}(7) WHERE status = 'OPEN'")
+        return {"open": int((r or {}).get("n") or 0), "high": int((r or {}).get("high") or 0)}
+    except Exception:
+        return {"open": 0, "high": 0}
+
+
+@app.post("/api/governance/action")
+async def api_governance_action(request: Request):
+    """Append a person's action on a reporting item (ACKNOWLEDGED / REPORTED) to gov_report_action — never updates."""
+    import re
+    body = await request.json()
+    item_id = str(body.get("item_id") or "")
+    action = str(body.get("action") or "").upper()
+    note = (str(body.get("note") or "").strip())[:500] or None
+    if not re.fullmatch(r"[0-9a-f]{16}", item_id) or action not in ("ACKNOWLEDGED", "REPORTED"):
+        return {"ok": False, "reason": "bad item or action"}
+    h = request.headers
+    actor = (h.get("x-forwarded-email") or h.get("x-forwarded-preferred-username") or h.get("x-forwarded-user")
+             or "app user")
+    try:
+        sql.query(f"INSERT INTO {config.fqn('gov_report_action')} (item_id, action, note, actor, acted_at) "
+                  f"VALUES (:item_id, :action, :note, :actor, current_timestamp())",
+                  {"item_id": item_id, "action": action, "note": note, "actor": actor})
+        return {"ok": True, "item_id": item_id, "action": action, "actor": actor}
+    except Exception as e:
+        return {"ok": False, "reason": str(e)[:200]}
 
 
 # ─────────────────────────── data sources & quality (Contract B) ───────────────────────────

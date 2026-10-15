@@ -2,6 +2,13 @@
 
 > Dated, reverse-chronological, self-contained entries. The single source of truth for what changed and why.
 
+## Governance register + reporting queue (2026-10-15) — newest first
+- **What we record, and how.** `ref_record_register` is the single list of every record the workbench keeps and how (append-only Delta table, Delta history, MLflow tracing, Jobs run history, Unity Catalog audit). `fn_record_register()` adds live counts and last-written times, so the register is evidence, not a description.
+- **What may need reporting.** `fn_reportable(p_days)` turns the records into an escalation queue with deterministic, visible rules — no AI in the decision. One item per event at its highest severity (above the programme → HIGH; above the per-event appetite in `ref_risk_appetite`, €100m illustrative → MEDIUM; a layer attaching → LOW loss advice), so the queue stays short. Frozen corroborating feed samples (FIRMS/EFFIS/EMS copies of a scenario event) don't raise their own catastrophe items. Feed fallbacks split honestly: "unreachable" → ICT incident (DORA, minor); "no credential" → configuration gap, not an incident.
+- **Undelivered alerts are now recorded.** `31_alert_email` appends a `gov_alert_delivery` row with the non-TRIGGERED state when thresholds were breached but the email did not go out; every reader of delivered sends (app, `fn_alert_log`) filters `alert_state = 'TRIGGERED'`. The silent morning reset records no delivery attempt, so it never raises an incident.
+- **Actions are appended, never updated.** Acknowledge / Mark reported append to `gov_report_action` with the signed-in user from the app's forwarded identity headers; the item's status is its latest action. Bind items are keyed by quote id + time (demo quotes reuse `Q-DEMO`).
+- **Rules that apply** are labelled law vs practice/contract and cited at regulation level (no article numbers asserted).
+
 ## Real alert email via a Databricks SQL alert (2026-10-15)
 - **No SMTP server needed.** The `exposure_30_alerts` job now evaluates a Databricks SQL alert ("Bricksurance exposure alert", `96a09f00-…`) after the sweep (`sql_task.alert` with a user subscription); when the latest sweep has breached events, Databricks emails the subscriber with a custom HTML template (intro, event table with readable headings, link to the app). `seconds_to_retrigger=60` so each demo sweep can email again. Verified: two sweeps triggered from the app → two emails received (14:57, 15:01 UTC).
 - **Delivery is its own append-only log.** `gov_alert_delivery` (written by `31_alert_email` only after confirming the alert TRIGGERED) records the send; `gov_alert_dispatch` stays the decision log, untouched. The app derives SENT from the join.

@@ -45,5 +45,15 @@ if state == "TRIGGERED" and recent and n_events > 0:
     print(f"recorded delivery: run {latest}, {n_events} events → {recipients}")
     dbutils.notebook.exit(f"SENT {n_events} events to {recipients}")
 else:
-    print("alert did not trigger in this run — nothing sent, nothing recorded")
+    if n_events > 0:
+        # Thresholds were breached but the email did not go out — record it, so the governance queue raises an
+        # operational incident (fn_reportable rule 8). Readers of delivered sends filter alert_state = 'TRIGGERED'.
+        st = state if state != "TRIGGERED" else "TRIGGERED_STALE"
+        spark.sql(f"""
+          INSERT INTO {fqn}.gov_alert_delivery
+          SELECT '{latest}', '{alert_id}', 'DATABRICKS_ALERT_EMAIL', '{recipients}', {int(n_events)},
+                 '{st}', current_timestamp()""")
+        print(f"breached but NOT delivered: run {latest}, {n_events} events, state={st} — recorded for review")
+    else:
+        print("nothing above threshold in this run — nothing to send")
     dbutils.notebook.exit(f"NOT SENT (state={state}, recent={recent}, events={n_events})")

@@ -228,6 +228,25 @@
   .sechead h3{margin:0;font-size:14px}.sechead span{font-size:12px;color:var(--mut)}
   .rejbanner{display:flex;gap:10px;align-items:flex-start;background:var(--red-bg);border:1px solid #fecaca;color:var(--red-ink);border-radius:12px;padding:11px 14px;margin:4px 0 14px;font-size:12.5px;line-height:1.5}
   .summaryline{font-size:13px;color:#334155;margin:2px 2px 12px}
+  /* governance */
+  .sev{display:inline-block;min-width:62px;text-align:center;border-radius:999px;padding:2px 8px;font-size:10.5px;font-weight:800;letter-spacing:.04em}
+  .sev.HIGH{background:var(--red-bg);color:var(--red-ink);border:1px solid #fecaca}
+  .sev.MEDIUM{background:var(--amber-bg,#fef3c7);color:#b45309;border:1px solid #fde68a}
+  .sev.LOW{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+  .stat{display:inline-block;border-radius:999px;padding:2px 9px;font-size:10.5px;font-weight:700}
+  .stat.OPEN{background:#eff6ff;color:#1d4ed8}.stat.ACKNOWLEDGED{background:#f1f5f9;color:#475569}.stat.REPORTED{background:#ecfdf5;color:#047857}
+  .kept{display:inline-block;border-radius:6px;padding:1px 7px;font-size:10.5px;font-weight:700;background:#f1f5f9;color:#334155;border:1px solid #e2e8f0;white-space:nowrap}
+  .govacts{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .govacts input{flex:1;min-width:180px;border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12.5px}
+  .rulegrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  @media(max-width:1000px){.rulegrid{grid-template-columns:1fr}}
+  .rulec{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.5}
+  .rulec .rh{display:flex;align-items:center;gap:8px;margin-bottom:4px}.rulec .rh b{font-size:13px}
+  .rulec .tag{font-size:9.5px;font-weight:800;letter-spacing:.06em;border-radius:5px;padding:1px 6px;margin-left:auto}
+  .rulec .tag.law{background:#eef2ff;color:#4338ca}.rulec .tag.prac{background:#f0fdf4;color:#15803d}
+  .rulec .ev{color:var(--mut);font-size:11.5px;margin-top:5px}
+  .govchip{display:inline-flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;cursor:pointer;margin:0 0 12px}
+  .govchip:hover{background:#f8fafc}.govchip .hi{color:var(--red-ink);font-weight:800}
   .gatehow{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:12px}
   .gatehow>summary{list-style:none;cursor:pointer;padding:10px 14px;font-size:12.5px;color:var(--mut);user-select:none}
   .gatehow>summary::-webkit-details-marker{display:none}
@@ -300,6 +319,7 @@
         <div class="wh">Active events near our book</div>
         <div class="wb">Each card below is a live catastrophe we're watching — the peril, where it is, and how many homes we insure are in its path. Click <b>Track ▸</b> to follow one live and see the exposure, the alert, and what we'd keep after reinsurance.</div>
       </div>
+      <div id="govChip" class="govchip" style="display:none" onclick="showTab('gov')"></div>
       <div id="boardList"><div class="loading">Loading active events…</div></div>
     </div>
 
@@ -335,8 +355,8 @@
 
     <div class="screen" id="govScreen">
       <div class="whatis on" style="margin-top:0">
-        <div class="wh">Governance &amp; provenance</div>
-        <div class="wb">Every event carries its <b>provenance</b> — which feed it came from, whether that feed is live or a frozen sample, and when it arrived. The <b>exposure history</b> shows what moved on the book over time (when a footprint updates, you see what changed and when). The <b>alert record</b> is the permanent, append-only log of who was told what. Everything here is governed and auditable.</div>
+        <div class="wh">Governance — what we record, what may need reporting, and the rules behind it</div>
+        <div class="wb">Everything the workbench does leaves a record: every feed pull, quality decision, exposure snapshot, alert, cover decision and AI answer. Those records are kept append-only in Unity Catalog — nothing is overwritten. Rules run over them to flag what <b>may need reporting</b> (an event above appetite, a rejected batch, a refused sale) and who to tell. A person acknowledges or marks each item reported, and that is recorded too.</div>
       </div>
       <div id="govView"><div class="loading">Loading governance…</div></div>
     </div><!-- /govScreen -->
@@ -620,6 +640,7 @@ async function boot(){
   const d=await api('/events');
   EVENTS=d.events||[]; ZONES=d.zones;   // ZONES = event ids published as active zones (null if not deployed)
   renderBoard();   // land on the clear alert board
+  loadGovChip();
   loadReset();
   loadMaps();      // which dashboard page maps each event (Contract D)
   $('#bufsel').querySelectorAll('button').forEach(b=>b.onclick=()=>{BUF=+b.dataset.b;$('#bufsel').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(SEL)selectEvent(SEL);});
@@ -912,7 +933,7 @@ function showTab(t){
   if(t==='exposure'){$('#track').style.display='none';$('#board').style.display='block';}
   if(t==='askai'&&!STARTED)initAgent();
   const pl=$('#aiPill');if(pl)pl.style.display=(t==='askai')?'none':'';
-  if(t==='gov'&&!GOV_LOADED)loadGov();
+  if(t==='gov')loadGov();                  // always refresh: counts and 'last written' should be current
   if(t==='radar'&&!RADAR_LOADED)loadRadar();
   if(t==='live'&&!LIVE_LOADED)loadLive();
   if(t==='sources')loadSources();          // always refresh: "last ingested" should be current
@@ -1369,12 +1390,80 @@ async function askGenie(q){
 }
 
 // ─────────────────────────── governance ───────────────────────────
+// The rules that apply — what each asks, and which records here evidence it. Law vs practice labelled.
+const GOV_RULES=[
+  {n:'Solvency II',t:'law',ask:'A sound system of governance and risk management, an own risk and solvency assessment (ORSA), and data that is appropriate, complete and accurate.',ref:'Directive 2009/138/EC · Delegated Regulation (EU) 2015/35',ev:['Exposure snapshots','Alert decisions','Data-quality decisions','Reporting actions']},
+  {n:'DORA',t:'law',ask:'ICT risk management, and every ICT-related incident logged, classified and — if major — reported.',ref:'Regulation (EU) 2022/2554',ev:['Feed pulls','Quarantined batches','Alert email deliveries','Scheduled runs and resets']},
+  {n:'GDPR',t:'law',ask:'Personal data — here, where policyholders live — used only for a clear purpose, minimised, and access controlled and logged.',ref:'Regulation (EU) 2016/679',ev:['Who accessed what','Cover decisions and overrides']},
+  {n:'IDD',t:'law',ask:'Product oversight and governance, and acting honestly, fairly and professionally — refusals must be consistent and explainable.',ref:'Directive (EU) 2016/97',ev:['Cover decisions and overrides']},
+  {n:'UK Consumer Duty',t:'law',ask:'For UK retail customers: good outcomes, fair value and clear communication — including when cover is refused.',ref:'FCA Principle 12 · PRIN 2A',ev:['Cover decisions and overrides']},
+  {n:'EU AI Act',t:'law',ask:'Logging and human oversight where AI assists decisions. Property cat monitoring is not a listed high-risk use; life and health pricing is.',ref:'Regulation (EU) 2024/1689',ev:['AI agent conversations','Human decisions on news signals']},
+  {n:'Lloyd’s Realistic Disaster Scenarios',t:'prac',ask:'Market practice: know the accumulation in named disaster scenarios and manage it against appetite.',ref:'Lloyd’s market practice (not law)',ev:['Exposure snapshots','Event footprints and provenance']},
+  {n:'Reinsurance treaty',t:'prac',ask:'Contract term: tell reinsurers early about an event likely to reach their layer (loss advice).',ref:'Treaty loss-notification clause (contract)',ev:['Alert decisions','Reporting actions']},
+];
+let GOV_DATA=null;
 async function loadGov(){
   GOV_LOADED=true;
-  try{const d=await api('/governance');renderGov(d);}
-  catch(e){$('#govView').innerHTML='<div class="muted">Governance unavailable.</div>';}
+  $('#govView').innerHTML='<div class="loading">Loading governance…</div>';
+  try{
+    const [ov,old]=await Promise.all([api('/governance/overview?days=7'),api('/governance')]);
+    GOV_DATA={ov,old};renderGov();
+  }catch(e){$('#govView').innerHTML='<div class="muted">Governance unavailable.</div>';}
 }
-function renderGov(d){
+async function loadGovChip(){
+  try{const d=await api('/governance/open');const c=$('#govChip');if(!c)return;
+    if(!d.open){c.style.display='none';return;}
+    c.innerHTML=`⚖ ${num(d.open)} item${d.open>1?'s':''} may need reporting${d.high?` · <span class="hi">${num(d.high)} high</span>`:''} →`;
+    c.style.display='inline-flex';
+  }catch(e){}
+}
+async function govAct(itemId,action,btn){
+  const box=btn.closest('details');const note=(box.querySelector('input')||{}).value||'';
+  box.querySelectorAll('button').forEach(b=>b.disabled=true);
+  try{const r=await fetch('/api/governance/action',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({item_id:itemId,action,note})});const d=await r.json();
+    if(!d.ok){alert(d.reason||'Could not record the action.');box.querySelectorAll('button').forEach(b=>b.disabled=false);return;}
+    GOV_LOADED=false;await loadGov();loadGovChip();
+  }catch(e){box.querySelectorAll('button').forEach(b=>b.disabled=false);}
+}
+function renderGov(){
+  const ov=GOV_DATA.ov||{}, reg=ov.register||[], items=ov.items||[], now=ov.now_utc;
+  const open=items.filter(i=>i.status==='OPEN'), high=open.filter(i=>i.severity==='HIGH');
+  const summary=`<p class="summaryline"><b>${num(reg.length)}</b> kinds of record kept · ${open.length?`<b style="color:var(--red-ink)">${num(open.length)} item${open.length>1?'s':''} may need reporting</b>${high.length?` (${num(high.length)} high)`:''}`:'nothing waiting to be reported'} · last 7 days</p>`;
+  const keptShort=k=>k.startsWith('Append-only')?'Append-only table':k.startsWith('MLflow')?'MLflow tracing':k.startsWith('Databricks Jobs')?'Jobs run history':k.startsWith('Unity Catalog audit')?'Platform audit log':k.startsWith('Delta table')?'Delta table + history':k;
+  const regRow=r=>{const isTbl=r.n_records!==null&&r.n_records!==undefined&&r.n_records!=='';
+    const meta=isTbl?`<span style="min-width:74px;text-align:right">${num(r.n_records)} records</span><span style="min-width:120px;text-align:right">${r.last_written?'last written '+ago(r.last_written,now):'nothing yet'}</span>`:`<span class="muted">${esc(r.live_note||'')}</span>`;
+    return `<details><summary><span class="chev">▸</span><span class="nm" style="min-width:230px">${esc(r.name)}</span><span class="kept">${esc(keptShort(r.how_kept||''))}</span><span class="ds"></span><span class="meta">${meta}</span></summary>
+      <div class="rb"><div class="kv">
+        <span>What’s recorded</span><span>${esc(r.what_is_recorded||'')}</span>
+        <span>How it’s kept</span><span>${esc(r.how_kept||'')}</span>
+        <span>Where</span><span class="mono">${esc(r.table_or_source||'')}</span>
+        <span>Who can see it</span><span>${esc(r.who_can_see||'')}</span>
+        <span>Kept for</span><span>${esc(r.retention_note||'')}</span>
+        <span>Evidence for</span><span>${esc(r.supports||'')}</span></div></div></details>`;};
+  const itemRow=i=>{const done=i.status==='REPORTED';
+    const acts=done?`<div class="muted" style="margin-top:8px">Marked reported by ${esc(i.status_by||'—')} · ${fmtTs(i.status_at)} UTC${i.status_note?` — “${esc(i.status_note)}”`:''}</div>`:
+      `<div class="govacts"><input placeholder="Note (optional) — e.g. told the CRO, loss advice sent" maxlength="500">${i.status==='OPEN'?`<button class="btn" onclick="govAct('${esc(i.item_id)}','ACKNOWLEDGED',this)">Acknowledge</button>`:''}<button class="btn" style="background:var(--brand);color:#fff;border-color:var(--brand)" onclick="govAct('${esc(i.item_id)}','REPORTED',this)">Mark reported</button></div>${i.status==='ACKNOWLEDGED'?`<div class="muted" style="margin-top:6px">Acknowledged by ${esc(i.status_by||'—')} · ${fmtTs(i.status_at)} UTC${i.status_note?` — “${esc(i.status_note)}”`:''}</div>`:''}`;
+    return `<details${i.severity==='HIGH'&&i.status==='OPEN'?' style="background:#fff7f7"':''}><summary><span class="chev">▸</span><span class="sev ${esc(i.severity)}">${esc(i.severity)}</span>
+      <span class="nm" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(i.title)}</span>
+      <span class="meta"><span class="muted">${esc(i.category)}</span><span class="stat ${esc(i.status)}">${esc(i.status==='OPEN'?'Open':i.status==='ACKNOWLEDGED'?'Acknowledged':'Reported')}</span><span style="min-width:72px;text-align:right">${ago(i.detected_at,now)}</span></span></summary>
+      <div class="rb"><div class="kv">
+        <span>What happened</span><span>${esc(i.what_happened||'')}</span>
+        <span>Why it matters</span><span>${esc(i.why_it_matters||'')}</span>
+        <span>Who to tell</span><span><b>${esc(i.who_to_tell||'')}</b></span>
+        <span>Rule</span><span>${esc(i.rule_basis||'')}</span>
+        <span>Source record</span><span class="mono">${esc(i.source_record||'')}</span></div>${acts}</div></details>`;};
+  const rules=`<div class="rulegrid">${GOV_RULES.map(r=>`<div class="rulec"><div class="rh"><b>${esc(r.n)}</b><span class="tag ${r.t==='law'?'law':'prac'}">${r.t==='law'?'LAW':'PRACTICE / CONTRACT'}</span></div>${esc(r.ask)}<div class="ev">${esc(r.ref)}</div><div class="ev"><b>Evidenced here by:</b> ${esc(r.ev.join(' · '))}</div></div>`).join('')}</div>`;
+  $('#govView').innerHTML=summary+
+    `<div class="sechead"><h3>What we record, and how</h3><span>append-only · click a record for what it holds, where, and who can see it</span></div>`+
+    (reg.length?`<div class="rows">${reg.map(regRow).join('')}</div>`:'<div class="card"><div class="muted">Register not available yet.</div></div>')+
+    `<div class="sechead"><h3>May need reporting${open.length?` · <span style="color:var(--red-ink)">${num(open.length)} open</span>`:''}</h3><span>rules over the records · click an item for who to tell and why</span></div>`+
+    (items.length?`<div class="rows">${items.map(itemRow).join('')}</div>`:'<div class="card"><div class="muted">Nothing needs reporting in the last 7 days.</div></div>')+
+    `<div class="sechead"><h3>Rules that apply</h3><span>what each asks · which records evidence it</span></div>`+rules+
+    `<details class="gatehow" style="margin-top:16px"><summary>▸ Detail — provenance, exposure history and alert audit</summary><div class="gb" id="govDetail"></div></details>`;
+  renderGovDetail(GOV_DATA.old||{});
+}
+function renderGovDetail(d){
   const prov=d.provenance||[],hist=d.history||[],audit=d.audit||[];
   const liveBadge=v=>(v===true||v==='true')?'<span class="pill" style="background:#dcfce7;color:#16a34a">● live feed</span>':'<span class="pill" style="background:#f1f5f9;color:#64748b">frozen</span>';
   const provRows=prov.map(r=>`<tr><td>${esc(r.event_name)}</td><td>${esc(r.peril_code)}</td><td>${esc(r.source)} <span class="muted">${esc(r.source_detail||'')}</span></td><td>${liveBadge(r.is_live)}</td><td>${esc(r.countries||'')}</td><td class="mono">${esc(r.ingested_at||'')}</td></tr>`).join('');
@@ -1383,7 +1472,7 @@ function renderGov(d){
   const histRows=Object.entries(byEv).map(([ev,rs])=>{const last=rs[rs.length-1];
     return `<tr><td class="mono">${esc(ev)}</td><td class="r">${rs.length}</td><td class="mono">${esc(last.as_of||'')}</td><td class="r">${num(last.threatened_count)}</td><td class="r">${eurm(last.sum_insured_eur)}</td></tr>`;}).join('')||'<tr><td colspan="5" class="muted" style="padding:16px;text-align:center">No snapshots yet — run an alert sweep to baseline.</td></tr>';
   const audRows=audit.map(r=>`<tr><td>${esc(r.event_name)}</td><td>${(r.breached===true||r.breached==='true')?'<span class="pill" style="background:#fef3c7;color:#b45309">breached</span>':'<span class="pill" style="background:#f1f5f9;color:#64748b">below</span>'}</td><td class="r">${num(r.threatened_count)}</td><td class="r">${eurm(r.gross_eur)}</td><td class="r">${eurm(r.net_eur)}</td><td class="r">${num(r.n_countries)}</td><td class="muted">${esc(r.recipients||'')}</td><td class="mono">${esc(r.sent_at||'')}</td></tr>`).join('')||'<tr><td colspan="8" class="muted" style="padding:16px;text-align:center">No dispatches yet.</td></tr>';
-  $('#govView').innerHTML=`
+  $('#govDetail').innerHTML=`
     <div class="card"><h3>Data provenance <span class="muted" style="font-weight:400;font-size:12px">· where every footprint came from</span></h3>
       <p class="h3s"><code>gov_data_provenance</code> — live feed vs frozen illustrative footprint, source, and ingest time per event.</p>
       <div class="tscroll"><table><thead><tr><th>Event</th><th>Peril</th><th>Source</th><th>Feed</th><th>Countries</th><th>Ingested</th></tr></thead><tbody>${provRows}</tbody></table></div></div>

@@ -192,9 +192,20 @@ resources:
               schema: ${var.schema}
               app_sp: ${var.app_service_principal_id}
           environment_key: serverless
-        - task_key: finish_clear_and_regrant
+        - task_key: governance_register
           depends_on:
             - task_key: governance_views
+          notebook_task:
+            notebook_path: ../notebooks/08_governance_register.py
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+              warehouse_id: ${var.warehouse_id}
+              app_sp: ${var.app_service_principal_id}
+          environment_key: serverless
+        - task_key: finish_clear_and_regrant
+          depends_on:
+            - task_key: governance_register
           notebook_task:
             notebook_path: ../notebooks/99_reset.py
             base_parameters:

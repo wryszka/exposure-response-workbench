@@ -1,6 +1,6 @@
 # Story Cards
 
-**Nine short stories, each one person, one moment, one number. Each stands on its own — pick the ones that fit the room.**
+**Ten short stories, each one person, one moment, one number. Each stands on its own — pick the ones that fit the room.**
 
 How to use them:
 - **5 minutes:** cards 1 → 2 → 6. *(Alert, watch it spread, the buyer at the window.)*
@@ -8,6 +8,7 @@ How to use them:
 - **"Wow" add-on:** card 5, if the room is engaged.
 - **For a technical or data room:** add card 7 (the batch we refused) and card 9 (the agent team).
 - **For underwriters:** add card 8 (one rule, two workbenches) after card 6.
+- **For a risk or compliance room:** add card 10 (what we'd have to report) — after card 6 it picks up the refused sale live.
 - Every number below is what the screen shows — read it off the screen, don't recite it.
 - Plain words only. No platform names unless someone asks.
 
@@ -111,6 +112,17 @@ How to use them:
 **Say:** *"Each agent has one job. The supervisor sent this to the reinsurance specialist — and every number comes from the governed calculation, not from the AI."*
 **The number:** **59 homes · we keep €25m** — answered by the Reinsurance Analyst.
 **Why it lands:** fast answers, with a clear line on what the AI may and may not do.
+
+---
+
+## 10 · "What we'd have to report"
+
+**Who:** the Chief Risk Officer, or whoever owns risk and compliance.
+**Today:** someone remembers to tell the risk committee — or doesn't — and the evidence is in emails.
+**Show:** the alert board → the **⚖ items may need reporting** chip → **Governance** → open the **Windstorm Celine** item. Then *What we record, and how* for one record.
+**Say:** *"Everything leaves a record, and rules over those records tell us what to escalate. This storm is above our reinsurance programme — the CRO and the risk committee need to know, and the reinsurers need loss advice. One click and it's marked reported, with who and when."*
+**The number:** the open count on the chip — **9 items, 1 high** after a reset (one more appears the moment a sale is refused in the fire zone).
+**Why it lands:** governance isn't a binder — it's the system telling you what to report, with the evidence attached.
 
 ---
 

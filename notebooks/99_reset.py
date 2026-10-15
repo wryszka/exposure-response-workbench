@@ -49,6 +49,7 @@ def snapshot_grants():
 def clear_demo_clicks():
     for stmt in [f"DELETE FROM {FQ}.gov_bind_decision",
                  f"DELETE FROM {FQ}.gov_news_decision",
+                 f"DELETE FROM {FQ}.gov_report_action",
                  f"DELETE FROM {FQ}.`2_event_footprint` WHERE source = 'NEWS'"]:
         try:
             spark.sql(stmt); print("ok:", stmt)

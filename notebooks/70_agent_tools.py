@@ -82,7 +82,7 @@ RETURN
     WHERE p_event_id IS NULL OR d.event_id = p_event_id
   ) x
   LEFT JOIN (SELECT run_id, max(channel) AS channel, max(recipients) AS recipients, max(delivered_at) AS delivered_at
-             FROM {fqn}.gov_alert_delivery GROUP BY run_id) dl
+             FROM {fqn}.gov_alert_delivery WHERE alert_state = 'TRIGGERED' GROUP BY run_id) dl
     ON dl.run_id = x.run_id
   WHERE x.rn = 1
   ORDER BY sent_at DESC

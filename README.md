@@ -93,6 +93,11 @@ promoting a signal to a `NEWS` event (which then flows through the same exposure
 audited append-only in `gov_news_decision`. Hero: a Var wildfire press item threatens **36 props / €103.6m**,
 `beats_feed=TRUE`, **14 hours ahead** of the FIRMS satellite sample.
 
+## Governance — what we record, what may need reporting (Explore → Governance)
+- **Register** — `ref_record_register` + `fn_record_register()`: every record the workbench keeps (feed pulls, data-quality decisions, quarantine, footprints and provenance, exposure snapshots, alert decisions and email deliveries, human news decisions, cover decisions and overrides, agent conversations, job runs, access audit, reporting actions), how it is kept (append-only Delta, Delta history, MLflow tracing, Jobs run history, Unity Catalog audit), where, who can see it, retention, the rules it evidences — with live counts and last-written times.
+- **Reporting queue** — `fn_reportable(p_days)`: deterministic rules over those records → items with severity, what happened, why it matters, who to tell and the rule basis (law vs practice labelled): event above the reinsurance programme / above risk appetite (`ref_risk_appetite`) / reinsurance attaching (loss advice), cross-border events, rejected batches, unreachable live feeds (DORA), feeds not switched on, undelivered alert emails, refused new business and underwriter overrides (IDD; UK Consumer Duty for UK risks), events declared by a person. Status from append-only `gov_report_action` (Acknowledge / Mark reported in the app; actor = signed-in user). `mv_reportable` for Genie.
+- Built by `notebooks/08_governance_register.py` (in `exposure_99_reset` and `exposure_07_governance`); the reset clears report actions with the other demo clicks.
+
 ## Governance & provenance
 `gov_data_provenance` (feed source, live vs frozen, ingest time per event), `gov_exposure_history` (what moved
 on the book across snapshots), `gov_alert_audit` (append-only dispatch record) and `gov_news_decision` (every
