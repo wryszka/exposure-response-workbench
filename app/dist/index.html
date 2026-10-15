@@ -175,6 +175,30 @@
   .rb .kv{display:grid;grid-template-columns:120px 1fr;gap:3px 12px}.rb .kv span:nth-child(odd){color:var(--mut)}
   .rb table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
   .rb th,.rb td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}.rb th{color:var(--mut);font-weight:600}
+  .supcard{background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .suphead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .supk{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--brand-d)}
+  .suphead h3{margin:3px 0 2px;font-size:15px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .ghostbtn{background:#fff!important;color:var(--brand-d)!important;border:1px solid var(--brand-line)!important}
+  .answ{margin-bottom:6px}
+  .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:1100px){.tgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:700px){.tgrid{grid-template-columns:1fr}}
+  .tile{background:#fff;border:1px solid var(--line);border-top:3px solid var(--tone,#2563eb);border-radius:12px;padding:12px 13px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:box-shadow .12s}
+  .tile:hover{box-shadow:0 2px 10px rgba(15,23,42,.08)}
+  .tile.open{grid-column:1/-1;cursor:default}
+  .tile .th{display:flex;align-items:center;gap:8px}
+  .tile .ti{font-size:17px;line-height:1}
+  .tile .tn{font-weight:700;font-size:13.5px;color:#0f172a}
+  .tile .tx{margin-left:auto;font-size:11px;color:var(--mut)}
+  .tile .td{font-size:12.5px;color:#475569;line-height:1.45}
+  .tile .tq{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+  .tile .tq span{font-size:12px;color:var(--brand-d);background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:8px;padding:4px 8px;cursor:pointer;line-height:1.35}
+  .tile .tq span:hover{background:#dbeafe}
+  .tile .tdet{display:none;border-top:1px dashed var(--line);margin-top:4px}
+  .tile.open .tdet{display:block}
+  .tile .tdet .rb{padding:6px 2px 4px 2px}
   .sechead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 2px 8px}
   .sechead h3{margin:0;font-size:14px}.sechead span{font-size:12px;color:var(--mut)}
   .rejbanner{display:flex;gap:10px;align-items:flex-start;background:var(--red-bg);border:1px solid #fecaca;color:var(--red-ink);border-radius:12px;padding:11px 14px;margin:4px 0 14px;font-size:12.5px;line-height:1.5}
@@ -209,8 +233,7 @@
       <div class="slab">Explore</div>
       <div class="nav">
         <a class="navi" data-t="sources" onclick="showTab('sources')">Data sources &amp; quality</a>
-        <a class="navi" data-t="agents" onclick="showTab('agents')">AI agents</a>
-        <a class="navi" data-t="ask" onclick="showTab('ask')">Ask the book (Genie)</a>
+        <a class="navi" data-t="askai" onclick="showTab('askai')">Ask AI</a>
         <a class="navi" data-t="gov" onclick="showTab('gov')">Governance &amp; provenance</a>
       </div>
       <div class="slab">Perils tracked</div>
@@ -285,24 +308,6 @@
     </div>
     </div><!-- /exposureScreen -->
 
-    <div class="screen" id="askScreen">
-      <div class="whatis on" style="margin-top:0">
-        <div class="wh">Ask the book — Genie</div>
-        <div class="wb">Ask ad-hoc questions about the insured book in plain English — totals by country, the most exposed homes, what sits near an active event. Genie writes the query and shows it, so the answer is checkable. For questions about an event's cost, who was told, or a bind decision, use the <a href="#" onclick="showTab('agents');return false">AI agents</a>.</div>
-      </div>
-      <div class="card">
-        <h3>Ask the Exposure Book — Genie</h3>
-        <p class="h3s">Natural-language analytics over the book; Genie shows the SQL behind the answer. <span id="genieState" class="muted"></span></p>
-        <div style="display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 10px">
-          <span class="starter" onclick="askGenieQ(this.textContent)">Total sum insured by country</span>
-          <span class="starter" onclick="askGenieQ(this.textContent)">Top 10 most exposed properties</span>
-          <span class="starter" onclick="askGenieQ(this.textContent)">How many properties within 100 m of an active fire?</span>
-        </div>
-        <div class="ask-in"><input id="genieQ" placeholder="e.g. total sum insured by country" onkeydown="if(event.key==='Enter')askGenie()"><button class="btn" onclick="askGenie()">Ask Genie</button></div>
-        <div id="genieOut" style="margin-top:12px"></div>
-      </div>
-    </div><!-- /askScreen -->
-
     <div class="screen" id="govScreen">
       <div class="whatis on" style="margin-top:0">
         <div class="wh">Governance &amp; provenance</div>
@@ -354,23 +359,25 @@
       <div id="srcView"><div class="loading">Loading sources…</div></div>
     </div><!-- /sourcesScreen -->
 
-    <div class="screen" id="agentsScreen">
+    <div class="screen" id="askaiScreen">
       <div class="whatis" style="margin-top:0">
-        <div class="wh">AI agents — a supervisor and six specialists, each with a clear job</div>
-        <div class="wb">Ask a question and the <b>supervisor</b> sends it to the specialist whose job it is — the answer shows <b>who answered, why they were picked, and which governed functions they called</b>. Agents read and explain; they never invent a number (every figure comes from a governed function) and they never take a consequential action on their own — promoting an event, sending an alert or overriding a bind stays with a person. The <span style="color:#b45309">yellow toggle</span> switches between instant (cached) and fresh answers.</div>
+        <div class="wh">Ask AI — the agent team and Genie in one place</div>
+        <div class="wb">Ask in plain English. The <b>supervisor</b> sends governed questions — an event's cost, who was told, a bind decision, a rejected batch — to the specialist whose job it is; every figure comes from a governed function, and the answer says who answered and why. <b>Genie</b> handles free-form exploration over the tables and shows the SQL it wrote. Agents read and explain; they never take a consequential action — promoting an event, sending an alert or overriding a bind stays with a person. The <span style="color:#b45309">yellow toggle</span> switches between instant (cached) and fresh answers.</div>
       </div>
-      <p class="summaryline" style="margin-top:0">A supervisor and six specialists, each with one job. Ask below, or click an agent to see what it does.</p>
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-          <div><h3>Ask the agent team</h3><p class="h3s" id="agentEpState">Checking the agent endpoint…</p></div>
+      <div class="supcard">
+        <div class="suphead">
+          <div><div class="supk">🧭 Supervisor</div>
+            <h3>Ask anything — the supervisor sends your question to the right specialist</h3>
+            <p class="h3s" id="agentEpState">Checking the agent endpoint…</p></div>
           <button class="ybtn" id="liveBtn" onclick="toggleLive()" title="Cached = instant; Live = a fresh answer (slower)">◉ Cached</button>
         </div>
-        <div class="chat" id="chat"></div>
-        <div id="starters" style="display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 4px"></div>
-        <div class="ask-in"><input id="agentQ" placeholder="e.g. What's my exposure to the Var wildfire, gross and net?" onkeydown="if(event.key==='Enter')askAgent()"><button class="btn" onclick="askAgent()">Ask</button></div>
+        <div class="ask-in"><input id="agentQ" placeholder="e.g. What's my exposure to the Var wildfire, gross and net?" onkeydown="if(event.key==='Enter')askAgent()"><button class="btn" onclick="askAgent()">Ask</button><button class="btn ghostbtn" onclick="askGenie()" title="Send this question to Genie instead">Ask Genie</button></div>
+        <div id="starters" class="chips"></div>
       </div>
+      <div class="card answ" id="answerCard" style="display:none"><div class="chat" id="chat"></div></div>
+      <div class="sechead"><h3>The team</h3><span>Click a tile for its job, skills and limits — or click a question to ask it</span></div>
       <div id="agentsView"><div class="loading">Loading the agent team…</div></div>
-    </div><!-- /agentsScreen -->
+    </div><!-- /askaiScreen -->
 
     <div class="screen" id="learnScreen">
       <div class="lgrid">
@@ -422,7 +429,7 @@
                 <li>Everything scales to zero when no one is using it.</li>
               </ul></div>
             </div>
-            <div class="golive"><button class="btn" onclick="openCatalog()">Open the schema in Catalog Explorer ↗</button><button class="btn" onclick="showTab('sources')">See the feeds</button><button class="btn" onclick="showTab('agents')">Meet the agents</button></div>
+            <div class="golive"><button class="btn" onclick="openCatalog()">Open the schema in Catalog Explorer ↗</button><button class="btn" onclick="showTab('sources')">See the feeds</button><button class="btn" onclick="showTab('askai')">Ask the AI team</button></div>
           </div>
 
           <div class="lpanel" id="l-flow">
@@ -865,15 +872,16 @@ async function runSweep(btn){
 
 // ─────────────────────────── tabs ───────────────────────────
 let LIVE=false, GOV_LOADED=false, STARTED=false, RADAR_LOADED=false, LIVE_LOADED=false;
-const SCREENS={exposure:'exposureScreen',live:'liveScreen',radar:'radarScreen',ask:'askScreen',gov:'govScreen',
-  sources:'sourcesScreen',agents:'agentsScreen',learn:'learnScreen'};
+const SCREENS={exposure:'exposureScreen',live:'liveScreen',radar:'radarScreen',askai:'askaiScreen',gov:'govScreen',
+  sources:'sourcesScreen',learn:'learnScreen'};
 let SRC_LOADED=false, LEARN_BUILT=false;
 function showTab(t){
+  if(t==='agents'||t==='ask')t='askai';   // old entry points now open the unified Ask AI screen
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   $('#'+(SCREENS[t]||'exposureScreen')).classList.add('on');
   document.querySelectorAll('.navi').forEach(n=>n.classList.toggle('on',n.dataset.t===t));
   if(t==='exposure'){$('#track').style.display='none';$('#board').style.display='block';}
-  if(t==='agents'&&!STARTED)initAgent();
+  if(t==='askai'&&!STARTED)initAgent();
   if(t==='gov'&&!GOV_LOADED)loadGov();
   if(t==='radar'&&!RADAR_LOADED)loadRadar();
   if(t==='live'&&!LIVE_LOADED)loadLive();
@@ -1047,7 +1055,7 @@ async function promoteSignal(sid,btn){
 }
 
 // ─────────────────────────── event response agent ───────────────────────────
-function pushMsg(cls,html){const m=document.createElement('div');m.className='msg '+cls;m.innerHTML=html;$('#chat').appendChild(m);m.scrollIntoView({block:'nearest'});return m;}
+function pushMsg(cls,html){const c=$('#answerCard');if(c)c.style.display='';const m=document.createElement('div');m.className='msg '+cls;m.innerHTML=html;$('#chat').appendChild(m);m.scrollIntoView({block:'nearest'});return m;}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 // The six specialists from the build contract — shown only if ref_agent_roster isn't deployed yet (labelled).
 const ROSTER_FALLBACK=[
@@ -1073,7 +1081,8 @@ async function initAgent(){
   const pick=['reinsurance_analyst','data_steward','underwriting_guard'];
   let ex=pick.map(k=>(ROSTER.find(r=>r.agent_key===k)||{}).example_questions||[]).map(a=>a[0]).filter(Boolean);
   if(ex.length<3){ROSTER.forEach(r=>{const q=(r.example_questions||[])[0];if(q&&!ex.includes(q)&&ex.length<3)ex.push(q);});}
-  $('#starters').innerHTML=ex.map(q=>`<span class="starter" onclick="askAgent(this.textContent)">${esc(q)}</span>`).join('');
+  if(ex.length<4){const e=(ROSTER.find(r=>r.agent_key==='exposure_analyst')||{}).example_questions||[];if(e[0]&&!ex.includes(e[0]))ex.push(e[0]);}
+  $('#starters').innerHTML=ex.slice(0,4).map(q=>`<span class="starter" onclick="askAgent(this.textContent)">${esc(q)}</span>`).join('');
   renderRoster(fromTable,d);
 }
 // Escape-first mini Markdown for agent answers: headings, bold, inline code, bullet lists, tables, rules.
@@ -1095,33 +1104,48 @@ function md(src){
   flushT();flushL(); return out.join('');
 }
 function li(arr){return (arr||[]).length?'<ul>'+arr.map(x=>`<li>${esc(String(x))}</li>`).join('')+'</ul>':'<span class="muted">—</span>';}
+const AGENT_ICON={event_watch:'📡',exposure_analyst:'🗺️',reinsurance_analyst:'🛡️',alerts_officer:'📣',underwriting_guard:'🚦',data_steward:'🧪'};
+const GENIE_TILE={agent_key:'genie',name:'Data explorer (Genie)',role:'Free-form questions over the tables — shows the SQL it wrote.',
+  responsibilities:['Answer ad-hoc questions over the book: totals, rankings, breakdowns','Show the SQL behind every answer so it can be checked'],
+  skills:['Genie space over the governed tables'],reads:['The book and event tables in Unity Catalog'],
+  may_do:['Explore and aggregate the data','Show its SQL'],
+  may_not_do:["Give governed figures for an event's cost, alerts or bind decisions — the specialists do that"],
+  example_questions:['Total sum insured by country','Top 10 most exposed properties']};
 function renderRoster(fromTable,d){
   const tones=['#2563eb','#059669','#7c3aed','#b45309','#dc2626','#0891b2'];
-  const sup=ROSTER.find(r=>/supervisor/i.test(r.agent_key||'')||/supervisor/i.test(r.name||''))||
-    {agent_key:'supervisor',name:'Supervisor',role:'Reads each question and hands it to the right specialist, saying why.'};
-  const specs=ROSTER.filter(r=>r!==sup&&!/supervisor/i.test(r.agent_key||''));
+  const specs=ROSTER.filter(r=>!/supervisor/i.test(r.agent_key||'')&&!/supervisor/i.test(r.name||''));
   const h=wsBase();
   const epUrl=(d&&d.endpoint&&h)?`${h}/ml/endpoints/${encodeURIComponent(d.endpoint)}${wsO()}`:'';
   const codes=a=>(a||[]).map(x=>`<code>${esc(String(x))}</code>`).join('')||'<span class="muted">—</span>';
-  const body=(r,isSup)=>`<div class="rb">
-    ${isSup?`<p style="margin:2px 0 6px">One served endpoint on Agent Framework; the specialists' tools are governed Unity Catalog functions.${epUrl?` <a href="${epUrl}" target="_blank" rel="noopener">Open the endpoint ↗</a>`:''}</p>`:''}
+  const det=r=>`<div class="rb">
     ${(r.responsibilities||[]).length?`<div class="al">Responsibilities</div>${li(r.responsibilities)}`:''}
-    ${(r.skills||[]).length?`<div class="al">Skills — governed functions it can call</div><div class="sk">${codes(r.skills)}</div>`:''}
+    ${(r.skills||[]).length?`<div class="al">${r.agent_key==='genie'?'How it works':'Skills — governed functions it can call'}</div><div class="sk">${codes(r.skills)}</div>`:''}
     ${(r.reads||[]).length?`<div class="al">Data it reads</div><div class="sk">${codes(r.reads)}</div>`:''}
     ${((r.may_do||[]).length||(r.may_not_do||[]).length)?`<div class="two" style="gap:10px"><div><div class="al" style="color:#166534">May</div>${li(r.may_do)}</div><div><div class="al" style="color:#991b1b">May not</div>${li(r.may_not_do)}</div></div>`:''}
-    ${(r.example_questions||[]).length?`<div class="al">Try asking</div>${r.example_questions.map(q=>`<div class="ex" onclick="askAgent(this.textContent)">${esc(q)}</div>`).join('')}`:''}
+    ${r.agent_key!=='genie'&&epUrl?`<p style="margin:10px 0 0;font-size:11.5px">Served on Agent Framework behind the supervisor. <a href="${epUrl}" target="_blank" rel="noopener">Open the endpoint ↗</a></p>`:''}
   </div>`;
-  const row=(r,tone,isSup)=>`<details><summary><span class="chev">▸</span><span class="dot" style="background:${tone}"></span>
-    <span class="nm">${isSup?'🧭 ':''}${esc(r.name)}</span><span class="ds">${esc(r.role||'')}</span>
-    ${isSup?'<span class="meta"><span class="pill" style="background:#e2e8f0;color:#334155">routes every question</span></span>':''}</summary>${body(r,isSup)}</details>`;
-  $('#agentsView').innerHTML=`<div class="sechead"><h3>The team</h3><span>Click an agent for its job, skills and limits</span></div>
-    <div class="rows">${row(sup,'#0f172a',true)}${specs.map((r,i)=>row(r,tones[i%tones.length],false)).join('')}</div>`+
+  const tile=(r,tone,isGenie)=>{
+    const qs=(r.example_questions||[]).slice(0,2);
+    const fn=isGenie?'askGenie':'askAgent';
+    return `<div class="tile" style="--tone:${tone}" onclick="toggleTile(this,event)">
+      <div class="th"><span class="ti">${isGenie?'📊':(AGENT_ICON[r.agent_key]||'🤖')}</span><span class="tn">${esc(r.name)}</span><span class="tx">details ▸</span></div>
+      <div class="td">${esc(r.role||'')}</div>
+      <div class="tq">${qs.map(q=>`<span onclick="event.stopPropagation();${fn}(this.textContent)">${esc(q)}</span>`).join('')}</div>
+      <div class="tdet">${det(r)}</div>
+    </div>`;};
+  $('#agentsView').innerHTML=`<div class="tgrid">${specs.map((r,i)=>tile(r,tones[i%tones.length],false)).join('')}${tile(GENIE_TILE,'#0f172a',true)}</div>`+
     (fromTable?'':'<p class="muted" style="font-size:11.5px;margin-top:8px">Roster shown from the build contract — the governed roster table (<code>ref_agent_roster</code>) isn\'t populated yet.</p>');
+}
+function toggleTile(el,ev){
+  if(ev&&ev.target.closest('a'))return;
+  const open=!el.classList.contains('open');
+  document.querySelectorAll('#agentsView .tile.open').forEach(t=>{t.classList.remove('open');t.querySelector('.tx').textContent='details ▸';});
+  if(open){el.classList.add('open');el.querySelector('.tx').textContent='close ▾';}
 }
 function toggleLive(){LIVE=!LIVE;const b=$('#liveBtn');b.classList.toggle('live',LIVE);b.textContent=LIVE?'● Live':'◉ Cached';}
 async function askAgent(q){
   q=(typeof q==='string'?q:$('#agentQ').value).trim();if(!q)return;
-  if(!$('#agentsScreen').classList.contains('on'))showTab('agents');
+  if(!$('#askaiScreen').classList.contains('on'))showTab('askai');
   $('#agentQ').value='';pushMsg('u',esc(q));
   const wait=pushMsg('a','<span class="muted">The supervisor is routing your question…</span>');
   try{
@@ -1129,7 +1153,7 @@ async function askAgent(q){
     const who=r.specialist?`<div class="route">🧭 Answered by ${esc(r.specialist)}</div>${r.route_reason?`<div class="muted" style="font-size:11.5px;margin:-2px 0 6px">Why: ${esc(r.route_reason)}</div>`:''}`
       : (r.mode==='fallback'?`<div class="route" style="background:#fef3c7;color:#92400e">In-app agent (fallback)</div>`:'');
     const tl=(r.tools||[]);
-    const tools=tl.length?`<details class="tools"><summary style="cursor:pointer;user-select:none">Governed functions used (${tl.length}) <span style="float:right">${esc(r.cache==='hit'?'cached':(r.cache||''))} · ${esc(r.endpoint||'')}</span></summary><div style="margin-top:5px">${tl.map(t=>`<code>${esc(String(t.name||t.tool||''))}</code>${t.rows!=null?' ('+t.rows+' rows)':''}`).join(' · ')}</div></details>`:'';
+    const tools=tl.length?`<details class="tools"><summary style="cursor:pointer;user-select:none">How it got this — governed functions used (${tl.length}) <span style="float:right">${esc(r.cache==='hit'?'cached':(r.cache||''))} · ${esc(r.endpoint||'')}</span></summary><div style="margin-top:5px">${tl.map(t=>`<code>${esc(String(t.name||t.tool||''))}</code>${t.rows!=null?' ('+t.rows+' rows)':''}`).join(' · ')}</div></details>`:'';
     wait.innerHTML=who+md(r.text||'(no answer)')+tools;
   }catch(e){wait.innerHTML='<span class="muted">Agent unavailable.</span>';}
 }
@@ -1267,19 +1291,21 @@ function lgo(id){const el=document.getElementById(id);if(el)el.scrollIntoView({b
 function openCatalog(){const h=wsBase();if(!h)return;window.open(h+'/explore/data/'+encodeURIComponent(CFG.catalog||'')+'/'+encodeURIComponent(CFG.schema||'')+wsO(),'_blank','noopener');}
 
 // ─────────────────────────── genie ───────────────────────────
-function askGenieQ(q){$('#genieQ').value=q;askGenie();}
-async function askGenie(){
-  const q=$('#genieQ').value.trim();if(!q)return;
-  $('#genieOut').innerHTML='<div class="loading">Asking Genie…</div>';
+async function askGenie(q){
+  q=(typeof q==='string'?q:$('#agentQ').value).trim();if(!q)return;
+  if(!$('#askaiScreen').classList.contains('on'))showTab('askai');
+  $('#agentQ').value='';pushMsg('u',esc(q)+' <span style="opacity:.75;font-size:11px">→ Genie</span>');
+  const wait=pushMsg('a','<span class="muted">Asking Genie…</span>');
   try{
     const r=await fetch('/api/genie',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})}).then(x=>x.json());
-    if(!r.ok){$('#genieOut').innerHTML=`<div class="muted">Genie unavailable: ${esc(r.reason||'')}. ${CFG.genie_space_id?'':'No Genie space is configured yet.'}</div>`;return;}
-    let h=r.text?`<div style="font-size:13px;margin-bottom:10px">${esc(r.text)}</div>`:'';
-    if(r.sql)h+=`<details class="tools" style="border:0;padding:0;margin-bottom:8px"><summary style="cursor:pointer;user-select:none">See the SQL Genie wrote</summary><pre class="mono" style="white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:9px;margin-top:5px">${esc(r.sql)}</pre></details>`;
+    const who='<div class="route" style="background:#f1f5f9;color:#0f172a">📊 Answered by Genie — data explorer</div>';
+    if(!r.ok){wait.innerHTML=who+`<div class="muted">Genie unavailable: ${esc(r.reason||'')}. ${CFG.genie_space_id?'':'No Genie space is configured yet.'}</div>`;return;}
+    let h=who+(r.text?`<p>${esc(r.text)}</p>`:'');
     if((r.rows||[]).length){const cols=r.columns||Object.keys(r.rows[0]);
       h+=`<div class="tscroll"><table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${r.rows.slice(0,50).map(row=>`<tr>${cols.map(c=>`<td>${esc(String(row[c]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
-    $('#genieOut').innerHTML=h||'<div class="muted">No result.</div>';
-  }catch(e){$('#genieOut').innerHTML='<div class="muted">Genie error.</div>';}
+    if(r.sql)h+=`<details class="tools"><summary style="cursor:pointer;user-select:none">How it got this — the SQL Genie wrote</summary><pre class="mono" style="white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:9px;margin-top:5px">${esc(r.sql)}</pre></details>`;
+    wait.innerHTML=(h===who)?who+'<div class="muted">No result.</div>':h;
+  }catch(e){wait.innerHTML='<span class="muted">Genie error.</span>';}
 }
 
 // ─────────────────────────── governance ───────────────────────────
