@@ -71,10 +71,11 @@ How to use them:
 
 ## 6 · "The buyer at the window"
 
-**Who:** someone online, buying home insurance — with the fire visible from their window.
-**Today:** the quote system has no idea there's a fire. The policy gets sold. The claim comes in next week.
+**Who:** a stranger — never a customer, uninsured — buying home insurance online with the fire visible from their window.
+**Today:** the quote system has no idea there's a fire. The policy gets sold in the last hour. The claim comes in next week.
 **Show:** **Get cover** → 🔥 **Villa in the Var** → quote → **Buy cover now** → **Declined**. Then 🏡 **Apartment in Munich** → quote → **Buy** → **Approved**.
-**Say:** *"Same product, same rule. The house in the fire zone — no. The flat in Munich — yes. Decided by what's happening right now."*
+**Say:** *"This isn't our customer — it's someone who never insured with us, buying cover as the fire reaches their street. That's the risk we must not write. The house in the fire zone — no. The flat in Munich — yes. Same rule, decided by what's happening right now."*
+**If they push ("can we refuse a sale?"):** new business only — existing customers and renewals are untouched. Pausing new business in an active event zone is normal practice (a moratorium); here it's a governed rule an underwriter can override, and every decision is logged.
 **The number:** Var — **declined, in the active zone.** Munich — **approved, €33,573 a year.**
 **Why it lands:** everyone understands this one instantly. It's the punchline — finish on it.
 

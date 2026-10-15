@@ -28,9 +28,10 @@ The app opens on the **alert board** — one card per active event. Make sure it
 - NUMBER: we keep **€25m**.
 - IF ASKED "did it actually email?": *"The alert is built and audited; turning on the send is one free credential — no code change."*
 
-**Beat 4 — Someone tries to buy cover with the fire at their door.**
+**Beat 4 — A stranger tries to buy cover with the fire at their door.**
 - DO: In the **Get cover** panel pick 🔥 **Villa in the Var** → quote → **Buy cover now** → **Declined**. Then pick 🏡 **Apartment in Munich** → quote → **Buy** → **Bound**.
-- SAY: *"Someone in the fire's path tries to buy — we say no, active zone. Someone in Munich buys the same cover — approved. Same rule, decided by the live data."*
+- SAY: *"This isn't one of our customers. It's someone who never insured with us, watching the fire come up the valley, trying to buy cover in the last hour. That's the risk we must not write — so: no, active zone. Someone in Munich buys the same cover — approved. Same rule, decided by the live data."*
+- IF ASKED *"can we refuse a sale?"*: *"This is new business only — existing customers and renewals are untouched. Pausing new business inside an active event zone is normal market practice, often called a moratorium or binding embargo. Here it's a governed rule an underwriter can override, and every decision is logged."*
 - NUMBER: Munich quote **€33,573/yr — bound.** Var — **declined.**
 
 **Close (one line):** *"Spot it, track it live, know the cost, tell the right people, and stop the bad risk — in minutes."*
@@ -106,6 +107,7 @@ Open these **only when asked** — they are the answer to "can it also…", neve
 
 **Tough questions — arm these (from the review panel); answer honestly, don't dodge:**
 - *"How do we know the feed data is right?"* Every batch passes a quality gate (empty, missing locations, outside Europe, broken shapes, duplicates, staleness). A failing batch is quarantined and the previous good data stays — show the rejected batch on the Data sources & quality screen.
+- *"Our customers are insured all year — why would we block a sale?"* It isn't about the existing book. It's the uninsured stranger trying to buy cover as the fire reaches them — adverse selection at the point of sale. New business only; renewals and existing policies are untouched.
 - *"Do the agents decide anything?"* No. They explain and look things up through governed functions; the rules decide, and a person approves anything consequential.
 - *"Do the alerts actually send?"* The engine builds + audits the alert; real send is one free credential (SMTP/Slack) away, no code change. *(If we've wired it: "yes — here's the one that just sent.")*
 - *"Is the wildfire feed live?"* MeteoAlarm and GDACS are live; the EFFIS wildfire perimeter is a real Copernicus sample, frozen for a reproducible room — live EFFIS ingestion is a known next step.
