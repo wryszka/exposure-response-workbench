@@ -97,6 +97,18 @@ audited append-only in `gov_news_decision`. Hero: a Var wildfire press item thre
 on the book across snapshots), `gov_alert_audit` (append-only dispatch record) and `gov_news_decision` (every
 Event Radar detection + human promote/dismiss) back the **Governance** and **Event Radar** tabs.
 
+## Data sources & quality (Explore → Data sources & quality)
+Every feed batch passes a data-quality gate before it can change the events the app shows. A failing batch is **rejected and quarantined** and the previous good data stays in use; the reason is shown in plain English. One rejected batch is always seeded for the demo. Objects: `gov_source_catalog`, `gov_feed_dq_log`, `1_feed_quarantine`, `ref_dq_threshold`; functions `fn_source_status()`, `fn_dq_recent(p_days)`, `fn_dq_batch_checks(p_run_id)`.
+
+## UK flood → underwriting workbench
+The Environment Agency flood-warning feed publishes active zones (`mv_active_zones`, `fn_zone_check`). The **underwriting workbench** checks every quote against them (`fn_disaster_zone_check`, Referral Control rule `CAT_ACTIVE_ZONE`): Calder Valley Fine Foods in Hebden Bridge refers with the reason and can't be quoted; a Cheshire risk quotes normally.
+
+## The agent team (Explore → AI agents)
+A served Agent-Framework endpoint, `exposure-response-agent`: a supervisor routes each question to one of six specialists, each limited to its own governed functions. See `docs/AGENTS.md`. It scales to zero — ask each example question once ~10 minutes before a demo to wake it.
+
+## Maps
+Maps are Databricks AI/BI dashboard pages embedded in the app: "Exposure — Event maps" (one page per event) and the "Live Fire Tracker" for the live follow. See `docs/notes/maps.md`.
+
 ## Status
 **P0–P7 complete.** Property foundation, governed exposure functions, live exposure view, **live hazard-feed
 ingestion** (MeteoAlarm + GDACS live; FIRMS/Copernicus frozen pending free keys), the **gross → net → coverholder**
