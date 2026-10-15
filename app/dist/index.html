@@ -46,8 +46,6 @@
   .ybtn.live{background:#f59e0b;color:#fff}
   .ask-in{display:flex;gap:8px;margin-top:4px}
   .ask-in input{flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 12px;font-size:13px}
-  .starter{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer;color:#334155}
-  .starter:hover{background:#f1f5f9}
   .perils{display:flex;flex-direction:column;gap:6px}
   .peril{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.03);font-size:12.5px}
   .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
@@ -175,30 +173,57 @@
   .rb .kv{display:grid;grid-template-columns:120px 1fr;gap:3px 12px}.rb .kv span:nth-child(odd){color:var(--mut)}
   .rb table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
   .rb th,.rb td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}.rb th{color:var(--mut);font-weight:600}
-  .supcard{background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:14px;padding:16px 18px;margin-bottom:14px}
-  .suphead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
-  .supk{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--brand-d)}
-  .suphead h3{margin:3px 0 2px;font-size:15px}
-  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
-  .ghostbtn{background:#fff!important;color:var(--brand-d)!important;border:1px solid var(--brand-line)!important}
-  .answ{margin-bottom:6px}
-  .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  @media(max-width:1100px){.tgrid{grid-template-columns:repeat(2,1fr)}}
-  @media(max-width:700px){.tgrid{grid-template-columns:1fr}}
-  .tile{background:#fff;border:1px solid var(--line);border-top:3px solid var(--tone,#2563eb);border-radius:12px;padding:12px 13px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:box-shadow .12s}
-  .tile:hover{box-shadow:0 2px 10px rgba(15,23,42,.08)}
-  .tile.open{grid-column:1/-1;cursor:default}
-  .tile .th{display:flex;align-items:center;gap:8px}
-  .tile .ti{font-size:17px;line-height:1}
-  .tile .tn{font-weight:700;font-size:13.5px;color:#0f172a}
-  .tile .tx{margin-left:auto;font-size:11px;color:var(--mut)}
-  .tile .td{font-size:12.5px;color:#475569;line-height:1.45}
-  .tile .tq{display:flex;flex-direction:column;gap:5px;margin-top:2px}
-  .tile .tq span{font-size:12px;color:var(--brand-d);background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:8px;padding:4px 8px;cursor:pointer;line-height:1.35}
-  .tile .tq span:hover{background:#dbeafe}
-  .tile .tdet{display:none;border-top:1px dashed var(--line);margin-top:4px}
-  .tile.open .tdet{display:block}
-  .tile .tdet .rb{padding:6px 2px 4px 2px}
+  /* Ask AI — "Ask the supervisor" panel + the agent team (mirrors the Solvency II AgentArchitecture page) */
+  .askp{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(15,23,42,.05);margin-bottom:24px}
+  .askh{display:flex;align-items:center;gap:8px;padding:11px 18px;background:#f5f3ff;border-bottom:1px solid var(--line)}
+  .askh h3{margin:0;font-size:14px;font-weight:700;color:#4c1d95}
+  .askh .askico{font-size:15px;line-height:1}
+  .askh .askst{margin-left:auto;font-size:11px;color:var(--mut)}
+  .askh .rotag{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#6d28d9}
+  .askb{padding:14px 18px 8px}
+  .askb .askintro{margin:0 0 9px;font-size:13px;color:#334155}
+  .exgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+  @media(max-width:800px){.exgrid{grid-template-columns:1fr}}
+  .exq{display:flex;gap:9px;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer;font:inherit;color:#334155}
+  .exq:hover{background:#f5f3ff;border-color:#c4b5fd}
+  .exq .ei{color:#6d28d9;font-size:12px;line-height:1.5}
+  .exq .et{display:block;font-size:12.5px;line-height:1.4}
+  .exq .eh{display:block;font-size:10.5px;color:#7c3aed;margin-top:2px}
+  .askconv{margin-top:12px;max-height:460px;overflow-y:auto}
+  .askf{display:flex;gap:8px;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}
+  .askf input{flex:1;border:1px solid var(--line2);border-radius:8px;padding:8px 12px;font-size:13px}
+  .askf input:focus{outline:none;border-color:#a78bfa;box-shadow:0 0 0 3px #ede9fe}
+  .sendbtn{background:#6d28d9;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .sendbtn:hover{background:#5b21b6}
+  .askalt{padding:0 18px 11px;font-size:11.5px;color:var(--mut)}
+  .askalt a{color:#6d28d9;cursor:pointer;text-decoration:underline dotted}
+  .fronts{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0 2px 4px}
+  .frontp{margin:0 2px 18px;font-size:13.5px;color:#475569;line-height:1.55;max-width:780px}
+  .supc{max-width:480px;margin:0 auto 18px;border:2px solid #c4b5fd;border-radius:14px;padding:18px 22px;background:linear-gradient(135deg,#ede9fe,#fff)}
+  .supc .sck{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6d28d9;text-align:center}
+  .supc h3{margin:3px 0 8px;font-size:24px;font-weight:800;color:#4c1d95;text-align:center}
+  .supc p{margin:0;font-size:13.5px;color:#4c1d95;line-height:1.55}
+  .supc .sf{margin-top:12px;padding-top:10px;border-top:1px solid #ddd6fe;font-size:11px;color:#6d28d9;text-align:center}
+  .supc .sf a,.supc .sf code{font-family:ui-monospace,Menlo,monospace;color:#4c1d95}
+  .agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:1100px){.agrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:700px){.agrid{grid-template-columns:1fr}}
+  .acard{background:var(--abg);border:2px solid var(--abd);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:box-shadow .12s}
+  .acard:hover{box-shadow:0 2px 12px rgba(15,23,42,.08)}
+  .acard.open{grid-column:1/-1;cursor:default}
+  .acard .ah{display:flex;align-items:flex-start;gap:8px}
+  .acard .ai{font-size:17px;line-height:1.15}
+  .acard .an{flex:1;font-weight:800;font-size:15px;color:var(--ahd);line-height:1.25}
+  .acard .atag{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ahd);border:1px solid var(--abd);background:rgba(255,255,255,.65);border-radius:4px;padding:2px 6px}
+  .acard .ad{flex:1;margin:0;font-size:13px;color:var(--ahd);line-height:1.5}
+  .acard .af{font-size:10.5px;color:#475569;padding-top:8px;border-top:1px solid rgba(15,23,42,.08);display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+  .acard .af code,.acard .af a{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#334155}
+  .acard .af .dx{margin-left:auto;color:var(--ahd);font-weight:700;font-family:inherit}
+  .acard .adet{display:none;border-top:1px dashed rgba(15,23,42,.15)}
+  .acard.open .adet{display:block}
+  .acard .adet .rb{padding:6px 2px 2px}
+  .aipill{position:fixed;right:22px;bottom:22px;z-index:40;background:#6d28d9;color:#fff;border:0;border-radius:999px;padding:11px 18px;font-size:13px;font-weight:700;box-shadow:0 6px 20px rgba(109,40,217,.35);cursor:pointer}
+  .aipill:hover{background:#5b21b6}
   .sechead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:18px 2px 8px}
   .sechead h3{margin:0;font-size:14px}.sechead span{font-size:12px;color:var(--mut)}
   .rejbanner{display:flex;gap:10px;align-items:flex-start;background:var(--red-bg);border:1px solid #fecaca;color:var(--red-ink);border-radius:12px;padding:11px 14px;margin:4px 0 14px;font-size:12.5px;line-height:1.5}
@@ -364,18 +389,21 @@
         <div class="wh">Ask AI — the agent team and Genie in one place</div>
         <div class="wb">Ask in plain English. The <b>supervisor</b> sends governed questions — an event's cost, who was told, a bind decision, a rejected batch — to the specialist whose job it is; every figure comes from a governed function, and the answer says who answered and why. <b>Genie</b> handles free-form exploration over the tables and shows the SQL it wrote. Agents read and explain; they never take a consequential action — promoting an event, sending an alert or overriding a bind stays with a person. The <span style="color:#b45309">yellow toggle</span> switches between instant (cached) and fresh answers.</div>
       </div>
-      <div class="supcard">
-        <div class="suphead">
-          <div><div class="supk">🧭 Supervisor</div>
-            <h3>Ask anything — the supervisor sends your question to the right specialist</h3>
-            <p class="h3s" id="agentEpState">Checking the agent endpoint…</p></div>
+      <section class="askp">
+        <header class="askh"><span class="askico">🤖</span><h3>Ask the supervisor</h3>
+          <span class="askst" id="agentEpState">Checking the agent team…</span>
           <button class="ybtn" id="liveBtn" onclick="toggleLive()" title="Cached = instant; Live = a fresh answer (slower)">◉ Cached</button>
+          <span class="rotag">Read-only</span></header>
+        <div class="askb">
+          <p class="askintro">The supervisor classifies your question and dispatches to the specialist best positioned to answer. Try one:</p>
+          <div class="exgrid" id="starters"></div>
+          <div class="askconv" id="answerCard" style="display:none"><div class="chat" id="chat"></div></div>
         </div>
-        <div class="ask-in"><input id="agentQ" placeholder="e.g. What's my exposure to the Var wildfire, gross and net?" onkeydown="if(event.key==='Enter')askAgent()"><button class="btn" onclick="askAgent()">Ask</button><button class="btn ghostbtn" onclick="askGenie()" title="Send this question to Genie instead">Ask Genie</button></div>
-        <div id="starters" class="chips"></div>
-      </div>
-      <div class="card answ" id="answerCard" style="display:none"><div class="chat" id="chat"></div></div>
-      <div class="sechead"><h3>The team</h3><span>Click a tile for its job, skills and limits — or click a question to ask it</span></div>
+        <div class="askf"><input id="agentQ" placeholder="Ask the supervisor anything…" onkeydown="if(event.key==='Enter')askAgent()"><button class="sendbtn" onclick="askAgent()">➤ Send</button></div>
+        <div class="askalt">Free-form question about the data — totals, rankings, breakdowns? <a onclick="askGenie()">Send it to Genie instead</a>; it shows the SQL it wrote.</div>
+      </section>
+      <div class="fronts">What the agent team fronts</div>
+      <p class="frontp">Six specialists, one address. Each is a governed agent on Databricks — built on Agent Framework, traced with MLflow — and can only call its own Unity Catalog functions, so every figure is the governed calculation, not the model's guess. The supervisor classifies the question and dispatches; Genie covers free-form exploration of the tables.</p>
       <div id="agentsView"><div class="loading">Loading the agent team…</div></div>
     </div><!-- /askaiScreen -->
 
@@ -883,6 +911,7 @@ function showTab(t){
   document.querySelectorAll('.navi').forEach(n=>n.classList.toggle('on',n.dataset.t===t));
   if(t==='exposure'){$('#track').style.display='none';$('#board').style.display='block';}
   if(t==='askai'&&!STARTED)initAgent();
+  const pl=$('#aiPill');if(pl)pl.style.display=(t==='askai')?'none':'';
   if(t==='gov'&&!GOV_LOADED)loadGov();
   if(t==='radar'&&!RADAR_LOADED)loadRadar();
   if(t==='live'&&!LIVE_LOADED)loadLive();
@@ -1077,13 +1106,9 @@ async function initAgent(){
   ROSTER=fromTable?d.roster:ROSTER_FALLBACK;
   const st=d.endpoint_state;
   $('#agentEpState').innerHTML= st==='READY'
-    ? `Supervisor endpoint <code>${esc(d.endpoint)}</code> <span class="pill" style="background:#dcfce7;color:#166534">● serving</span> — Agent Framework, routes to the specialist below.`
-    : `<span class="pill" style="background:#fef3c7;color:#92400e">fallback</span> The served supervisor (<code>${esc(d.endpoint||'exposure-response-agent')}</code>) is ${st==='NOT_READY'?'starting up':'not available'} — answers come from the in-app agent (same governed functions, no specialist routing).`;
-  const pick=['reinsurance_analyst','data_steward','underwriting_guard'];
-  let ex=pick.map(k=>(ROSTER.find(r=>r.agent_key===k)||{}).example_questions||[]).map(a=>a[0]).filter(Boolean);
-  if(ex.length<3){ROSTER.forEach(r=>{const q=(r.example_questions||[])[0];if(q&&!ex.includes(q)&&ex.length<3)ex.push(q);});}
-  if(ex.length<4){const e=(ROSTER.find(r=>r.agent_key==='exposure_analyst')||{}).example_questions||[];if(e[0]&&!ex.includes(e[0]))ex.push(e[0]);}
-  $('#starters').innerHTML=ex.slice(0,4).map(q=>`<span class="starter" onclick="askAgent(this.textContent)">${esc(q)}</span>`).join('');
+    ? `<span class="pill" style="background:#dcfce7;color:#166534">● supervisor serving</span>`
+    : `<span class="pill" style="background:#fef3c7;color:#92400e" title="The served supervisor (${esc(d.endpoint||'exposure-response-agent')}) is ${st==='NOT_READY'?'starting up':'not available'} — answers come from the in-app agent: same governed functions, no specialist routing.">fallback — in-app agent</span>`;
+  $('#starters').innerHTML=ASK_EXAMPLES.map((e,i)=>`<button class="exq" onclick="askExample(${i})"><span class="ei">💬</span><span><span class="et">${esc(e.q)}</span><span class="eh">→ ${esc(e.hint)}</span></span></button>`).join('');
   renderRoster(fromTable,d);
 }
 // Escape-first mini Markdown for agent answers: headings, bold, inline code, bullet lists, tables, rules.
@@ -1112,36 +1137,70 @@ const GENIE_TILE={agent_key:'genie',name:'Data explorer (Genie)',role:'Free-form
   may_do:['Explore and aggregate the data','Show its SQL'],
   may_not_do:["Give governed figures for an event's cost, alerts or bind decisions — the specialists do that"],
   example_questions:['Total sum insured by country','Top 10 most exposed properties']};
+// Example questions for the "Ask the supervisor" panel — each with the specialist it routes to (verified).
+const ASK_EXAMPLES=[
+  {q:"What's my exposure to the Var wildfire, gross and net?",hint:'Exposure Analyst → Reinsurance Analyst'},
+  {q:'Which homes are in the path of the Alpine flood, by country?',hint:'Exposure Analyst'},
+  {q:'Was any feed batch rejected today, and why?',hint:'Data Steward'},
+  {q:'Can we bind cover at postcode district HX7?',hint:'Underwriting Guard'},
+  {q:'Who was alerted about the Alpine flood?',hint:'Alerts Officer'},
+  {q:'Is anything on the radar that beats the satellite?',hint:'Event Watch'},
+  {q:'Total sum insured by country',hint:'Data explorer (Genie)',genie:true},
+];
+function askExample(i){const e=ASK_EXAMPLES[i];if(!e)return;e.genie?askGenie(e.q):askAgent(e.q);}
+function openAskAI(){showTab('askai');setTimeout(()=>{const i=$('#agentQ');if(i)i.focus();},50);}
+// Card colours (border / fill / heading) — the AgentArchitecture palette.
+const AGENT_TONE={
+  event_watch:['#fcd34d','#fffbeb','#78350f'], exposure_analyst:['#93c5fd','#eff6ff','#1e3a8a'],
+  reinsurance_analyst:['#c4b5fd','#f5f3ff','#4c1d95'], alerts_officer:['#fda4af','#fff1f2','#881337'],
+  underwriting_guard:['#6ee7b7','#ecfdf5','#064e3b'], data_steward:['#fdba74','#fff7ed','#7c2d12'],
+  genie:['#67e8f9','#ecfeff','#164e63']};
+// What each one does, in a few plain lines (the roster's one-line role is the fallback).
+const AGENT_DESC={
+  event_watch:'Watches every feed and the news radar for events that could touch the book. Says where each event came from — live feed or frozen sample — and flags early signals that beat the satellite.',
+  exposure_analyst:'Answers who is in the path. Counts homes and sum insured at 50, 100 and 200 metres, keeps one event across borders as one event, and names the most exposed properties.',
+  reinsurance_analyst:'Turns exposure into money. Runs gross to net through the Cat XL programme, explains which layers attach and why, and splits the exposure by coverholder.',
+  alerts_officer:'Knows who was told, when and why. Reports the alert for an event, what changed since the last sweep, and whether the email went out.',
+  underwriting_guard:'Checks whether new cover can be bound at an address while an event is active — including UK flood warnings. Explains a decline or referral; never overrides one.',
+  data_steward:'Vouches for the data. Lists every source and when it last arrived, the quality checks on each batch, and why a batch was rejected — down to the failed check.',
+  genie:'Free-form questions over the governed tables — totals, rankings, breakdowns. Shows the SQL it wrote, so every answer can be checked.'};
 function renderRoster(fromTable,d){
-  const tones=['#2563eb','#059669','#7c3aed','#b45309','#dc2626','#0891b2'];
   const specs=ROSTER.filter(r=>!/supervisor/i.test(r.agent_key||'')&&!/supervisor/i.test(r.name||''));
   const h=wsBase();
-  const epUrl=(d&&d.endpoint&&h)?`${h}/ml/endpoints/${encodeURIComponent(d.endpoint)}${wsO()}`:'';
+  const ep=(d&&d.endpoint)||'exposure-response-agent';
+  const epUrl=h?`${h}/ml/endpoints/${encodeURIComponent(ep)}${wsO()}`:'';
+  const genieUrl=(h&&CFG.genie_space_id)?`${h}/genie/rooms/${encodeURIComponent(CFG.genie_space_id)}${wsO()}`:'';
   const codes=a=>(a||[]).map(x=>`<code>${esc(String(x))}</code>`).join('')||'<span class="muted">—</span>';
-  const det=r=>`<div class="rb">
+  const qs=(r,isGenie)=>(r.example_questions||[]).map(q=>`<div class="ex" onclick="event.stopPropagation();${isGenie?'askGenie':'askAgent'}(this.textContent)">${esc(q)}</div>`).join('');
+  const det=(r,isGenie)=>`<div class="rb">
     ${(r.responsibilities||[]).length?`<div class="al">Responsibilities</div>${li(r.responsibilities)}`:''}
-    ${(r.skills||[]).length?`<div class="al">${r.agent_key==='genie'?'How it works':'Skills — governed functions it can call'}</div><div class="sk">${codes(r.skills)}</div>`:''}
+    ${(r.skills||[]).length?`<div class="al">${isGenie?'How it works':'Skills — governed functions it can call'}</div><div class="sk">${codes(r.skills)}</div>`:''}
     ${(r.reads||[]).length?`<div class="al">Data it reads</div><div class="sk">${codes(r.reads)}</div>`:''}
     ${((r.may_do||[]).length||(r.may_not_do||[]).length)?`<div class="two" style="gap:10px"><div><div class="al" style="color:#166534">May</div>${li(r.may_do)}</div><div><div class="al" style="color:#991b1b">May not</div>${li(r.may_not_do)}</div></div>`:''}
-    ${r.agent_key!=='genie'&&epUrl?`<p style="margin:10px 0 0;font-size:11.5px">Served on Agent Framework behind the supervisor. <a href="${epUrl}" target="_blank" rel="noopener">Open the endpoint ↗</a></p>`:''}
+    ${(r.example_questions||[]).length?`<div class="al">Try asking</div>${qs(r,isGenie)}`:''}
   </div>`;
-  const tile=(r,tone,isGenie)=>{
-    const qs=(r.example_questions||[]).slice(0,2);
-    const fn=isGenie?'askGenie':'askAgent';
-    return `<div class="tile" style="--tone:${tone}" onclick="toggleTile(this,event)">
-      <div class="th"><span class="ti">${isGenie?'📊':(AGENT_ICON[r.agent_key]||'🤖')}</span><span class="tn">${esc(r.name)}</span><span class="tx">details ▸</span></div>
-      <div class="td">${esc(r.role||'')}</div>
-      <div class="tq">${qs.map(q=>`<span onclick="event.stopPropagation();${fn}(this.textContent)">${esc(q)}</span>`).join('')}</div>
-      <div class="tdet">${det(r)}</div>
-    </div>`;};
-  $('#agentsView').innerHTML=`<div class="tgrid">${specs.map((r,i)=>tile(r,tones[i%tones.length],false)).join('')}${tile(GENIE_TILE,'#0f172a',true)}</div>`+
+  const card=(r,isGenie)=>{
+    const t=AGENT_TONE[r.agent_key]||['#cbd5e1','#f8fafc','#0f172a'];
+    const foot=isGenie
+      ? `<b>Endpoint:</b> ${genieUrl?`<a href="${genieUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Genie space ↗</a>`:'<code>Genie space</code>'}`
+      : `<b>Endpoint:</b> <code>${esc(ep)}</code> · ${epUrl?`<a href="${epUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">agent: ${esc(r.agent_key)} ↗</a>`:`<code>agent: ${esc(r.agent_key)}</code>`}`;
+    return `<article class="acard" style="--abd:${t[0]};--abg:${t[1]};--ahd:${t[2]}" onclick="toggleCard(this,event)">
+      <div class="ah"><span class="ai">${isGenie?'📊':(AGENT_ICON[r.agent_key]||'🤖')}</span><span class="an">${esc(r.name)}</span><span class="atag">${isGenie?'Genie':'Agent'}</span></div>
+      <p class="ad">${esc(AGENT_DESC[r.agent_key]||r.role||'')}</p>
+      <div class="af">${foot}<span class="dx">details ▸</span></div>
+      <div class="adet">${det(r,isGenie)}</div>
+    </article>`;};
+  const supCard=`<div class="supc"><div class="sck">Agent team</div><h3>Supervisor</h3>
+    <p>Reads the question and checks it against the specialist catalogue. Sends it to the right one — or to two in order when a question needs both — and records why. If its routing call ever fails it falls back to keyword rules, so no question is lost. It never answers itself: every figure comes from a specialist's governed functions.</p>
+    <div class="sf">Endpoint: ${epUrl?`<a href="${epUrl}" target="_blank" rel="noopener">${esc(ep)}</a>`:`<code>${esc(ep)}</code>`}</div></div>`;
+  $('#agentsView').innerHTML=supCard+`<div class="agrid">${specs.map(r=>card(r,false)).join('')}${card(GENIE_TILE,true)}</div>`+
     (fromTable?'':'<p class="muted" style="font-size:11.5px;margin-top:8px">Roster shown from the build contract — the governed roster table (<code>ref_agent_roster</code>) isn\'t populated yet.</p>');
 }
-function toggleTile(el,ev){
-  if(ev&&ev.target.closest('a'))return;
+function toggleCard(el,ev){
+  if(ev&&ev.target.closest('a,.ex'))return;
   const open=!el.classList.contains('open');
-  document.querySelectorAll('#agentsView .tile.open').forEach(t=>{t.classList.remove('open');t.querySelector('.tx').textContent='details ▸';});
-  if(open){el.classList.add('open');el.querySelector('.tx').textContent='close ▾';}
+  document.querySelectorAll('#agentsView .acard.open').forEach(c=>{c.classList.remove('open');c.querySelector('.dx').textContent='details ▸';});
+  if(open){el.classList.add('open');el.querySelector('.dx').textContent='close ▾';}
 }
 function toggleLive(){LIVE=!LIVE;const b=$('#liveBtn');b.classList.toggle('live',LIVE);b.textContent=LIVE?'● Live':'◉ Cached';}
 async function askAgent(q){
@@ -1340,5 +1399,6 @@ function renderGov(d){
 
 boot();
 </script>
+<button class="aipill" id="aiPill" onclick="openAskAI()">🤖 Ask AI</button>
 </body>
 </html>
