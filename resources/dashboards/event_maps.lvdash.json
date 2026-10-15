@@ -1,0 +1,1737 @@
+{
+ "datasets": [
+  {
+   "name": "ds_live",
+   "displayName": "Var wildfire — live follow",
+   "catalog": "lr_dev_aws_us_catalog",
+   "schema": "exposure_response",
+   "queryLines": [
+    "SELECT 'Fire footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
+    "       t_index + 1 AS update_no\n",
+    "FROM mv_map_live_footprint_points\n",
+    "UNION ALL\n",
+    "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
+    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si, t_index + 1 AS update_no\n",
+    "FROM live_fire_state\n",
+    "ORDER BY marker\n"
+   ]
+  },
+  {
+   "name": "ds_var",
+   "displayName": "Var wildfire",
+   "catalog": "lr_dev_aws_us_catalog",
+   "schema": "exposure_response",
+   "queryLines": [
+    "SELECT 'Fire footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
+    "       0 AS at_risk_it, 0 AS at_risk_at\n",
+    "FROM mv_map_footprint_points WHERE event_id = 'EVT_FIRE_VAR'\n",
+    "UNION ALL\n",
+    "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
+    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si,\n",
+    "       CASE WHEN in_path AND country_code='IT' THEN 1 ELSE 0 END AS at_risk_it,\n",
+    "       CASE WHEN in_path AND country_code='AT' THEN 1 ELSE 0 END AS at_risk_at\n",
+    "FROM mv_map_event_homes WHERE event_id = 'EVT_FIRE_VAR'\n",
+    "ORDER BY marker\n"
+   ]
+  },
+  {
+   "name": "ds_alps",
+   "displayName": "Alpine flood",
+   "catalog": "lr_dev_aws_us_catalog",
+   "schema": "exposure_response",
+   "queryLines": [
+    "SELECT 'Flood footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
+    "       0 AS at_risk_it, 0 AS at_risk_at\n",
+    "FROM mv_map_footprint_points WHERE event_id = 'EVT_FLOOD_ALPS'\n",
+    "UNION ALL\n",
+    "SELECT CASE WHEN NOT in_path THEN 'Home clear' WHEN country_code='IT' THEN 'Home in the path · Italy' WHEN country_code='AT' THEN 'Home in the path · Austria' ELSE 'Home in the path' END AS layer, latitude, longitude,\n",
+    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si,\n",
+    "       CASE WHEN in_path AND country_code='IT' THEN 1 ELSE 0 END AS at_risk_it,\n",
+    "       CASE WHEN in_path AND country_code='AT' THEN 1 ELSE 0 END AS at_risk_at\n",
+    "FROM mv_map_event_homes WHERE event_id = 'EVT_FLOOD_ALPS'\n",
+    "ORDER BY marker\n"
+   ]
+  },
+  {
+   "name": "ds_celine",
+   "displayName": "Windstorm Celine",
+   "catalog": "lr_dev_aws_us_catalog",
+   "schema": "exposure_response",
+   "queryLines": [
+    "SELECT 'Storm footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
+    "       0 AS at_risk_it, 0 AS at_risk_at\n",
+    "FROM mv_map_footprint_points WHERE event_id = 'EVT_STORM_CELINE'\n",
+    "UNION ALL\n",
+    "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
+    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si,\n",
+    "       CASE WHEN in_path AND country_code='IT' THEN 1 ELSE 0 END AS at_risk_it,\n",
+    "       CASE WHEN in_path AND country_code='AT' THEN 1 ELSE 0 END AS at_risk_at\n",
+    "FROM mv_map_event_homes WHERE event_id = 'EVT_STORM_CELINE'\n",
+    "ORDER BY marker\n"
+   ]
+  },
+  {
+   "name": "ds_uk",
+   "displayName": "UK flood warnings vs underwriting risks",
+   "catalog": "lr_dev_aws_us_catalog",
+   "schema": "exposure_response",
+   "queryLines": [
+    "SELECT 'Flood warning area' AS layer, latitude, longitude, 1 AS marker, event_id AS zone_event,\n",
+    "       0 AS district_in_zone, 0 AS subs_in_zone, CAST(0 AS DOUBLE) AS si_in_zone\n",
+    "FROM mv_map_footprint_points WHERE source = 'EA'\n",
+    "UNION ALL\n",
+    "SELECT CASE WHEN in_zone THEN 'Underwriting risks in a flood zone' ELSE 'Underwriting risks clear' END AS layer,\n",
+    "       latitude, longitude, CASE WHEN in_zone THEN 7 ELSE 3 END AS marker, CAST(NULL AS STRING) AS zone_event,\n",
+    "       CASE WHEN in_zone THEN 1 ELSE 0 END AS district_in_zone,\n",
+    "       CASE WHEN in_zone THEN n_submissions ELSE 0 END AS subs_in_zone,\n",
+    "       CAST(CASE WHEN in_zone THEN total_property_si ELSE 0 END AS DOUBLE) AS si_in_zone\n",
+    "FROM mv_map_uk_uw_risks\n",
+    "ORDER BY marker\n"
+   ]
+  },
+  {
+   "name": "ds_overview",
+   "displayName": "All active events",
+   "catalog": "lr_dev_aws_us_catalog",
+   "schema": "exposure_response",
+   "queryLines": [
+    "SELECT CASE peril_code WHEN 'FIRE' THEN 'Wildfire footprint' WHEN 'FLOOD' THEN 'Flood footprint'\n",
+    "            ELSE 'Storm footprint' END AS layer, latitude, longitude, 1 AS marker, event_id,\n",
+    "       0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si\n",
+    "FROM mv_map_footprint_points\n",
+    "UNION ALL\n",
+    "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
+    "       CASE WHEN in_path THEN 5 ELSE 1 END AS marker, CAST(NULL AS STRING) AS event_id,\n",
+    "       CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si\n",
+    "FROM mv_map_book_homes\n",
+    "ORDER BY marker\n"
+   ]
+  }
+ ],
+ "pages": [
+  {
+   "name": "live",
+   "displayName": "Var wildfire — live",
+   "pageType": "PAGE_TYPE_CANVAS",
+   "layoutVersion": "GRID_V1",
+   "layout": [
+    {
+     "widget": {
+      "name": "live_title",
+      "multilineTextboxSpec": {
+       "lines": [
+        "## Var wildfire — following it live"
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "live_sub",
+      "multilineTextboxSpec": {
+       "lines": [
+        "Every dot is a home we insure. Red = in the fire's path (within 200 m). The orange area is the fire, redrawn at each update."
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 1,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "live_homes",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_live",
+         "fields": [
+          {
+           "name": "sum(at_risk)",
+           "expression": "SUM(`at_risk`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk)",
+         "displayName": "Homes in the fire's path",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Homes in the fire's path"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "live_si",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_live",
+         "fields": [
+          {
+           "name": "sum(at_risk_si)",
+           "expression": "SUM(`at_risk_si`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk_si)",
+         "displayName": "Sum insured at risk",
+         "format": {
+          "type": "number-currency",
+          "currencyCode": "EUR",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 1
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Sum insured at risk"
+       }
+      }
+     },
+     "position": {
+      "x": 4,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "live_update",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_live",
+         "fields": [
+          {
+           "name": "max(update_no)",
+           "expression": "MAX(`update_no`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "max(update_no)",
+         "displayName": "Update (of 4)",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Update (of 4)"
+       }
+      }
+     },
+     "position": {
+      "x": 8,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "live_map",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_live",
+         "fields": [
+          {
+           "name": "latitude",
+           "expression": "`latitude`"
+          },
+          {
+           "name": "longitude",
+           "expression": "`longitude`"
+          },
+          {
+           "name": "layer",
+           "expression": "`layer`"
+          },
+          {
+           "name": "marker",
+           "expression": "`marker`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "symbol-map",
+       "encodings": {
+        "coordinates": {
+         "latitude": {
+          "fieldName": "latitude"
+         },
+         "longitude": {
+          "fieldName": "longitude"
+         }
+        },
+        "color": {
+         "fieldName": "layer",
+         "displayName": "What you see",
+         "scale": {
+          "type": "categorical",
+          "mappings": [
+           {
+            "value": "Fire footprint",
+            "color": "#FDBA74"
+           },
+           {
+            "value": "Home in the path",
+            "color": "#DC2626"
+           },
+           {
+            "value": "Home clear",
+            "color": "#475569"
+           }
+          ]
+         }
+        },
+        "size": {
+         "fieldName": "marker",
+         "scale": {
+          "type": "quantitative"
+         }
+        }
+       },
+       "mark": {
+        "opacity": 0.85
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "The fire and the homes in its path"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 5,
+      "width": 12,
+      "height": 10
+     }
+    }
+   ]
+  },
+  {
+   "name": "var",
+   "displayName": "Var wildfire",
+   "pageType": "PAGE_TYPE_CANVAS",
+   "layoutVersion": "GRID_V1",
+   "layout": [
+    {
+     "widget": {
+      "name": "var_title",
+      "multilineTextboxSpec": {
+       "lines": [
+        "## Var wildfire — southern France"
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "var_sub",
+      "multilineTextboxSpec": {
+       "lines": [
+        "Red = homes we insure within 200 m of the fire. Grey = homes nearby, clear for now."
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 1,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "var_homes",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_var",
+         "fields": [
+          {
+           "name": "sum(at_risk)",
+           "expression": "SUM(`at_risk`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk)",
+         "displayName": "Homes in the fire's path",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Homes in the fire's path"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 2,
+      "width": 6,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "var_si",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_var",
+         "fields": [
+          {
+           "name": "sum(at_risk_si)",
+           "expression": "SUM(`at_risk_si`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk_si)",
+         "displayName": "Sum insured at risk",
+         "format": {
+          "type": "number-currency",
+          "currencyCode": "EUR",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 1
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Sum insured at risk"
+       }
+      }
+     },
+     "position": {
+      "x": 6,
+      "y": 2,
+      "width": 6,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "var_map",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_var",
+         "fields": [
+          {
+           "name": "latitude",
+           "expression": "`latitude`"
+          },
+          {
+           "name": "longitude",
+           "expression": "`longitude`"
+          },
+          {
+           "name": "layer",
+           "expression": "`layer`"
+          },
+          {
+           "name": "marker",
+           "expression": "`marker`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "symbol-map",
+       "encodings": {
+        "coordinates": {
+         "latitude": {
+          "fieldName": "latitude"
+         },
+         "longitude": {
+          "fieldName": "longitude"
+         }
+        },
+        "color": {
+         "fieldName": "layer",
+         "displayName": "What you see",
+         "scale": {
+          "type": "categorical",
+          "mappings": [
+           {
+            "value": "Fire footprint",
+            "color": "#FDBA74"
+           },
+           {
+            "value": "Home in the path",
+            "color": "#DC2626"
+           },
+           {
+            "value": "Home clear",
+            "color": "#475569"
+           }
+          ]
+         }
+        },
+        "size": {
+         "fieldName": "marker",
+         "scale": {
+          "type": "quantitative"
+         }
+        }
+       },
+       "mark": {
+        "opacity": 0.85
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "The fire and the homes in its path"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 5,
+      "width": 12,
+      "height": 10
+     }
+    }
+   ]
+  },
+  {
+   "name": "alps",
+   "displayName": "Alpine flood",
+   "pageType": "PAGE_TYPE_CANVAS",
+   "layoutVersion": "GRID_V1",
+   "layout": [
+    {
+     "widget": {
+      "name": "alps_title",
+      "multilineTextboxSpec": {
+       "lines": [
+        "## Alpine flood — one event, two countries"
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "alps_sub",
+      "multilineTextboxSpec": {
+       "lines": [
+        "One flood across the Italian–Austrian border. Red = homes in the path in Italy, purple = in Austria. One alert, not two."
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 1,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "alps_homes",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_alps",
+         "fields": [
+          {
+           "name": "sum(at_risk)",
+           "expression": "SUM(`at_risk`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk)",
+         "displayName": "Homes in the path",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Homes in the path"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 2,
+      "width": 3,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "alps_si",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_alps",
+         "fields": [
+          {
+           "name": "sum(at_risk_si)",
+           "expression": "SUM(`at_risk_si`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk_si)",
+         "displayName": "Sum insured at risk",
+         "format": {
+          "type": "number-currency",
+          "currencyCode": "EUR",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 1
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Sum insured at risk"
+       }
+      }
+     },
+     "position": {
+      "x": 3,
+      "y": 2,
+      "width": 3,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "alps_it",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_alps",
+         "fields": [
+          {
+           "name": "sum(at_risk_it)",
+           "expression": "SUM(`at_risk_it`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk_it)",
+         "displayName": "In Italy",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "In Italy"
+       }
+      }
+     },
+     "position": {
+      "x": 6,
+      "y": 2,
+      "width": 3,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "alps_at",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_alps",
+         "fields": [
+          {
+           "name": "sum(at_risk_at)",
+           "expression": "SUM(`at_risk_at`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk_at)",
+         "displayName": "In Austria",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "In Austria"
+       }
+      }
+     },
+     "position": {
+      "x": 9,
+      "y": 2,
+      "width": 3,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "alps_map",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_alps",
+         "fields": [
+          {
+           "name": "latitude",
+           "expression": "`latitude`"
+          },
+          {
+           "name": "longitude",
+           "expression": "`longitude`"
+          },
+          {
+           "name": "layer",
+           "expression": "`layer`"
+          },
+          {
+           "name": "marker",
+           "expression": "`marker`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "symbol-map",
+       "encodings": {
+        "coordinates": {
+         "latitude": {
+          "fieldName": "latitude"
+         },
+         "longitude": {
+          "fieldName": "longitude"
+         }
+        },
+        "color": {
+         "fieldName": "layer",
+         "displayName": "What you see",
+         "scale": {
+          "type": "categorical",
+          "mappings": [
+           {
+            "value": "Flood footprint",
+            "color": "#7DD3FC"
+           },
+           {
+            "value": "Home in the path · Italy",
+            "color": "#DC2626"
+           },
+           {
+            "value": "Home in the path · Austria",
+            "color": "#7C3AED"
+           },
+           {
+            "value": "Home clear",
+            "color": "#475569"
+           }
+          ]
+         }
+        },
+        "size": {
+         "fieldName": "marker",
+         "scale": {
+          "type": "quantitative"
+         }
+        }
+       },
+       "mark": {
+        "opacity": 0.85
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "The flood and the homes in its path, by country"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 5,
+      "width": 12,
+      "height": 10
+     }
+    }
+   ]
+  },
+  {
+   "name": "celine",
+   "displayName": "Windstorm Celine",
+   "pageType": "PAGE_TYPE_CANVAS",
+   "layoutVersion": "GRID_V1",
+   "layout": [
+    {
+     "widget": {
+      "name": "celine_title",
+      "multilineTextboxSpec": {
+       "lines": [
+        "## Windstorm Celine — a severe storm"
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "celine_sub",
+      "multilineTextboxSpec": {
+       "lines": [
+        "The storm's swath (violet) and every home we insure inside it (red)."
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 1,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "celine_homes",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_celine",
+         "fields": [
+          {
+           "name": "sum(at_risk)",
+           "expression": "SUM(`at_risk`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk)",
+         "displayName": "Homes in the path",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Homes in the path"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 2,
+      "width": 6,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "celine_si",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_celine",
+         "fields": [
+          {
+           "name": "sum(at_risk_si)",
+           "expression": "SUM(`at_risk_si`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk_si)",
+         "displayName": "Sum insured at risk",
+         "format": {
+          "type": "number-currency",
+          "currencyCode": "EUR",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 1
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Sum insured at risk"
+       }
+      }
+     },
+     "position": {
+      "x": 6,
+      "y": 2,
+      "width": 6,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "celine_map",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_celine",
+         "fields": [
+          {
+           "name": "latitude",
+           "expression": "`latitude`"
+          },
+          {
+           "name": "longitude",
+           "expression": "`longitude`"
+          },
+          {
+           "name": "layer",
+           "expression": "`layer`"
+          },
+          {
+           "name": "marker",
+           "expression": "`marker`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "symbol-map",
+       "encodings": {
+        "coordinates": {
+         "latitude": {
+          "fieldName": "latitude"
+         },
+         "longitude": {
+          "fieldName": "longitude"
+         }
+        },
+        "color": {
+         "fieldName": "layer",
+         "displayName": "What you see",
+         "scale": {
+          "type": "categorical",
+          "mappings": [
+           {
+            "value": "Storm footprint",
+            "color": "#C4B5FD"
+           },
+           {
+            "value": "Home in the path",
+            "color": "#DC2626"
+           },
+           {
+            "value": "Home clear",
+            "color": "#475569"
+           }
+          ]
+         }
+        },
+        "size": {
+         "fieldName": "marker",
+         "scale": {
+          "type": "quantitative"
+         }
+        }
+       },
+       "mark": {
+        "opacity": 0.85
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "The storm and the homes in its path"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 5,
+      "width": 12,
+      "height": 10
+     }
+    }
+   ]
+  },
+  {
+   "name": "uk",
+   "displayName": "UK flood warnings",
+   "pageType": "PAGE_TYPE_CANVAS",
+   "layoutVersion": "GRID_V1",
+   "layout": [
+    {
+     "widget": {
+      "name": "uk_title",
+      "multilineTextboxSpec": {
+       "lines": [
+        "## UK flood — Environment Agency warnings"
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "uk_sub",
+      "multilineTextboxSpec": {
+       "lines": [
+        "Live flood warning areas (blue) published as active zones. Red = underwriting risks inside a warning area: new cover there is referred."
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 1,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "uk_zones",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_uk",
+         "fields": [
+          {
+           "name": "countdistinct(zone_event)",
+           "expression": "COUNT(DISTINCT `zone_event`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "countdistinct(zone_event)",
+         "displayName": "Active flood warning areas",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Active flood warning areas"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "uk_subs",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_uk",
+         "fields": [
+          {
+           "name": "sum(subs_in_zone)",
+           "expression": "SUM(`subs_in_zone`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(subs_in_zone)",
+         "displayName": "Underwriting submissions in a zone",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Underwriting submissions in a zone"
+       }
+      }
+     },
+     "position": {
+      "x": 4,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "uk_si",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_uk",
+         "fields": [
+          {
+           "name": "sum(si_in_zone)",
+           "expression": "SUM(`si_in_zone`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(si_in_zone)",
+         "displayName": "Property sum insured in a zone",
+         "format": {
+          "type": "number-currency",
+          "currencyCode": "GBP",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 1
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Property sum insured in a zone"
+       }
+      }
+     },
+     "position": {
+      "x": 8,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "uk_map",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_uk",
+         "fields": [
+          {
+           "name": "latitude",
+           "expression": "`latitude`"
+          },
+          {
+           "name": "longitude",
+           "expression": "`longitude`"
+          },
+          {
+           "name": "layer",
+           "expression": "`layer`"
+          },
+          {
+           "name": "marker",
+           "expression": "`marker`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "symbol-map",
+       "encodings": {
+        "coordinates": {
+         "latitude": {
+          "fieldName": "latitude"
+         },
+         "longitude": {
+          "fieldName": "longitude"
+         }
+        },
+        "color": {
+         "fieldName": "layer",
+         "displayName": "What you see",
+         "scale": {
+          "type": "categorical",
+          "mappings": [
+           {
+            "value": "Flood warning area",
+            "color": "#7DD3FC"
+           },
+           {
+            "value": "Underwriting risks in a flood zone",
+            "color": "#DC2626"
+           },
+           {
+            "value": "Underwriting risks clear",
+            "color": "#475569"
+           }
+          ]
+         }
+        },
+        "size": {
+         "fieldName": "marker",
+         "scale": {
+          "type": "quantitative"
+         }
+        }
+       },
+       "mark": {
+        "opacity": 0.85
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Flood warning areas and underwriting risks"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 5,
+      "width": 12,
+      "height": 10
+     }
+    }
+   ]
+  },
+  {
+   "name": "overview",
+   "displayName": "All active events",
+   "pageType": "PAGE_TYPE_CANVAS",
+   "layoutVersion": "GRID_V1",
+   "layout": [
+    {
+     "widget": {
+      "name": "ov_title",
+      "multilineTextboxSpec": {
+       "lines": [
+        "## All active events across the book"
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "ov_sub",
+      "multilineTextboxSpec": {
+       "lines": [
+        "Every active event footprint, and every home we insure — red where an event is within 200 m."
+       ]
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 1,
+      "width": 12,
+      "height": 1
+     }
+    },
+    {
+     "widget": {
+      "name": "ov_events",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_overview",
+         "fields": [
+          {
+           "name": "countdistinct(event_id)",
+           "expression": "COUNT(DISTINCT `event_id`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "countdistinct(event_id)",
+         "displayName": "Active events",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Active events"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "ov_homes",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_overview",
+         "fields": [
+          {
+           "name": "sum(at_risk)",
+           "expression": "SUM(`at_risk`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk)",
+         "displayName": "Homes in an event's path",
+         "format": {
+          "type": "number",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 0
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Homes in an event's path"
+       }
+      }
+     },
+     "position": {
+      "x": 4,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "ov_si",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_overview",
+         "fields": [
+          {
+           "name": "sum(at_risk_si)",
+           "expression": "SUM(`at_risk_si`)"
+          }
+         ],
+         "disaggregated": false
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "counter",
+       "encodings": {
+        "value": {
+         "fieldName": "sum(at_risk_si)",
+         "displayName": "Sum insured at risk",
+         "format": {
+          "type": "number-currency",
+          "currencyCode": "EUR",
+          "abbreviation": "compact",
+          "decimalPlaces": {
+           "type": "max",
+           "places": 1
+          }
+         }
+        }
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Sum insured at risk"
+       }
+      }
+     },
+     "position": {
+      "x": 8,
+      "y": 2,
+      "width": 4,
+      "height": 3
+     }
+    },
+    {
+     "widget": {
+      "name": "ov_map",
+      "queries": [
+       {
+        "name": "main_query",
+        "query": {
+         "datasetName": "ds_overview",
+         "fields": [
+          {
+           "name": "latitude",
+           "expression": "`latitude`"
+          },
+          {
+           "name": "longitude",
+           "expression": "`longitude`"
+          },
+          {
+           "name": "layer",
+           "expression": "`layer`"
+          },
+          {
+           "name": "marker",
+           "expression": "`marker`"
+          }
+         ],
+         "disaggregated": true
+        }
+       }
+      ],
+      "spec": {
+       "version": 2,
+       "widgetType": "symbol-map",
+       "encodings": {
+        "coordinates": {
+         "latitude": {
+          "fieldName": "latitude"
+         },
+         "longitude": {
+          "fieldName": "longitude"
+         }
+        },
+        "color": {
+         "fieldName": "layer",
+         "displayName": "What you see",
+         "scale": {
+          "type": "categorical",
+          "mappings": [
+           {
+            "value": "Wildfire footprint",
+            "color": "#FDBA74"
+           },
+           {
+            "value": "Flood footprint",
+            "color": "#7DD3FC"
+           },
+           {
+            "value": "Storm footprint",
+            "color": "#C4B5FD"
+           },
+           {
+            "value": "Home in the path",
+            "color": "#DC2626"
+           },
+           {
+            "value": "Home clear",
+            "color": "#94A3B8"
+           }
+          ]
+         }
+        },
+        "size": {
+         "fieldName": "marker",
+         "scale": {
+          "type": "quantitative"
+         }
+        }
+       },
+       "mark": {
+        "opacity": 0.85
+       },
+       "frame": {
+        "showTitle": true,
+        "title": "Events and the book"
+       }
+      }
+     },
+     "position": {
+      "x": 0,
+      "y": 5,
+      "width": 12,
+      "height": 10
+     }
+    }
+   ]
+  }
+ ],
+ "uiSettings": {
+  "theme": {
+   "canvasBackgroundColor": {
+    "light": "#FCFCFC",
+    "dark": "#1F272D"
+   },
+   "widgetBackgroundColor": {
+    "light": "#FFFFFF",
+    "dark": "#11171C"
+   },
+   "fontColor": {
+    "light": "#11171C",
+    "dark": "#E8ECF0"
+   },
+   "selectionColor": {
+    "light": "#2563EB",
+    "dark": "#8ACAFF"
+   },
+   "visualizationColors": [
+    "#DC2626",
+    "#F97316",
+    "#0EA5E9",
+    "#7C3AED",
+    "#475569",
+    "#10B981"
+   ],
+   "widgetHeaderAlignment": "LEFT"
+  }
+ }
+}
