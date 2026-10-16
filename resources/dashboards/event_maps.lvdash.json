@@ -2,19 +2,20 @@
  "datasets": [
   {
    "name": "ds_live",
-   "displayName": "Var wildfire — live follow",
+   "displayName": "Var wildfire \u2014 live follow",
    "catalog": "lr_dev_aws_us_catalog",
    "schema": "exposure_response",
    "queryLines": [
-    "SELECT 'Fire footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
+    "SELECT 'Fire footprint' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
     "       t_index + 1 AS update_no\n",
     "FROM mv_map_live_footprint_points\n",
     "UNION ALL\n",
     "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
-    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
     "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si, t_index + 1 AS update_no\n",
     "FROM live_fire_state\n",
-    "ORDER BY marker\n"
+    "ORDER BY draw_order\n",
+    ""
    ]
   },
   {
@@ -23,17 +24,18 @@
    "catalog": "lr_dev_aws_us_catalog",
    "schema": "exposure_response",
    "queryLines": [
-    "SELECT 'Fire footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
+    "SELECT 'Fire footprint' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
     "       0 AS at_risk_it, 0 AS at_risk_at\n",
     "FROM mv_map_footprint_points WHERE event_id = 'EVT_FIRE_VAR'\n",
     "UNION ALL\n",
     "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
-    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
     "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si,\n",
     "       CASE WHEN in_path AND country_code='IT' THEN 1 ELSE 0 END AS at_risk_it,\n",
     "       CASE WHEN in_path AND country_code='AT' THEN 1 ELSE 0 END AS at_risk_at\n",
     "FROM mv_map_event_homes WHERE event_id = 'EVT_FIRE_VAR'\n",
-    "ORDER BY marker\n"
+    "ORDER BY draw_order\n",
+    ""
    ]
   },
   {
@@ -42,17 +44,18 @@
    "catalog": "lr_dev_aws_us_catalog",
    "schema": "exposure_response",
    "queryLines": [
-    "SELECT 'Flood footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
+    "SELECT 'Flood footprint' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
     "       0 AS at_risk_it, 0 AS at_risk_at\n",
     "FROM mv_map_footprint_points WHERE event_id = 'EVT_FLOOD_ALPS'\n",
     "UNION ALL\n",
-    "SELECT CASE WHEN NOT in_path THEN 'Home clear' WHEN country_code='IT' THEN 'Home in the path · Italy' WHEN country_code='AT' THEN 'Home in the path · Austria' ELSE 'Home in the path' END AS layer, latitude, longitude,\n",
-    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "SELECT CASE WHEN NOT in_path THEN 'Home clear' WHEN country_code='IT' THEN 'Home in the path \u00b7 Italy' WHEN country_code='AT' THEN 'Home in the path \u00b7 Austria' ELSE 'Home in the path' END AS layer, latitude, longitude,\n",
+    "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
     "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si,\n",
     "       CASE WHEN in_path AND country_code='IT' THEN 1 ELSE 0 END AS at_risk_it,\n",
     "       CASE WHEN in_path AND country_code='AT' THEN 1 ELSE 0 END AS at_risk_at\n",
     "FROM mv_map_event_homes WHERE event_id = 'EVT_FLOOD_ALPS'\n",
-    "ORDER BY marker\n"
+    "ORDER BY draw_order\n",
+    ""
    ]
   },
   {
@@ -61,17 +64,18 @@
    "catalog": "lr_dev_aws_us_catalog",
    "schema": "exposure_response",
    "queryLines": [
-    "SELECT 'Storm footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
+    "SELECT 'Storm footprint' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,\n",
     "       0 AS at_risk_it, 0 AS at_risk_at\n",
     "FROM mv_map_footprint_points WHERE event_id = 'EVT_STORM_CELINE'\n",
     "UNION ALL\n",
     "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
-    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
+    "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
     "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si,\n",
     "       CASE WHEN in_path AND country_code='IT' THEN 1 ELSE 0 END AS at_risk_it,\n",
     "       CASE WHEN in_path AND country_code='AT' THEN 1 ELSE 0 END AS at_risk_at\n",
     "FROM mv_map_event_homes WHERE event_id = 'EVT_STORM_CELINE'\n",
-    "ORDER BY marker\n"
+    "ORDER BY draw_order\n",
+    ""
    ]
   },
   {
@@ -80,17 +84,18 @@
    "catalog": "lr_dev_aws_us_catalog",
    "schema": "exposure_response",
    "queryLines": [
-    "SELECT 'Flood warning area' AS layer, latitude, longitude, 1 AS marker, event_id AS zone_event,\n",
+    "SELECT 'Flood warning area' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, event_id AS zone_event,\n",
     "       0 AS district_in_zone, 0 AS subs_in_zone, CAST(0 AS DOUBLE) AS si_in_zone\n",
     "FROM mv_map_footprint_points WHERE source = 'EA'\n",
     "UNION ALL\n",
     "SELECT CASE WHEN in_zone THEN 'Underwriting risks in a flood zone' ELSE 'Underwriting risks clear' END AS layer,\n",
-    "       latitude, longitude, CASE WHEN in_zone THEN 7 ELSE 3 END AS marker, CAST(NULL AS STRING) AS zone_event,\n",
+    "       latitude, longitude, CASE WHEN in_zone THEN 2 ELSE 1 END AS marker, CASE WHEN in_zone THEN 2 ELSE 1 END AS draw_order, CAST(NULL AS STRING) AS zone_event,\n",
     "       CASE WHEN in_zone THEN 1 ELSE 0 END AS district_in_zone,\n",
     "       CASE WHEN in_zone THEN n_submissions ELSE 0 END AS subs_in_zone,\n",
     "       CAST(CASE WHEN in_zone THEN total_property_si ELSE 0 END AS DOUBLE) AS si_in_zone\n",
     "FROM mv_map_uk_uw_risks\n",
-    "ORDER BY marker\n"
+    "ORDER BY draw_order\n",
+    ""
    ]
   },
   {
@@ -100,23 +105,24 @@
    "schema": "exposure_response",
    "queryLines": [
     "SELECT CASE peril_code WHEN 'FIRE' THEN 'Wildfire footprint' WHEN 'FLOOD' THEN 'Flood footprint'\n",
-    "            ELSE 'Storm footprint' END AS layer, latitude, longitude, 1 AS marker, event_id,\n",
+    "            ELSE 'Storm footprint' END AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, event_id,\n",
     "       0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si\n",
     "FROM mv_map_footprint_points\n",
     "UNION ALL\n",
     "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
-    "       CASE WHEN in_path THEN 5 ELSE 1 END AS marker, CAST(NULL AS STRING) AS event_id,\n",
+    "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order, CAST(NULL AS STRING) AS event_id,\n",
     "       CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,\n",
     "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si\n",
     "FROM mv_map_book_homes\n",
-    "ORDER BY marker\n"
+    "ORDER BY draw_order\n",
+    ""
    ]
   }
  ],
  "pages": [
   {
    "name": "live",
-   "displayName": "Var wildfire — live",
+   "displayName": "Var wildfire \u2014 live",
    "pageType": "PAGE_TYPE_CANVAS",
    "layoutVersion": "GRID_V1",
    "layout": [
@@ -125,7 +131,7 @@
       "name": "live_title",
       "multilineTextboxSpec": {
        "lines": [
-        "## Var wildfire — following it live"
+        "## Var wildfire \u2014 following it live"
        ]
       }
      },
@@ -347,11 +353,11 @@
           "mappings": [
            {
             "value": "Fire footprint",
-            "color": "#FDBA74"
+            "color": "#FB923C"
            },
            {
             "value": "Home in the path",
-            "color": "#DC2626"
+            "color": "#B91C1C"
            },
            {
             "value": "Home clear",
@@ -396,7 +402,7 @@
       "name": "var_title",
       "multilineTextboxSpec": {
        "lines": [
-        "## Var wildfire — southern France"
+        "## Var wildfire \u2014 southern France"
        ]
       }
      },
@@ -570,11 +576,11 @@
           "mappings": [
            {
             "value": "Fire footprint",
-            "color": "#FDBA74"
+            "color": "#FB923C"
            },
            {
             "value": "Home in the path",
-            "color": "#DC2626"
+            "color": "#B91C1C"
            },
            {
             "value": "Home clear",
@@ -619,7 +625,7 @@
       "name": "alps_title",
       "multilineTextboxSpec": {
        "lines": [
-        "## Alpine flood — one event, two countries"
+        "## Alpine flood \u2014 one event, two countries"
        ]
       }
      },
@@ -635,7 +641,7 @@
       "name": "alps_sub",
       "multilineTextboxSpec": {
        "lines": [
-        "One flood across the Italian–Austrian border. Red = homes in the path in Italy, purple = in Austria. One alert, not two."
+        "One flood across the Italian\u2013Austrian border. Red = homes in the path in Italy, purple = in Austria. One alert, not two."
        ]
       }
      },
@@ -892,11 +898,11 @@
             "color": "#7DD3FC"
            },
            {
-            "value": "Home in the path · Italy",
+            "value": "Home in the path \u00b7 Italy",
             "color": "#DC2626"
            },
            {
-            "value": "Home in the path · Austria",
+            "value": "Home in the path \u00b7 Austria",
             "color": "#7C3AED"
            },
            {
@@ -942,7 +948,7 @@
       "name": "celine_title",
       "multilineTextboxSpec": {
        "lines": [
-        "## Windstorm Celine — a severe storm"
+        "## Windstorm Celine \u2014 a severe storm"
        ]
       }
      },
@@ -1120,7 +1126,7 @@
            },
            {
             "value": "Home in the path",
-            "color": "#DC2626"
+            "color": "#B91C1C"
            },
            {
             "value": "Home clear",
@@ -1165,7 +1171,7 @@
       "name": "uk_title",
       "multilineTextboxSpec": {
        "lines": [
-        "## UK flood — Environment Agency warnings"
+        "## UK flood \u2014 Environment Agency warnings"
        ]
       }
      },
@@ -1452,7 +1458,7 @@
       "name": "ov_sub",
       "multilineTextboxSpec": {
        "lines": [
-        "Every active event footprint, and every home we insure — red where an event is within 200 m."
+        "Every active event footprint, and every home we insure \u2014 red where an event is within 200 m."
        ]
       }
      },
@@ -1670,7 +1676,7 @@
            },
            {
             "value": "Home in the path",
-            "color": "#DC2626"
+            "color": "#B91C1C"
            },
            {
             "value": "Home clear",

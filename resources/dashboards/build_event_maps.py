@@ -9,7 +9,10 @@ import pathlib
 
 CAT, SCH = "lr_dev_aws_us_catalog", "exposure_response"
 RED, PURPLE, SLATE = "#DC2626", "#7C3AED", "#475569"
-FIRE_FP, FLOOD_FP, STORM_FP = "#FDBA74", "#7DD3FC", "#C4B5FD"
+# Footprint dots are the biggest marker (4) and draw first; homes draw on top, smaller (in path 2, clear 1),
+# so the event area reads as a shaded shape instead of hiding under the home markers (16 Oct dry run).
+# On the fire pages the published dashboards use #B91C1C for "Home in the path" (contrast on orange).
+FIRE_FP, FLOOD_FP, STORM_FP = "#FB923C", "#7DD3FC", "#C4B5FD"
 EUR = {"type": "number-currency", "currencyCode": "EUR", "abbreviation": "compact",
        "decimalPlaces": {"type": "max", "places": 1}}
 GBP = dict(EUR, currencyCode="GBP")
@@ -26,58 +29,58 @@ def static_event_sql(event_id, fp_layer, by_country=False):
                   "WHEN country_code='AT' THEN 'Home in the path · Austria' ELSE 'Home in the path' END"
                   if by_country else "CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END")
     return [
-        f"SELECT '{fp_layer}' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,",
+        f"SELECT '{fp_layer}' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,",
         "       0 AS at_risk_it, 0 AS at_risk_at",
         f"FROM mv_map_footprint_points WHERE event_id = '{event_id}'",
         "UNION ALL",
         f"SELECT {home_layer} AS layer, latitude, longitude,",
-        "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,",
+        "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,",
         "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si,",
         "       CASE WHEN in_path AND country_code='IT' THEN 1 ELSE 0 END AS at_risk_it,",
         "       CASE WHEN in_path AND country_code='AT' THEN 1 ELSE 0 END AS at_risk_at",
         f"FROM mv_map_event_homes WHERE event_id = '{event_id}'",
-        "ORDER BY marker",
+        "ORDER BY draw_order",
     ]
 
 
 LIVE_SQL = [
-    "SELECT 'Fire footprint' AS layer, latitude, longitude, 1 AS marker, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,",
+    "SELECT 'Fire footprint' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, 0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si,",
     "       t_index + 1 AS update_no",
     "FROM mv_map_live_footprint_points",
     "UNION ALL",
     "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,",
-    "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,",
+    "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order, CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,",
     "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si, t_index + 1 AS update_no",
     "FROM live_fire_state",
-    "ORDER BY marker",
+    "ORDER BY draw_order",
 ]
 
 UK_SQL = [
-    "SELECT 'Flood warning area' AS layer, latitude, longitude, 1 AS marker, event_id AS zone_event,",
+    "SELECT 'Flood warning area' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, event_id AS zone_event,",
     "       0 AS district_in_zone, 0 AS subs_in_zone, CAST(0 AS DOUBLE) AS si_in_zone",
     "FROM mv_map_footprint_points WHERE source = 'EA'",
     "UNION ALL",
     "SELECT CASE WHEN in_zone THEN 'Underwriting risks in a flood zone' ELSE 'Underwriting risks clear' END AS layer,",
-    "       latitude, longitude, CASE WHEN in_zone THEN 7 ELSE 3 END AS marker, CAST(NULL AS STRING) AS zone_event,",
+    "       latitude, longitude, CASE WHEN in_zone THEN 2 ELSE 1 END AS marker, CASE WHEN in_zone THEN 2 ELSE 1 END AS draw_order, CAST(NULL AS STRING) AS zone_event,",
     "       CASE WHEN in_zone THEN 1 ELSE 0 END AS district_in_zone,",
     "       CASE WHEN in_zone THEN n_submissions ELSE 0 END AS subs_in_zone,",
     "       CAST(CASE WHEN in_zone THEN total_property_si ELSE 0 END AS DOUBLE) AS si_in_zone",
     "FROM mv_map_uk_uw_risks",
-    "ORDER BY marker",
+    "ORDER BY draw_order",
 ]
 
 OVERVIEW_SQL = [
     "SELECT CASE peril_code WHEN 'FIRE' THEN 'Wildfire footprint' WHEN 'FLOOD' THEN 'Flood footprint'",
-    "            ELSE 'Storm footprint' END AS layer, latitude, longitude, 1 AS marker, event_id,",
+    "            ELSE 'Storm footprint' END AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order, event_id,",
     "       0 AS at_risk, CAST(0 AS DOUBLE) AS at_risk_si",
     "FROM mv_map_footprint_points",
     "UNION ALL",
     "SELECT CASE WHEN in_path THEN 'Home in the path' ELSE 'Home clear' END AS layer, latitude, longitude,",
-    "       CASE WHEN in_path THEN 5 ELSE 1 END AS marker, CAST(NULL AS STRING) AS event_id,",
+    "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order, CAST(NULL AS STRING) AS event_id,",
     "       CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,",
     "       CAST(CASE WHEN in_path THEN sum_insured ELSE 0 END AS DOUBLE) AS at_risk_si",
     "FROM mv_map_book_homes",
-    "ORDER BY marker",
+    "ORDER BY draw_order",
 ]
 
 

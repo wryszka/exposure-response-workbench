@@ -13,13 +13,13 @@
       "name": "ds_live_map",
       "displayName": "Live fire map (fire + homes)",
       "queryLines": [
-        "SELECT 'The fire' AS layer, latitude, longitude, 1 AS marker\n",
+        "SELECT 'The fire' AS layer, latitude, longitude, 4 AS marker, 0 AS draw_order\n",
         "FROM mv_map_live_footprint_points\n",
         "UNION ALL\n",
         "SELECT CASE WHEN in_path THEN 'Home in the fire''s path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
-        "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker\n",
+        "       CASE WHEN in_path THEN 2 ELSE 1 END AS marker, CASE WHEN in_path THEN 2 ELSE 1 END AS draw_order\n",
         "FROM live_fire_state\n",
-        "ORDER BY marker"
+        "ORDER BY draw_order"
       ],
       "catalog": "lr_dev_aws_us_catalog",
       "schema": "exposure_response"
@@ -231,7 +231,7 @@
                       },
                       {
                         "value": "Home in the fire's path",
-                        "color": "#DC2626"
+                        "color": "#B91C1C"
                       },
                       {
                         "value": "Home clear",
