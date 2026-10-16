@@ -340,11 +340,15 @@
       <div class="card" id="dashPanel" style="display:none;margin-bottom:16px">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
           <b style="font-size:15px">🔥 Live fire tracker</b>
-          <span class="muted" style="font-size:12px">The map and counts refresh as new feed records arrive.</span>
-          <label style="margin-left:auto;font-size:12px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dashAuto" checked onchange="dashAutoToggle()"> Auto-refresh every 30 s</label>
-          <button class="btn" onclick="dashReload()">↻ Refresh</button>
-          <a class="btn" id="dashNewTab" target="_blank" rel="noopener">Open in new tab ↗</a>
-          <button class="btn" onclick="closeDash()">✕</button>
+          <span class="pill" id="dashTick" style="background:#eef2ff;color:#3730a3">Update 1</span>
+          <span class="muted" style="font-size:12px">Orange = the fire · red = a home in its path · grey = clear.</span>
+          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <button class="btn" onclick="dashGo(0)">↺ Start again</button>
+            <button class="btn" id="dashNext" style="background:#2563eb;color:#fff;border-color:#2563eb" onclick="dashGo(DASH_TICK+1)">Next update ▸</button>
+            <label style="font-size:12px;display:flex;align-items:center;gap:6px"><input type="checkbox" id="dashAuto" checked onchange="dashAutoToggle()"> Advance every 30 s</label>
+            <a class="btn" id="dashNewTab" target="_blank" rel="noopener">Open in new tab ↗</a>
+            <button class="btn" onclick="closeDash()">✕</button>
+          </span>
         </div>
         <iframe id="dashFrame" title="Live fire tracker dashboard" style="width:100%;height:720px;border:1px solid var(--line);border-radius:10px;background:#fff" loading="lazy"></iframe>
         <div class="muted" style="font-size:11.5px;margin-top:6px">If the dashboard doesn't appear here (browser blocks embedded sign-in), use <b>Open in new tab</b>.</div>
@@ -689,24 +693,36 @@ function trackEvent(eid){
   window.scrollTo(0,0);
   selectEvent(eid);
 }
-let DASH_T=null;
+let DASH_T=null, DASH_TICK=0, DASH_TICKS=[];
 function dashUrls(){
   let h=CFG.workspace_host; if(!/^https?:\/\//.test(h)) h='https://'+h;
   const o=CFG.workspace_id?('?o='+encodeURIComponent(CFG.workspace_id)):'';
   return {embed:h+'/embed/dashboardsv3/'+encodeURIComponent(CFG.dashboard_id)+o,
           tab:h+'/dashboardsv3/'+encodeURIComponent(CFG.dashboard_id)+'/published'+o};
 }
-function openDash(){
+async function openDash(){
   if(!CFG.dashboard_id || !CFG.workspace_host) return;
-  const u=dashUrls();
-  $('#dashNewTab').href=u.tab;
-  $('#dashFrame').src=u.embed;
+  if(LIVE_TIMER){clearInterval(LIVE_TIMER);LIVE_TIMER=null;}   // one driver of the live cursor at a time
+  $('#dashNewTab').href=dashUrls().tab;
   $('#dashPanel').style.display='block';
   $('#dashPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  if(!DASH_TICKS.length){try{const d=await api('/live/ticks');DASH_TICKS=d.ticks||[];}catch(e){DASH_TICKS=[];}}
+  dashGo(0);            // the fire from the start; it grows with each update
   dashAutoToggle();
 }
+// Move the live fire to update i (writes live_cursor), then reload the embedded dashboard so the map redraws.
+async function dashGo(i){
+  const n=DASH_TICKS.length||1;
+  DASH_TICK=Math.max(0,Math.min(i,n-1));
+  const t=DASH_TICKS[DASH_TICK]||{};
+  $('#dashTick').textContent=`Update ${DASH_TICK+1} of ${n}`+(t.label?` · ${t.label}`:'');
+  $('#dashNext').disabled=DASH_TICK>=n-1;
+  try{await fetch('/api/live/cursor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({t_index:DASH_TICK})});}catch(e){}
+  setTimeout(dashReload,1200);
+}
 function dashReload(){ if($('#dashPanel').style.display==='block') $('#dashFrame').src=dashUrls().embed; }
-function dashAutoToggle(){ clearInterval(DASH_T); DASH_T=null; if($('#dashAuto').checked) DASH_T=setInterval(dashReload,30000); }
+// Auto: advance the fire every 30 s; once it's full size, keep refreshing (the live-ingestion counter keeps ticking).
+function dashAutoToggle(){ clearInterval(DASH_T); DASH_T=null; if($('#dashAuto').checked) DASH_T=setInterval(()=>{ if(DASH_TICK<(DASH_TICKS.length||1)-1) dashGo(DASH_TICK+1); else dashReload(); },30000); }
 function closeDash(){ clearInterval(DASH_T); DASH_T=null; $('#dashPanel').style.display='none'; $('#dashFrame').src='about:blank'; }
 function backToBoard(){
   closeDash();

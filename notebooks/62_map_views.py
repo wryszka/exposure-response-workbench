@@ -184,9 +184,11 @@ CROSS JOIN z
 
 # COMMAND ----------
 # MAGIC %md ## Event → dashboard page (read by the app)
-# MAGIC `embed_url` uses the documented single-widget embed (`fullscreenWidget=<page>~<widget>`) so the app shows that
-# MAGIC event's map full size; `page_url` opens the whole page (map + counters) in a new tab. `event_id='*'` is the
-# MAGIC book-wide overview — the default for any event without its own page. Any `source='EA'` event uses the UK page.
+# MAGIC Each event's map is its own one-widget published dashboard (`MAP_DASH`, split from the Event maps dashboard by
+# MAGIC `resources/dashboards/split_event_maps.py`), embedded with the plain form `/embed/dashboardsv3/<id>?o=<wsid>`.
+# MAGIC (The single-widget `fullscreenWidget=<page>~<widget>` embed loaded the frame but the map never drew — 16 Oct dry run.)
+# MAGIC `event_id='*'` is the book-wide overview — the default for any event without its own page. Any `source='EA'` event
+# MAGIC uses the UK page.
 
 # COMMAND ----------
 WSID = str(requests.get(f"https://{HOST}/api/2.1/unity-catalog/current-metastore-assignment", headers=H).json()["workspace_id"])
@@ -201,11 +203,19 @@ PAGES = [  # event_id, page, map widget, title
 run_wh(f"""CREATE OR REPLACE TABLE {S}.ref_dashboard_pages (
   event_id STRING, dashboard_id STRING, page_id STRING, embed_url STRING, title STRING,
   page_url STRING, map_widget STRING)
-COMMENT 'Event → page of the Exposure — Event maps AI/BI dashboard. embed_url = single-widget embed of that event map (iframe-ready); page_url = the published page (map + counters). event_id * = overview, the default for events without their own page; source=EA events use the EVT_EA_SAMPLE_UK page.'""")
+COMMENT 'Event → its one-widget map dashboard (split from Exposure — Event maps). embed_url = plain embed of that map (iframe-ready); page_url = the published map. event_id * = overview, the default for events without their own page; source=EA events use the EVT_EA_SAMPLE_UK page.'""")
 base = f"https://{HOST}"
+MAP_DASH = {  # page → its one-widget map dashboard (DEV workspace)
+    "live": "01f1c94f6ca21f48a78dfab076d66164",
+    "var": "01f1c94f6d6c1a30b5b8c0e810a6201e",
+    "alps": "01f1c94f6e38191887fbe57a45734250",
+    "celine": "01f1c94f6ef8186f93cd116988e79cea",
+    "uk": "01f1c94f6fbd19abbfb679b24e7279c7",
+    "overview": "01f1c94f707f1db8af395ca43683d734",
+}
 rows = ",".join(
-    f"('{e}','{DASH}','{p}','{base}/embed/dashboardsv3/{DASH}?o={WSID}&fullscreenWidget={p}~{w}','{t}',"
-    f"'{base}/dashboardsv3/{DASH}/published/pages/{p}?o={WSID}','{w}')"
+    f"('{e}','{MAP_DASH[p]}','{p}','{base}/embed/dashboardsv3/{MAP_DASH[p]}?o={WSID}','{t}',"
+    f"'{base}/dashboardsv3/{MAP_DASH[p]}/published?o={WSID}','{w}')"
     for e, p, w, t in PAGES)
 run_wh(f"INSERT INTO {S}.ref_dashboard_pages VALUES {rows}")
 

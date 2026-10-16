@@ -3,34 +3,44 @@
     {
       "name": "ds_live",
       "displayName": "Live fire state",
-      "catalog": "lr_dev_aws_us_catalog",
-      "schema": "exposure_response",
       "queryLines": [
-        "SELECT insured_object_id, latitude, longitude, sum_insured, band, ",
-        "       CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk, ",
-        "       CASE WHEN in_path THEN sum_insured ELSE 0 END AS at_risk_si ",
-        "FROM live_fire_state"
-      ]
+        "SELECT insured_object_id, latitude, longitude, sum_insured, band,        CASE WHEN in_path THEN 1 ELSE 0 END AS at_risk,        CASE WHEN in_path THEN sum_insured ELSE 0 END AS at_risk_si FROM live_fire_state"
+      ],
+      "catalog": "lr_dev_aws_us_catalog",
+      "schema": "exposure_response"
+    },
+    {
+      "name": "ds_live_map",
+      "displayName": "Live fire map (fire + homes)",
+      "queryLines": [
+        "SELECT 'The fire' AS layer, latitude, longitude, 1 AS marker\n",
+        "FROM mv_map_live_footprint_points\n",
+        "UNION ALL\n",
+        "SELECT CASE WHEN in_path THEN 'Home in the fire''s path' ELSE 'Home clear' END AS layer, latitude, longitude,\n",
+        "       CASE WHEN in_path THEN 6 ELSE 2 END AS marker\n",
+        "FROM live_fire_state\n",
+        "ORDER BY marker"
+      ],
+      "catalog": "lr_dev_aws_us_catalog",
+      "schema": "exposure_response"
     },
     {
       "name": "ds_stream",
       "displayName": "Live ingestion (stream)",
-      "catalog": "lr_dev_aws_us_catalog",
-      "schema": "exposure_response",
       "queryLines": [
-        "SELECT count(*) AS records_ingested, max(ingested_at) AS last_received, ",
-        "       coalesce(timestampdiff(SECOND, max(ingested_at), current_timestamp()), -1) AS seconds_since_last ",
-        "FROM stream_proof"
-      ]
+        "SELECT count(*) AS records_ingested, max(ingested_at) AS last_received,        coalesce(timestampdiff(SECOND, max(ingested_at), current_timestamp()), -1) AS seconds_since_last FROM stream_proof"
+      ],
+      "catalog": "lr_dev_aws_us_catalog",
+      "schema": "exposure_response"
     },
     {
       "name": "ds_stream_ts",
       "displayName": "Records per minute (stream)",
-      "catalog": "lr_dev_aws_us_catalog",
-      "schema": "exposure_response",
       "queryLines": [
         "SELECT date_trunc('MINUTE', ingested_at) AS minute, count(*) AS records FROM stream_proof GROUP BY 1 ORDER BY 1"
-      ]
+      ],
+      "catalog": "lr_dev_aws_us_catalog",
+      "schema": "exposure_response"
     }
   ],
   "pages": [
@@ -43,7 +53,7 @@
             "name": "title",
             "multilineTextboxSpec": {
               "lines": [
-                "## 🔥 Live fire tracker — Var, southern France"
+                "## \ud83d\udd25 Live fire tracker \u2014 Var, southern France"
               ]
             }
           },
@@ -59,7 +69,7 @@
             "name": "subtitle",
             "multilineTextboxSpec": {
               "lines": [
-                "Insured homes in the path of an active wildfire — the map updates as the fire spreads."
+                "Our insured homes around an active wildfire. Each update, the fire grows \u2014 homes within 200 m of it turn red."
               ]
             }
           },
@@ -174,7 +184,7 @@
               {
                 "name": "main_query",
                 "query": {
-                  "datasetName": "ds_live",
+                  "datasetName": "ds_live_map",
                   "fields": [
                     {
                       "name": "latitude",
@@ -185,12 +195,12 @@
                       "expression": "`longitude`"
                     },
                     {
-                      "name": "band",
-                      "expression": "`band`"
+                      "name": "layer",
+                      "expression": "`layer`"
                     },
                     {
-                      "name": "sum_insured",
-                      "expression": "`sum_insured`"
+                      "name": "marker",
+                      "expression": "`marker`"
                     }
                   ],
                   "disaggregated": true
@@ -210,38 +220,39 @@
                   }
                 },
                 "color": {
-                  "fieldName": "band",
+                  "fieldName": "layer",
+                  "displayName": "On the map",
                   "scale": {
                     "type": "categorical",
                     "mappings": [
                       {
-                        "value": "In fire zone",
-                        "color": "#FF5F66"
+                        "value": "The fire",
+                        "color": "#FB923C"
                       },
                       {
-                        "value": "Near (<=200m)",
-                        "color": "#FFA600"
+                        "value": "Home in the fire's path",
+                        "color": "#DC2626"
                       },
                       {
-                        "value": "Clear",
-                        "color": "#5ADBFF"
+                        "value": "Home clear",
+                        "color": "#475569"
                       }
                     ]
                   }
                 },
                 "size": {
-                  "fieldName": "sum_insured",
+                  "fieldName": "marker",
                   "scale": {
                     "type": "quantitative"
                   }
                 }
               },
               "mark": {
-                "opacity": 0.75
+                "opacity": 0.85
               },
               "frame": {
                 "showTitle": true,
-                "title": "Insured homes near the fire (colour = threat)"
+                "title": "Orange = the fire \u00b7 red = a home in its path \u00b7 grey = clear"
               }
             }
           },
@@ -257,7 +268,7 @@
             "name": "stream_hdr",
             "multilineTextboxSpec": {
               "lines": [
-                "### 📡 Live ingestion — the hazard feed streaming in right now"
+                "### \ud83d\udce1 Live ingestion \u2014 the hazard feed streaming in right now"
               ]
             }
           },

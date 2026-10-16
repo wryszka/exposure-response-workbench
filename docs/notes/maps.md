@@ -41,3 +41,15 @@ in-path homes draw on top.
 - Reset: the views are name-based, so a reset that recreates base tables keeps them working. Adding `62_map_views` as an optional last task in `exposure_99_reset` is harmless (re-applies grants, rebuilds `ref_dashboard_pages`).
 - The live page moves only when `live_cursor` changes (the app's Start / Next / Reset already write it via `POST /api/live/cursor`). The embedded map refreshes when the iframe reloads.
 - The existing "Live Fire Tracker" dashboard (`01f1c169…`) is untouched.
+
+## Dry-run fixes (16 Oct)
+- **Event map spun forever.** The single-widget embed (`fullscreenWidget=<page>~<widget>`) loaded the frame and the
+  data (the warehouse shows the query finishing with 931 rows), but the map never drew. Each event's map is now its own
+  one-widget published dashboard (`resources/dashboards/split_event_maps.py`), embedded with the plain
+  `/embed/dashboardsv3/<id>?o=<wsid>` form — the same form the Live Fire Tracker uses, which renders. `ref_dashboard_pages`
+  points at them (`MAP_DASH` in `notebooks/62_map_views.py`). The six-page "Exposure — Event maps" dashboard is kept as the source.
+- **Track live showed homes but no fire.** The Live Fire Tracker map plotted homes only (all "clear" blue at update 1).
+  Its map now has its own dataset `ds_live_map`: the fire (fill points at the current tick, orange), homes in its path
+  (red), clear homes (grey); counters still read `ds_live`.
+- **Track live never moved.** The panel had no way to advance the fire (only the Event Radar screen did). It now opens at
+  update 1, advances every 30 s, and has **Next update ▸** and **↺ Start again** — each writes `live_cursor` and reloads.
