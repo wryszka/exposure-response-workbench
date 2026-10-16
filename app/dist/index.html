@@ -756,7 +756,7 @@ function mapEmbed(eid){
   const row=mapRowFor(eid);
   const u=mapUrls(row);
   if(!u)return `<div class="mapph"><b>Map loading</b><span>The dashboard map for this event isn't published yet. The numbers on this page are live.</span></div>`;
-  return `<iframe title="${esc((row&&row.title)||'Event map')}" src="${u.embed}" style="width:100%;height:520px;border:1px solid var(--line);border-radius:10px;background:#fff" loading="lazy"></iframe>
+  return `<iframe title="${esc((row&&row.title)||'Event map')}" src="${u.embed}" style="width:100%;height:600px;border:1px solid var(--line);border-radius:10px;background:#fff" loading="lazy"></iframe>
     <div class="muted" style="font-size:11.5px;margin-top:6px">${row.event_id==='*'?'Book-wide map. ':''}<a href="${u.tab}" target="_blank" rel="noopener">Open in new tab ↗</a></div>`;
 }
 
@@ -784,6 +784,13 @@ function renderView(d){
   const net=+((wf.find(r=>r.kind==='net')||{}).running_net_eur||0);
   const ceded=Math.max(gross-net,0);
   const chs=(d.coverholders||[]).map(r=>({id:r.coverholder_id,name:r.coverholder_name,binder:r.binder_ref,scope:r.country_scope,del:String(r.is_delegated)==='true',n:+r.n_objects,si:+r.sum_insured_eur}));
+  const countryCard=`
+      <div class="card">
+        <h3>Exposure by country</h3>
+        <p class="h3s">One event, every country it touches — no silos.</p>
+        <div class="cb">${countryBars(byCountry,p.c)}</div>
+        <div class="xborder ${xborder?'on':''}">⚠ This single event crosses <b>${byCountry.length} countries</b> (${byCountry.map(c=>c.k).join(', ')}). Teams organised by country would each see only their slice.</div>
+      </div>`;
   const finCards=`
     <div class="grid2">
       <div class="card">
@@ -798,11 +805,12 @@ function renderView(d){
         </div>
         <div class="wf">${waterfall(wf,gross)}</div>
       </div>
+      <div>${countryCard}
       <div class="card">
         <h3>Exposure by coverholder</h3>
         <p class="h3s">Who wrote the threatened risk — the delegated authorities (binders) and the direct book.</p>
         <div class="cb">${coverholderBars(chs)}</div>
-      </div>
+      </div></div>
     </div>`;
 
   // ── stakeholder alert: delta since last sweep + the digest that goes out (fn_event_delta / gov_alert_dispatch) ──
@@ -824,18 +832,10 @@ function renderView(d){
       <span class="muted" style="font-size:12.5px">${esc(ev.event_date||'')}</span>
     </div>
     ${kpis}
-    <div class="grid2">
-      <div class="card">
-        <h3>Event map</h3>
-        <p class="h3s">The footprint and the insured homes around it — Databricks AI/BI dashboard. Red = in the path.</p>
-        ${mapEmbed(d.event_id)}
-      </div>
-      <div class="card">
-        <h3>Exposure by country</h3>
-        <p class="h3s">One event, every country it touches — no silos.</p>
-        <div class="cb">${countryBars(byCountry,p.c)}</div>
-        <div class="xborder ${xborder?'on':''}">⚠ This single event crosses <b>${byCountry.length} countries</b> (${byCountry.map(c=>c.k).join(', ')}). Teams organised by country would each see only their slice.</div>
-      </div>
+    <div class="card">
+      <h3>Event map</h3>
+      <p class="h3s">The event's footprint (shaded) and the insured homes around it — Databricks AI/BI dashboard. Red = a home in the path, grey = clear.</p>
+      ${mapEmbed(d.event_id)}
     </div>
     ${finCards}
     ${alertCard}

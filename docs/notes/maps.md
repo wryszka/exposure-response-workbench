@@ -53,3 +53,8 @@ in-path homes draw on top.
   (red), clear homes (grey); counters still read `ds_live`.
 - **Track live never moved.** The panel had no way to advance the fire (only the Event Radar screen did). It now opens at
   update 1, advances every 30 s, and has **Next update ▸** and **↺ Start again** — each writes `live_cursor` and reloads.
+- **Fire hidden under the homes.** Homes in the path were the biggest markers (6) and drew over the footprint dots (1),
+  so the Var fire (1.4 × 1.1 km) vanished under 59 red circles. Now the footprint is the biggest marker (4) and draws
+  first, with homes on top and smaller (in path 2, clear 1, `draw_order`). Fire orange `#FB923C`, home in the path `#B91C1C`.
+- **Event view layout:** the event map is full width (600 px); Exposure by country sits under it, stacked above
+  Exposure by coverholder beside Gross → net.
